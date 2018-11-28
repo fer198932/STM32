@@ -1629,8 +1629,10 @@ void coderResBack(void)				// 回复编码器设定参数的函数
 	coderResString[5] = 0x42;					// 指令码
 	coderResString[6] = 0x00;
 	
-	// 90个 allAxisSetData 的数据
-	memcpy(coderResString+7, allAxisSetData, sizeof(allAxisSetData));
+	// 90个 allAxisSetData 的数据，小心四字节对齐!!  byYJY
+	memcpy(coderResString+7, &allAxisSetData[0], sizeof(allAxisSetData[0]));
+	memcpy(coderResString+37, &allAxisSetData[1], sizeof(allAxisSetData[1]));
+	memcpy(coderResString+67, &allAxisSetData[2], sizeof(allAxisSetData[2]));
 	
 	coderResString[97] = FrameEnd;				// 结束位	
 	
