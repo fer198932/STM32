@@ -61,7 +61,10 @@ extern u32 xAxisPlusNum,yAxisPlusNum,zAxisPlusNum,aAxisPlusNum,bAxisPlusNum;
 extern u32 maxPlusNum;
 
 extern nAxisSetData allAxisSetData[3];			// X、Y、Z轴设定的运动参数
+extern SetDataPerAxis setDataPerAxis;	// 完整记录某一轴的运动参数，暂时为X轴
 extern u8 testSetDataFlag;			// 标记当前的运行状态
+u16 setClkTempPre = 0;									// 临时保存频率数据
+u16 setClkTempNext = 0;									// 临时保存频率数据
 
 u32 testNum;
 void testIO_Init(void)
@@ -163,7 +166,9 @@ void TIM7_IRQHandler(void)						//40ms
 	if(TIM_GetITStatus(TIM7,TIM_IT_Update)==SET) 		//溢出中断
 	{
 		TIM_ClearITPendingBit(TIM7,TIM_IT_Update);			//清除中断标志位
-	
+		// 保存CLK的初始值
+		setClkTempPre = setDataPerAxis.setClk[setDataPerAxis.incClkDataFlag];
+		
 		if(workedTimeMS == 0)
 			{
 				i=0;
@@ -206,6 +211,15 @@ void TIM7_IRQHandler(void)						//40ms
 				}
 		}
 		
+		// 如果CLK变化，则重新计数
+		if( setClkTempPre != setClkTempNext)
+		{
+			setDataPerAxis.incClkDataFlag++;
+			setDataPerAxis.setClk[setDataPerAxis.incClkDataFlag] = setClkTempNext;
+		}
+		setDataPerAxis.setClkTime[setDataPerAxis.incClkDataFlag]++;
+		
+		// 记录匀速运动的持续时间 byYJY
 		if(	allAxisSetData[0].addSubClkSet[testSetDataFlag] != xAxisClk || 
 				allAxisSetData[1].addSubClkSet[testSetDataFlag] != yAxisClk ||
 				allAxisSetData[2].addSubClkSet[testSetDataFlag] != zAxisClk	)					// 不是匀速阶段时，标记位递增

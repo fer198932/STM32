@@ -26,6 +26,7 @@
 extern u32 xAxisPlusNum,yAxisPlusNum,zAxisPlusNum,aAxisPlusNum,bAxisPlusNum;
 
 extern nAxisSetData allAxisSetData[3];			// X、Y、Z轴设定的运动参数
+extern SetDataPerAxis setDataPerAxis;	// 完整记录某一轴的运动参数，暂时为X轴
 extern u8 setedDataResFlag;
 
 u32 pwmNumTim12=0;
@@ -76,6 +77,9 @@ void EXTI1_IRQHandler(void)
 			allAxisSetData[0].subLastTime = TIM7->CNT;
 			TIM_Cmd(TIM7,DISABLE);												// 关闭TIM7计时
 			setedDataResFlag = 0;													// 运动停止，标记置位
+//			setDataPerAxis.subLastTime = TIM7->CNT;
+//			TIM_Cmd(TIM7,DISABLE);												// 关闭TIM7计时
+//			setedDataResFlag = 0;													// 运动停止，标记置位			
 	 	}
 }	
 

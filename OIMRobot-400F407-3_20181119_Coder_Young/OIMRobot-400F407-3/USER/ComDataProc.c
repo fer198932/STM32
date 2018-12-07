@@ -76,6 +76,10 @@ u32 CountNeedAdd;//ÀÛ¼Æ¼ÆËã¼ÓËÙËùĞèÂö³å¸öÊı
 extern unsigned char respFlag;	// ±ê¼ÇÊÇ·ñ»Ø¸´
 
 nAxisSetData allAxisSetData[3];	// ¼ÇÂ¼Éè¶¨µÄÔË¶¯²ÎÊı
+SetDataPerAxis setDataPerAxis;	// ÍêÕû¼ÇÂ¼Ä³Ò»ÖáµÄÔË¶¯²ÎÊı£¬ÔİÊ±ÎªXÖá
+//u16 setClkTemp;									// ÁÙÊ±±£´æÉè¶¨µÄÆµÂÊ
+extern u16 setClkTempNext;									// ÁÙÊ±±£´æÆµÂÊÊı¾İ
+
 u8 testSetDataFlag = 0;			// ±ê¼Çµ±Ç°µÄÔËĞĞ×´Ì¬
 u8 setedDataResFlag = 1;		// ±ê¼Ç¶¯×÷Íê³É£¬Íê³Éºó²Å¿ÉÒÔ´®¿Ú·µ»Ø
 
@@ -1330,7 +1334,7 @@ void addSubFlagSet(void)
 	}
 	if(maxPlusNum>=2*CountNeedAdd)
 	{
-			addSubFlag = 0;			//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª£
+			addSubFlag = 0;			//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª?
 	}
 	else
 	{
@@ -1373,7 +1377,7 @@ void addSubFlagSet(void)
 //	}
 //	if(maxPlusNum>=2*CountNeedAdd)
 //	{
-//			addSubFlag = 0;			//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª£
+//			addSubFlag = 0;			//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª?
 //	}
 //	else
 //	{
@@ -1618,6 +1622,7 @@ void rs232DataProcStep1(void)
 void coderResBack(void)				// »Ø¸´±àÂëÆ÷Éè¶¨²ÎÊıµÄº¯Êı 
 {
 	u8 i;
+	memset(coderResString, 0, sizeof(coderResString));
 	
 	coderResString[0] = FrameB1;
 	coderResString[1] = FrameB2;
@@ -1633,6 +1638,7 @@ void coderResBack(void)				// »Ø¸´±àÂëÆ÷Éè¶¨²ÎÊıµÄº¯Êı
 	memcpy(coderResString+7, &allAxisSetData[0], sizeof(allAxisSetData[0]));
 	memcpy(coderResString+37, &allAxisSetData[1], sizeof(allAxisSetData[1]));
 	memcpy(coderResString+67, &allAxisSetData[2], sizeof(allAxisSetData[2]));
+//	memcpy(coderResString+7, &setDataPerAxis, sizeof(setDataPerAxis));
 	
 	coderResString[97] = FrameEnd;				// ½áÊøÎ»	
 	
@@ -1641,6 +1647,13 @@ void coderResBack(void)				// »Ø¸´±àÂëÆ÷Éè¶¨²ÎÊıµÄº¯Êı
 			USART_SendData(USART3,coderResString[i]); 
 			while(USART_GetFlagStatus(USART3,USART_FLAG_TC)!=SET);	//µÈ´ı·¢ËÍ½áÊø
 		}
+}
+
+void noAddSubSpeed(void)
+{
+	xAxisClkSet(xAxisClk);
+	yAxisClkSet(yAxisClk);
+	zAxisClkSet(zAxisClk);
 }
 
 void rs232DataProcStep2(void)
@@ -1665,19 +1678,25 @@ void rs232DataProcStep2(void)
 				bAxisStepFlag = 0;
 				
 				addSubStepNo = 1;		//¼Ó¼õËÙµÄ²½Êı¼ÆÊıÆ÷£»
-				workedTimeMS = 0;		//¼Ó¼õËÙµÄ¼ÆÊ±Æ÷£
+				workedTimeMS = 0;		//¼Ó¼õËÙµÄ¼ÆÊ±Æ÷?
 				
 				setedDataResFlag = 1;																// ±ê¼ÇÔË¶¯ÊÇ·ñÍ£Ö¹£¬Í£Ö¹²Å¿ÉÒÔ´®¿Ú»Ø¸´
 				testSetDataFlag = 0;																// ¿ªÊ¼¼ÆÊı
 				memset(allAxisSetData, 0, sizeof(nAxisSetData)*3);	// ³õÊ¼»¯Îª0 byYJY
+				memset(&setDataPerAxis, 0, sizeof(setDataPerAxis));	// ³õÊ¼»¯Îª0 byYJY
+				setDataPerAxis.incClkDataFlag++;										// µİÔö
+				
+				// ¹Ø±Õ¼Ó¼õËÙ byYJY
 				
 				//*************Elsie***********
 				addcount=preProcStep();
 				//*************Elsie***********
 				
-				addSubFlagSet();		//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª£
+				addSubFlagSet();		//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª?
 				//addSubFlag=2;
 				addSubSpeed();			//ÆµÂÊÉèÖÃ£»
+				
+//				noAddSubSpeed();
 				
 				pwmNumTim12 =0;			//Âö³å¼ÆÊıÇåÁã£»
 				pwmNumTim9 = 0;
@@ -1703,6 +1722,14 @@ void rs232DataProcStep2(void)
 				allAxisSetData[2].nDir = zAxisDir;
 				
 				testSetDataFlag++;	
+				
+				// ¼ÇÂ¼Éè¶¨µÄÔË¶¯²ÎÊı	byYJY 
+				setDataPerAxis.nAxisPlusNum = xAxisPlusNum;		// XÖá
+				setDataPerAxis.nAxisClk = xAxisClk;
+				setDataPerAxis.nDir = xAxisDir;
+				setDataPerAxis.setClk[setDataPerAxis.incClkDataFlag] = setClkTempNext;
+				setDataPerAxis.setClkTime[setDataPerAxis.incClkDataFlag]++;
+				
 				
 				motor5workstart();		//5ÖáµÄ¶¨Ê±Æ÷Æô¶¯£»
 				

@@ -90,6 +90,8 @@ extern u8 dataPreProcFlag; 	//0:已完成预处理，待第二部处理；1:等待下一帧数据的预
 extern u8 addtime;
 
 extern nAxisSetData allAxisSetData[3];			// X、Y、Z轴设定的运动参数
+extern SetDataPerAxis setDataPerAxis;	// 完整记录某一轴的运动参数，暂时为X轴
+
 extern u8 testSetDataFlag;			// 标记当前的运行状态
 
 //KEY任务
@@ -240,7 +242,7 @@ int main(void)
  	TIM6_Base_Init(5000-1,8400-1);	//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数5000次为500ms     //用于串口数据异常处理	
 //	TIM_Cmd(TIM6,ENABLE);			//用于串口数据异常处理							  //使能定时器3
 
-	addtime=40;
+	addtime=40;									// 增加延时，编码器用
 	TIM7_Int_Init(addtime*10-1,8400-1);		//定时器时钟84M，分频系数8400，所以84M/8400=10Khz的计数频率，计数400次为40ms    20ms 	10ms	//用于电机加减速处理
 	TIM_Cmd(TIM7,DISABLE);			//test
 
@@ -262,6 +264,7 @@ int main(void)
 	
 	// 初始化用来记录设定的运动参数的结构体数组
 	memset(allAxisSetData, 0, sizeof(nAxisSetData)*3);		
+	memset(&setDataPerAxis, 0, sizeof(setDataPerAxis));
 	
 	xAxisStepFlag = 2;
 	yAxisStepFlag = 2;
