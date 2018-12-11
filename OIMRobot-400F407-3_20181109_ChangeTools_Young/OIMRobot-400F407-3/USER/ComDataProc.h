@@ -2,6 +2,7 @@
 #define __COMDATAPROC_H 
 
 #include "sys.h"
+#include "Reset.h"
 
 #define SET_DATA_TEST 1			// 1：开启运动参数的设置，0：关闭
 
@@ -17,6 +18,16 @@ typedef struct
 } nAxisSetData;		// 某个轴设定的运动参数
 
 extern void selfCheckFunc(void);
-//
+
+// 机械零点复位主程序
+extern void reset2Zero();
+
+extern u8 resetStatusFlag;
+
+#ifdef RESET_DEBUG
+// 从零点到开始位置，debug模式下才开启
+extern void zero2Start(void);
+extern u8 resetStatusFlag;			// 0:回零， 1：到起始点
+#endif
 
 #endif

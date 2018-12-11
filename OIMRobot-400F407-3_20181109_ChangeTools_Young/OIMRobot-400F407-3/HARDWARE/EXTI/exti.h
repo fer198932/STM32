@@ -14,10 +14,17 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
-
+#include "ChangeTools.h"		// 包含了换刀步数的结构体
 
 void EXTIX_Init(void);	//外部中断初始化		 					   
 void TIM14_PWM_Init(u32 arr,u32 psc);
+
+// 设置标志位，记录走过的脉冲数用
+extern u8 stepsFlag[5]; 				// 打开X、Y、Z、A、B的计数 1：打开； 0：关闭
+
+// 记录走过多少脉冲
+extern ChangeToolsSavedSteps stepsTemp;
+
 
 #endif
 
