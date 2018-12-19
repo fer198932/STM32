@@ -95,9 +95,9 @@ extern u8 addtime;
 const u8 addSubTime = 40;			// 单位ms，分段式加减速每段的加速时间
 const u8 addSubCnt = 4;				// 分为4段
 const u32 plusNum = 12000;			// 输出脉冲数，如4000个脉冲表示10mm
-const u16 clk = 6666;					// 细分数8时：频率6666对应F1000、250(r/min)
+const u16 clk = 3333;					// 细分数8时：频率6666对应F1000、250(r/min)
 u16 clkTemp;
-u16 steps = 10;				// 走多少步停
+u16 steps = 8;				// 走多少步停
 u8 ii;									// 循环计数器
 u8 rotateTableFlag = 0;		// 标记正在进行回转台运动
 const u8 nAxis = 2;							// 标记哪个轴动作 0、1、2——X、Y、Z
@@ -334,7 +334,7 @@ int main(void)
 	delay_s(2);
 	rotateTableFlag = 1;
 	TIM7_Int_Init(addSubTime * 10 - 1, 8400 - 1);				// TIM7初始化，用来定时	系统时钟84MHz
-	while(1)			// steps--
+	while(steps--)			// steps--
 	{
 		// 运行前初始化
 		ii = 0;
@@ -378,7 +378,7 @@ int main(void)
 				zAxisClkSet(clkTemp>>(addSubCnt-1));		// 最低速度开始运行			
 				
 				// 打开定时器开始运行
-				TIM_Cmd(TIM4, ENABLE);							// 使能y
+				TIM_Cmd(TIM4, ENABLE);							// 使能z
 				TIM7->CNT = 0;											// 定时器重新开始计数
 				TIM_Cmd(TIM7, ENABLE);							// 使能加减速定时器
 				
