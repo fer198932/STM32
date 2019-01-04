@@ -44,6 +44,7 @@ extern u8 xAxisStepFlag;
 extern u8 yAxisStepFlag;
 extern u8 zAxisStepFlag; 
 extern unsigned char backResString[20];
+extern unsigned char  xAxisDir,yAxisDir,zAxisDir;
 
 extern u32 pwmNumTim2;
 extern u32 pwmNumTim3;
@@ -140,7 +141,7 @@ void axis3Back2ORG(void)
 	delay_s(2);
 }
 
-// ÄÜ¼Æ²½ÊıµÄ»Øµ½Ô­µã
+// ÄÜ¼Æ²½ÊıµÄ»Øµ½Ô­µã TEST_STEPSNUM´ò¿ªµÄÇé¿öÏÂµ÷ÓÃ¸Ãº¯Êı
 void axis3Back2ORGWithCnt(void)
 {
 	// ²»ÔÊĞí´ò¶Ï
@@ -151,9 +152,9 @@ void axis3Back2ORGWithCnt(void)
 	//	ZÖá¹éÁã ////////////////////////////////////////////////
 	zAxisDIR_ON;				//z¹éÁã·½Ïò
 //	disableZaxisCountINT(); 	//½ûÖ¹zÖá¼ÆÊıÖĞ¶Ï£» ½ûÖ¹ºóÎŞ·¨¼ÆÊı
-
+	
 	// Ö»ÓĞÎŞ¼Ó¼õËÙÔË¶¯
-	zAxisClkSet(Z_AXIS_RST_CLK>>1);			//z¹éÁãÆµÂÊÉè¶¨£»
+	zAxisClkSet(Z_AXIS_RST_CLK>>1);			//zÖáÏÂÒÆµÄËÙ¶È£»
 	
 	// ¿ªÊ¼¶¯×÷²¢¼ÆÊı
 	stepsFlag[2] = 1;					// ÉèÖÃ±êÖ¾Î»£¬zÖá¿ªÊ¼¼ÆÊı 1:¼ÆÊı£» 0£ºÍ£Ö¹¼ÆÊı
@@ -169,9 +170,9 @@ void axis3Back2ORGWithCnt(void)
 	//	YÖá¹éÁã  ///////////////////////////////////////////////////
 	yAxisDIR_ON;				//y¹éÁã·½Ïò
 //	disableYaxisCountINT(); 	//½ûÖ¹yÖá¼ÆÊıÖĞ¶Ï£»
-
+	
 	// Ö»ÓĞÎŞ¼Ó¼õËÙÔË¶¯
-	yAxisClkSet(Y_AXIS_RST_CLK>>1);			//y¹éÁãÆµÂÊÉè¶¨£»
+	yAxisClkSet(Y_AXIS_RST_CLK>>1);			//yÖáÏÂÒÆµÄËÙ¶È£»
 
 	// ¿ªÊ¼¶¯×÷²¢¼ÆÊı
 	stepsFlag[1] = 1;					// ÉèÖÃ±êÖ¾Î»£¬yÖá¿ªÊ¼¼ÆÊı 1:¼ÆÊı£» 0£ºÍ£Ö¹¼ÆÊı
@@ -188,9 +189,9 @@ void axis3Back2ORGWithCnt(void)
 	//	XÖá¹éÁã  /////////////////////////////////////////////////
 	xAxisDIR_OFF;				//x¹éÁã·½Ïò 
 //	disableXaxisCountINT(); 	//½ûÖ¹xÖá¼ÆÊıÖĞ¶Ï£»
-
+	
 	// Ö»ÓĞÎŞ¼Ó¼õËÙÔË¶¯
-	xAxisClkSet(X_AXIS_RST_CLK>>1);			//x¹éÁãÆµÂÊÉè¶¨£»
+	xAxisClkSet(X_AXIS_RST_CLK>>1);			//xÖáÏÂÒÆµÄËÙ¶È£»
 	
 	// ¿ªÊ¼¶¯×÷²¢¼ÆÊı
 	stepsFlag[0] = 1;					// ÉèÖÃ±êÖ¾Î»£¬xÖá¿ªÊ¼¼ÆÊı 1:¼ÆÊı£» 0£ºÍ£Ö¹¼ÆÊı
@@ -217,8 +218,7 @@ void dataFromTemp2Saved(u8 num)		// ½«±àºÅµÄtempÊı¾İ½øĞĞ±£´æ£º0£º¼Ó¹¤µãµ½Áãµã 1-
 
 void toolsFromORG2Start(void)	// ´ÓÁãµã·µ»ØÔ­À´¹¤¼şµÄÎ»ÖÃ
 {
-	//	xÖáÕıÏòÒÆ£¬µ½¹¤¼şÎ»ÖÃ£» ///////////////////////
-	xAxisDIR_ON;				// xÖáÒÆ¶¯·½Ïò
+	//	xÖáÕıÏòÒÆ£¬µ½¹¤¼şÎ»ÖÃ£» ///////////////////////	
 	xAxisPlusNum = changeToolsSavedSteps.xSteps[0];		//xÖáÒÆ¶¯µÄ²½Êı£»
 	pwmNumTim3 = 0; 
 	xAxisStepFlag = 0;	
@@ -226,18 +226,20 @@ void toolsFromORG2Start(void)	// ´ÓÁãµã·µ»ØÔ­À´¹¤¼şµÄÎ»ÖÃ
 #ifndef IF_ADDSUB_WORK_CHANGETOOLS		
 	// ÎŞ¼Ó¼õËÙÔË¶¯
 	xAxisClkSet(X_AXIS_RST_CLK);			//xÖáÏÂÒÆµÄËÙ¶È£»
+	xAxisDIR_ON;				// xÖáÒÆ¶¯·½Ïò
+	TIM_Cmd(TIM3, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 #else
 	// ÓĞ¼Ó¼õËÙÔË¶¯
+	xAxisDir = 0;				// xÖáÒÆ¶¯·½Ïò
+	xAxisClk = X_AXIS_RST_CLK;
 	setSpeedRST_Seg(X_AXIS_RST_CLK, 0);	
 #endif
 	
-	TIM_Cmd(TIM3, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 	while(xAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	xAxisStepFlag = 0;
 	delay_s(1);
 	
 	//	yÖáÕıÏòÒÆ£¬µ½¹¤¼şÎ»ÖÃ£» ///////////////////////
-	yAxisDIR_OFF;				// yÖáÒÆ¶¯·½Ïò
 	yAxisPlusNum = changeToolsSavedSteps.ySteps[0];		//yÖáÒÆ¶¯µÄ²½Êı£»
 	pwmNumTim2 = 0; 
 	yAxisStepFlag = 0;	
@@ -245,18 +247,20 @@ void toolsFromORG2Start(void)	// ´ÓÁãµã·µ»ØÔ­À´¹¤¼şµÄÎ»ÖÃ
 #ifndef IF_ADDSUB_WORK_CHANGETOOLS	
 	// ÎŞ¼Ó¼õËÙÔË¶¯
 	yAxisClkSet(Y_AXIS_RST_CLK);			//yÖáÏÂÒÆµÄËÙ¶È£»
+	yAxisDIR_OFF;				// yÖáÒÆ¶¯·½Ïò
+	TIM_Cmd(TIM2, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 #else	
 	// ÓĞ¼Ó¼õËÙÔË¶¯
+	yAxisDir = 1;
+	yAxisClk = Y_AXIS_RST_CLK;
 	setSpeedRST_Seg(Y_AXIS_RST_CLK, 1);	
 #endif
 
-	TIM_Cmd(TIM2, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 	while(yAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	yAxisStepFlag = 0;
 	delay_s(1);
 	
 	//	zÖáÏÂÒÆ£¬µ½¹¤¼şÎ»ÖÃ£» ////////////////////////////////
-	zAxisDIR_OFF;				// zÖáÒÆ¶¯·½Ïò
 	zAxisPlusNum = changeToolsSavedSteps.zSteps[0];		//zÖáÒÆ¶¯µÄ²½Êı£»
 	pwmNumTim4 = 0; 	
 	zAxisStepFlag = 0;	
@@ -264,12 +268,15 @@ void toolsFromORG2Start(void)	// ´ÓÁãµã·µ»ØÔ­À´¹¤¼şµÄÎ»ÖÃ
 #ifndef IF_ADDSUB_WORK_CHANGETOOLS	
 	// ÎŞ¼Ó¼õËÙÔË¶¯
 	zAxisClkSet(Z_AXIS_RST_CLK);			//zÖáÏÂÒÆµÄËÙ¶È£»
+	zAxisDIR_OFF;				// zÖáÒÆ¶¯·½Ïò
+	TIM_Cmd(TIM4, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 #else	
 	// ÓĞ¼Ó¼õËÙÔË¶¯
+	zAxisDir = 1;
+	zAxisClk = Z_AXIS_RST_CLK;
 	setSpeedRST_Seg(Z_AXIS_RST_CLK, 2);	
 #endif
 
-	TIM_Cmd(TIM4, ENABLE);		//¿ªÊ¼¶¯×÷£»	
 	while(zAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	zAxisStepFlag = 0;
 	delay_s(1);
@@ -278,38 +285,67 @@ void toolsFromORG2Start(void)	// ´ÓÁãµã·µ»ØÔ­À´¹¤¼şµÄÎ»ÖÃ
 	stepMotor5AxisStop();
 }
 
-void fromORG2Tools(void)	// ´ÓÁãµãµ½µ¶¾ßÎ»ÖÃ
-{
-	
+void fromORG2Tools(u8 toolNo)	// ´ÓÁãµãµ½µ¶¾ßÎ»ÖÃ
+{	
 	//	xÖáÕıÏòÒÆ£¬µ½µ¶¾ßÎ»ÖÃ£»
-	xAxisDIR_OFF;				// xÖáÒÆ¶¯·½Ïò
-	xAxisPlusNum = changeToolsSavedSteps.xSteps[targeToolNo];		//xÖáÒÆ¶¯µÄ²½Êı£»
+	xAxisPlusNum = changeToolsSavedSteps.xSteps[toolNo];		//xÖáÒÆ¶¯µÄ²½Êı£»
 	pwmNumTim3 = 0; 		
+
+#ifndef IF_ADDSUB_WORK_CHANGETOOLS		
+	// ÎŞ¼Ó¼õËÙÔË¶¯
 	xAxisClkSet(X_AXIS_RST_CLK);			//xÖáÏÂÒÆµÄËÙ¶È£»
+	xAxisDIR_OFF;				// xÖáÒÆ¶¯·½Ïò
 	TIM_Cmd(TIM3, ENABLE);		//¿ªÊ¼¶¯×÷£»	
+#else
+	// ÓĞ¼Ó¼õËÙÔË¶¯
+	xAxisDir = 1;
+	xAxisClk = X_AXIS_RST_CLK;
+	setSpeedRST_Seg(X_AXIS_RST_CLK, 0);	
+#endif		
+	
 	while(xAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	xAxisStepFlag = 0;
-	delay_s(8);
+	delay_s(2);
 	
 	//	yÖáÕıÏòÒÆ£¬µ½¹¤¼şÎ»ÖÃ£»
-	yAxisDIR_ON;				// yÖáÒÆ¶¯·½Ïò
-	yAxisPlusNum = changeToolsSavedSteps.ySteps[targeToolNo];		//yÖáÒÆ¶¯µÄ²½Êı£»
+	yAxisPlusNum = changeToolsSavedSteps.ySteps[toolNo];		//yÖáÒÆ¶¯µÄ²½Êı£»
 	pwmNumTim2 = 0; 		
+
+#ifndef IF_ADDSUB_WORK_CHANGETOOLS		
+	// ÎŞ¼Ó¼õËÙÔË¶¯
 	yAxisClkSet(Y_AXIS_RST_CLK);			//yÖáÏÂÒÆµÄËÙ¶È£»
+	yAxisDIR_ON;				// yÖáÒÆ¶¯·½Ïò
 	TIM_Cmd(TIM2, ENABLE);		//¿ªÊ¼¶¯×÷£»	
+#else
+	// ÓĞ¼Ó¼õËÙÔË¶¯
+	yAxisDir = 0;
+	yAxisClk = Y_AXIS_RST_CLK;
+	setSpeedRST_Seg(Y_AXIS_RST_CLK, 1);		
+#endif
+	
 	while(yAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	yAxisStepFlag = 0;
-	delay_s(8);
+	delay_s(2);
 	
 	//	zÖáÏÂÒÆ£¬µ½¹¤¼şÎ»ÖÃ£»
-	zAxisDIR_ON;				// zÖáÒÆ¶¯·½Ïò
-	zAxisPlusNum = changeToolsSavedSteps.zSteps[targeToolNo];		//zÖáÒÆ¶¯µÄ²½Êı£»
-	pwmNumTim4 = 0; 		
+	zAxisPlusNum = changeToolsSavedSteps.zSteps[toolNo];		//zÖáÒÆ¶¯µÄ²½Êı£»
+	pwmNumTim4 = 0; 	
+	
+#ifndef IF_ADDSUB_WORK_CHANGETOOLS		
+	// ÎŞ¼Ó¼õËÙÔË¶¯
 	zAxisClkSet(Z_AXIS_RST_CLK);			//zÖáÏÂÒÆµÄËÙ¶È£»
+	zAxisDIR_ON;				// zÖáÒÆ¶¯·½Ïò
 	TIM_Cmd(TIM4, ENABLE);		//¿ªÊ¼¶¯×÷£»	
+#else
+	// ÓĞ¼Ó¼õËÙÔË¶¯
+	zAxisDir = 0;
+	zAxisClk = Z_AXIS_RST_CLK;
+	setSpeedRST_Seg(Z_AXIS_RST_CLK, 2);	
+#endif
+
 	while(zAxisStepFlag!=2);	//¶¯×÷Íê³É£»
 	zAxisStepFlag = 0;
-	delay_s(5);
+	delay_s(2);
 }
 
 void xFromORG2ToolsXaPOS(void)
@@ -446,7 +482,10 @@ void zAxisUpNStep(u32 steps)
 	zAxisDIR_OFF;				//z »»ÁË·½Ïò£¬ZÖá·½Ïò²»¶Ô£¬ byYJY 2018Äê11ÔÂ9ÈÕ16:11:39
 	zAxisPlusNum = steps;		//ZÖáÏÂÒÆµÄ²½Êı£»
 	pwmNumTim4 = 0; 
+
+	// ÎŞ¼Ó¼õËÙÔË¶¯
 	zAxisClkSet(Z_AXIS_RST_CLK);			//zÖáÏÂÒÆµÄËÙ¶È£»
+	
 	TIM_Cmd(TIM4, ENABLE);		//¿ªÊ¼¶¯×÷£»
 	
 	while(zAxisStepFlag!=2);	//¶¯×÷Íê³É£»
@@ -495,7 +534,7 @@ void sendMessage2PC(void)
 }
 
 // ÍÑµ¶
-u8 cleanTools(void)
+u8 cleanTools(u8 toolNo)
 {
 	if(mainMoterToolsFlag==0)		//0:ÓĞµ¶£»	1:ÎŞµ¶£» ÕâÀïĞèÒªÅĞ¶ÏÓĞÎŞµ¶
 	{		
@@ -508,7 +547,6 @@ u8 cleanTools(void)
 		mainMotorStop();	// µ¶ÖáÍ£Ö¹×ª¶¯
 		delay_s(2);
 
-		/* ĞÂµÄ»»µ¶Á÷³Ì£¬byYJY 2018Äê11ÔÂ9ÈÕ13:02:23  */	
 		// ´Ó¹¤¼Ó¹¤µãµ½Áãµã
 		stepsTemp.xSteps[0] = 0;					// ¼ÆÊıÖÃÁã
 		stepsTemp.ySteps[0] = 0;
@@ -517,11 +555,12 @@ u8 cleanTools(void)
 		dataFromTemp2Saved(0);									// Êı¾İ±£´æ	
 		delay_s(2);
 		delay_s(5);	// ·½±ã¹Û²ì
+		
 		// ´ÓÁãµãµ½µ¶¾ßÎ»ÖÃ
 		GPIO_SetBits(GPIOB,GPIO_Pin_12);			// ËÉ¿ªµ¶¾ß
 		delay_s(2);
 		
-		fromORG2Tools();		// Áãµãµ½µ¶¾ß
+		fromORG2Tools(usingToolNo);		// Áãµãµ½µ¶¾ß
 		delay_s(2);
 		delay_s(5);	// ·½±ã¹Û²ì
 		
@@ -550,9 +589,8 @@ u8 cleanTools(void)
 			delay_s(2);			
 			delay_s(5);	// ·½±ã¹Û²ì
 			
-			// ·µ»ØÏûÏ¢£¬¿ÉÄÜ»á·µ»ØÁ½´Î byYJY ×¢ÊÍµô  ²»È»Ã»·¨¼ÌĞøÏÂÈ¥
-			// sendDataFillIn(0x01);
-			// sendMessage2PC();
+			sendDataFillIn(0x01);
+			sendMessage2PC();
 			
 			// ·µ»Ø¹¤¼şµÄÎ»ÖÃ
 			toolsFromORG2Start();
@@ -570,7 +608,7 @@ u8 cleanTools(void)
 			if(mainMoterToolsFlag == 0) //ÉÏµ¶³É¹¦
 			{
 				/* ²»·µ»ØÔ­µã£¬¸ù¾İ¼ÇÂ¼µÄÂö³åÔ­Â··µ»Ø£¬ĞèÔö¼Óº¯Êı */
-			
+				
 				sendDataFillIn(0x01);
 				sendMessage2PC();
 				return 0;
@@ -597,7 +635,7 @@ u8 cleanTools(void)
 }
 
 // ×°µ¶
-u8 assemTools(void)
+u8 assemTools(u8 toolNo)
 {
 	if(mainMoterToolsFlag==0)		//0:ÓĞµ¶£»	1:ÎŞµ¶£»
 	{		
@@ -631,7 +669,7 @@ u8 assemTools(void)
 		GPIO_SetBits(GPIOB,GPIO_Pin_12);			// ËÉ¿ªµ¶¾ß
 		delay_s(2);
 		
-		fromORG2Tools();
+		fromORG2Tools(targeToolNo);
 		delay_s(2);
 		delay_s(5);	// ·½±ã¹Û²ì
 		
@@ -665,9 +703,8 @@ u8 assemTools(void)
 			delay_s(5);	// ·½±ã¹Û²ì
 			
 			GPIO_ResetBits(GPIOB,GPIO_Pin_12);			// ¼Ğ½ôÊ£Óàµ¶¾ß
-			// ·µ»ØÏûÏ¢£¬¿ÉÄÜ»á·µ»ØÁ½´Î byYJY ×¢ÊÍµô  ²»È»Ã»·¨¼ÌĞøÏÂÈ¥
-			// sendDataFillIn(0x01);
-			// sendMessage2PC();
+			sendDataFillIn(0x01);
+			sendMessage2PC();
 			
 			// ·µ»Ø¹¤¼şµÄÎ»ÖÃ
 			toolsFromORG2Start();
@@ -679,7 +716,7 @@ u8 assemTools(void)
 			zAxisStepFlag = 2;
 			
 			// ²âÊÔÓÃ£¬½øÈëÍÑµ¶Ñ­»·
-			cleanTools();
+//			cleanTools();
 			
 			return 0;
 		}
@@ -717,182 +754,35 @@ u8 assemTools(void)
 // »»µ¶1
 u8 changeToolsStep1(void)
 {
-	/*
-	if(mainMoterToolsFlag==1)		//0:ÓĞµ¶£»	1:ÎŞµ¶£»
-	{
-		sendDataFillIn(0x02);
-		sendMessage2PC();
-		return 1;
-		
-	}
-	else if(mainMoterToolsFlag==0)
-	{
-		mainMotorStop();
-		delay_s(120);
-
-		axis3Back2ORG();
-//		xFromORG2ToolsPOS();
-		yFromORG2ToolsPOS(0,usingToolNo);
-
-//		zAxisDown(10000);
-		//¼Ğ½ô
-		motorChangeToolsLock();
-//		zAxisUp(10000);
-
-		if(mainMoterToolsFlag == 1)	//ÍÑµ¶³É¹¦
-		{
-			return 0;
-		}
-		else							//ÍÑµ¶Ê§°Ü	1
-		{
-			//ËÉ¿ª
-			motorChangeToolsUnLock();
-	//		zAxisDown(10000);
-			//¼Ğ½ô
-			motorChangeToolsLock();
-	//		zAxisUp(10000);
-			
-			if(mainMoterToolsFlag == 1) //ÍÑµ¶³É¹¦
-			{
-				return 0;
-			}
-			else						//ÍÑµ¶Ê§°Ü	2
-			{
-				//ËÉ¿ª
-				motorChangeToolsUnLock();
-	//			zAxisDown(10000);
-				//¼Ğ½ô
-				motorChangeToolsLock();
-//				zAxisUp(10000);
-				
-				if(mainMoterToolsFlag == 1) //ÍÑµ¶³É¹¦
-				{
-					return 0;
-				}
-				else					//ÍÑµ¶Ê§°Ü	3
-				{
-					sendDataFillIn(0x02);
-					sendMessage2PC();
-					return 1;
-				}
-			}
-		}
-	}
-	*/
+	// ÍÑµ¶
+	cleanTools(usingToolNo);
 }
 
 // »»µ¶2
 u8 changeToolsStep2(void)
 {
-	/*
-	u8 dir;
-	if(usingToolNo<targeToolNo)
-		dir = 0;
-	else
-		dir = 1;
-	
-	yFromORG2ToolsPOS(dir,targeToolNo);
-	
-//	zAxisDown(10000);
-//	zAxisUp(10000);
-	
-	if(mainMoterToolsFlag == 0) 	//ÉÏµ¶³É¹¦
-	{
-		axis3Back2ORG();
-		sendDataFillIn(0x01);
-		sendMessage2PC();
-		return 0;
-	}
-	else							//ÉÏµ¶Ê§°Ü	1
-	{
-//		zAxisDown(10000);
-//		zAxisUp(10000);
-		
-		if(mainMoterToolsFlag == 0) //ÉÏµ¶³É¹¦
-		{
-			axis3Back2ORG();
-			sendDataFillIn(0x01);
-			sendMessage2PC();
-			return 0;
-		}
-		else						//ÉÏµ¶Ê§°Ü	2
-		{
-//			zAxisDown(10000);
-//			zAxisUp(10000);
-			
-			if(mainMoterToolsFlag == 0) //ÉÏµ¶³É¹¦
-			{
-				axis3Back2ORG();
-				sendDataFillIn(0x01);
-				sendMessage2PC();
-				return 0;
-			}
-			else						//ÉÏµ¶Ê§°Ü	3
-			{
-				sendDataFillIn(0x02);
-				sendMessage2PC();
-				return 1;
-			}
-		}
-	}*/
+	// ×°µ¶
+	assemTools(targeToolNo);
 }
 
 // ·Ö¶ÎÊ½¼Ó¼õËÙ-»»µ¶¼°»ØÁãÓÃ£¬ nAxis ±íÊ¾Ä³Ò»Öá 0-x, 1-y, 2-z
 void setSpeedRST_Seg(u16 clk, u8 nAxis)
 {
-	// ËÙ¶È³õÊ¼»¯
-	switch(nAxis)
+	// ÆäÓàÖáÖÃÁã
+	if(0 != nAxis)
 	{
-		case 0:					// x
-			xAxisClk = clk;
-			yAxisClk = 0;
-			zAxisClk = 0;
-			aAxisClk = 0;
-			bAxisClk = 0;			
-			break;
-		
-		case 1:					// y
-			xAxisClk = 0;
-			yAxisClk = clk;
-			zAxisClk = 0;
-			aAxisClk = 0;
-			bAxisClk = 0;			
-			break;
-		
-		case 2:					// z
-			xAxisClk = 0;
-			yAxisClk = 0;
-			zAxisClk = clk;
-			aAxisClk = 0;
-			bAxisClk = 0;		
-			break;
-		
-		default:
-			xAxisClk = 0;
-			yAxisClk = 0;
-			zAxisClk = 0;
-			aAxisClk = 0;
-			bAxisClk = 0;		
-			break;
-	}
+		xAxisPlusNum = 0;
+		xAxisClk = 0;
+	} 
+	else if(1 != nAxis) {
+		yAxisPlusNum = 0;
+		yAxisClk = 0;
+	} 
+	else if(2 != nAxis) {
+		zAxisPlusNum = 0;
+		zAxisClk = 0;
+	} 
 	
-	// ´úÂëÀ´×Ô ComDataProc.c 
-	preProcMaxNum();
-	
-	addSubStepNo = 1;		//¼Ó¼õËÙµÄ²½Êı¼ÆÊıÆ÷£»
-	workedTimeMS = 0;		//¼Ó¼õËÙµÄ¼ÆÊ±Æ÷£
-
-	//*************Elsie***********
-	addcount=preProcStep();
-	//*************Elsie***********
-	
-	addSubFlagSet();		//0:ĞèÒª¶¨Ê±Æ÷ÅäÖÃ¼Ó¼õËÙ£»1:²»ĞèÒª£
-	//addSubFlag=2;
-	addSubSpeed();			//ÆµÂÊÉèÖÃ£»
-		
-	motor5workstart();		//5ÖáµÄ¶¨Ê±Æ÷Æô¶¯£»
-
-	TIM7->CNT = 0;					//ÓÃÓÚµç»ú¼Ó¼õËÙ´¦Àí£¬	40ms
-	TIM_Cmd(TIM7,ENABLE);			//ÓÃÓÚµç»ú¼Ó¼õËÙ´¦Àí£¬	40ms
+	addSubSpeed_Cur();
 }
 

@@ -453,6 +453,11 @@
               <FileType>1</FileType>
               <FilePath>.\Reset.c</FilePath>
             </File>
+            <File>
+              <FileName>OutDataProc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\OutDataProc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -29,6 +29,10 @@ extern u32 savePlusNum[5];		// 用来保存加减速时 加速阶段走过的脉冲数
 
 AddSubSetting addSubSetting;					// 加减速算法策略
 
+#if _OUT_DATA_PROC
+extern nAxisSetData allAxisSetData[3];				// 记录设定的运动参数	
+#endif
+
 // 最大、最小频率，注意要提前赋值好
 u16 max_Clk, min_Clk;
 // 对应最大频率的轴， 0-4：x、y、z、a、b
@@ -44,14 +48,22 @@ u8 savePlusNumFlag[5] = {0, 0, 0, 0, 0};	// 是否保存脉冲数的标签，锁定在加速状态
 u8 startSubFlag[5] = {0, 0, 0, 0, 0};			// 进入减速阶段的标记，0：不进入减速，1：开始减速
 u16 subPlusCnt[5] = {0, 0, 0, 0, 0};		// 减速阶段所需的脉冲数
 u16 correctSyncValue[5] = {0, 0, 0, 0, 0};		// 修正减速中间频率的减速阶段脉冲值
+// u8 avoidUrgentChangeDirFlag = 0;							// 避免紧急换向的标签 （小心发送零脉冲的情况）
 
 // 加减速主程序 clk_Src：原速度， clk_Dst：目标速度
 void addSubSpeed_Cur(u16 clk_Src, u16 clk_Dst)
 {
 	// 初始化的过程必须想办法锁定，以免被中断产生问题 临界区
 	nAxisInit();
-	
+		
 	nAxisStart();
+	
+#if _OUT_DATA_PROC
+	// 用来返回设置数据
+	setDataAssign();
+	respOutData2PC();
+	delay_ms(500);
+#endif
 	
 	// 系统启动后（可能未停止），即回复上位机 1:ok
 	respMsg(1);
@@ -465,6 +477,7 @@ void xAxisInit(void)
 	savePlusNumFlag[0] = 1;						// 用来确定减速阶段的标记
 	xSetPWMCnt(0);									// PWM中断计数置零
 	xAxisStepFlag = 0;							// 打开正在运行的标记
+	
 	if(xAxisDir==0)									// 注意在 ComDataProc.c 中已经判断了方向，但是这里判断更好
 	{
 		xAxisDIR_ON;
@@ -472,7 +485,7 @@ void xAxisInit(void)
 	else
 	{
 		xAxisDIR_OFF;
-	}	
+	}	 
 }
 // Y轴初始化
 void yAxisInit(void)

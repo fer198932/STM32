@@ -43,7 +43,7 @@ extern u8 bAxisStepFlag;
 u8 urgentStopFlag = -1; 
 // u8 i;
 
-//外部中断0服务程序
+//外部中断0服务程序 y轴
 void EXTI0_IRQHandler(void)
 {
 	 EXTI_ClearITPendingBit(EXTI_Line0); 	//清除LINE0上的中断标志位 
@@ -84,6 +84,36 @@ void EXTI1_IRQHandler(void)
 	 EXTI_ClearITPendingBit(EXTI_Line1); 	//清除LINE1上的中断标志位 
 	
 	// 脉冲计数，用来记录在触发传感器前走了多少距离
+	 if(stepsFlag[4])
+			;														// b轴计数 （暂时为空）
+	 else
+	 {
+		 pwmNumTim12++;
+		 
+		 // 打开减速标记
+		if((bAxisPlusNum - pwmNumTim12) == (subPlusCnt[4]+correctSyncValue[4]))		
+		{
+			TIM7->CNT = 0;
+			startSubFlag[4] = 1;
+		}
+			
+		 if(pwmNumTim12>=bAxisPlusNum)
+			{
+				TIM12_PWM_Stop();
+				pwmNumTim12 = 0;
+				bAxisStepFlag = 2;
+				
+				startSubFlag[4] = 0;
+				
+				// 关闭加减速定时器
+				if((2 == xAxisStepFlag) && (2 == yAxisStepFlag) && (2 == zAxisStepFlag) 
+					&&(2 == aAxisStepFlag) && (2 == bAxisStepFlag))
+					subAddTimerStop();
+			}
+	 }
+	
+	/* 原X轴中断服务程序
+	// 脉冲计数，用来记录在触发传感器前走了多少距离
 		if(stepsFlag[0])
 			stepsTemp.xSteps[0]++;														// x轴计数
 		else 
@@ -110,7 +140,7 @@ void EXTI1_IRQHandler(void)
 				&&(2 == aAxisStepFlag) && (2 == bAxisStepFlag))
 					subAddTimerStop();
 			}
-		}		
+		} */		
 }	
 
 //外部中断2服务程序
@@ -157,6 +187,36 @@ void EXTI3_IRQHandler(void)
 	 EXTI_ClearITPendingBit(EXTI_Line3);  	//清除LINE3上的中断标志位  
 	
 	// 脉冲计数，用来记录在触发传感器前走了多少距离
+		if(stepsFlag[0])
+			stepsTemp.xSteps[0]++;														// x轴计数
+		else 
+		{
+			pwmNumTim3++;
+				
+			// 打开减速标记
+			if((xAxisPlusNum - pwmNumTim3) == (subPlusCnt[0]+correctSyncValue[0]))
+			{
+				TIM7->CNT = 0;
+				startSubFlag[0] = 1;
+			}
+		
+		 if(pwmNumTim3>=xAxisPlusNum)
+			{
+				TIM3_PWM_Stop();
+				pwmNumTim3 = 0;					//180612 test
+				xAxisStepFlag = 2;
+				
+				startSubFlag[0] = 0;
+				
+				// 关闭加减速定时器
+				if((2 == xAxisStepFlag) && (2 == yAxisStepFlag) && (2 == zAxisStepFlag) 
+				&&(2 == aAxisStepFlag) && (2 == bAxisStepFlag))
+					subAddTimerStop();
+			}
+		}
+	
+	/* 原B轴中断服务程序
+	// 脉冲计数，用来记录在触发传感器前走了多少距离
 	 if(stepsFlag[4])
 			;														// b轴计数 （暂时为空）
 	 else
@@ -183,7 +243,7 @@ void EXTI3_IRQHandler(void)
 					&&(2 == aAxisStepFlag) && (2 == bAxisStepFlag))
 					subAddTimerStop();
 			}
-	 }		
+	 }		*/
 }
 //外部中断4服务程序
 void EXTI4_IRQHandler(void)

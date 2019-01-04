@@ -16,15 +16,25 @@
 * 2018-05-02
 ********************************************************************************************************/
 
+// 原各轴限位IO口
+//#define KEYXa	PFin(5)			
+//#define KEYXb	PFin(6) 		
+//#define KEYYa	PFin(7)			
+//#define KEYYb	PFin(8) 		
+//#define KEYZa	PFin(10)			
+//#define KEYZb	PFin(13) 		
+//#define KEYA	PFin(14)			
+//#define KEYB	PFin(15) 
 
-#define KEYXa	PFin(5)			
-#define KEYXb	PFin(6) 		
-#define KEYYa	PFin(7)			
-#define KEYYb	PFin(8) 		
-#define KEYZa	PFin(10)			
-#define KEYZb	PFin(13) 		
-#define KEYA	PFin(14)			
-#define KEYB	PFin(15) 		
+// 注意是否初始化IO口
+#define KEYXa	PDin(11)			
+#define KEYXb	PDin(12) 		
+#define KEYYa	PCin(6)			
+#define KEYYb	PCin(7) 		
+#define KEYZa	PFin(13)			
+#define KEYZb	PGin(1) 		
+#define KEYA	PGin(2)			
+#define KEYB	PGin(4)
 
 #define KEYTool1	PGin(0) 		
 #define KEYTool2	PGin(1) 		

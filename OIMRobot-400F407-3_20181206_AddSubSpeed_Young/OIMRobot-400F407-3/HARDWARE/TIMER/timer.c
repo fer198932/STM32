@@ -18,7 +18,7 @@
 #include "SysInit.h"
 #include "ChangeTools.h"		// 包含了换刀步数的结构体
 #include "AddSubSpeed.h"
-
+#include "OutDataProc.h"
 
 extern unsigned char recvFrameFlag;
 extern unsigned char recvFrameState;
@@ -237,5 +237,9 @@ void subAddTimerStart(void)
 void subAddTimerStop(void)
 {
 	TIM_Cmd(TIM7, DISABLE);
+	delay_ms(2);
+#if _OUT_DATA_PROC
+	delay_ms(100);
+#endif
 }
 

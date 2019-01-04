@@ -22,7 +22,7 @@
 *0724通信改到Uart3;
 ********************************************************************************************************/
 
-
+#include "main.h"
 #include "sys.h"
 #include "delay.h"
 #include "usart.h"
@@ -91,16 +91,13 @@ extern u8 dataPreProcFlag; 	//0:已完成预处理，待第二部处理；1:等待下一帧数据的预
 
 extern u8 addtime;
 
+#if _TEST
 // 高精度回转平台测试的初始化参数
-//const u8 addSubTime = 40;			// 单位ms，分段式加减速每段的加速时间
-//const u8 addSubCnt = 4;				// 分为4段
-const u32 plusNum = 12000;			// 输出脉冲数，如4000个脉冲表示10mm
-const u16 clk = 6666;					// 细分数8时：频率6666对应F1000、250(r/min)
-// u16 clkTemp;
-u16 steps = 10;				// 走多少步停
-// u8 ii;									// 循环计数器
-// u8 rotateTableFlag = 0;		// 标记正在进行回转台运动
-// const u8 nAxis = 2;							// 标记哪个轴动作 0、1、2——X、Y、Z
+const u32 plusNum = 400;			// 输出脉冲数，如4000个脉冲表示10mm
+const u16 clk = 2000;						// 细分数8时：频率6666对应F1000、250(r/min)
+u16 steps = 800;								// 走多少步停 8步一圈
+#endif
+
 extern u16 xAxisClk_Cur,yAxisClk_Cur,zAxisClk_Cur,aAxisClk_Cur,bAxisClk_Cur;
 extern u8 savePlusNumFlag;
 
@@ -233,7 +230,7 @@ int main(void)
 {
 	u8 i;
 	u32 temp;
-	nAxisSetData allAxisSetData[3];			// X、Y、Z轴设定的运动参数
+//	nAxisSetData allAxisSetData[3];			// X、Y、Z轴设定的运动参数
 	
 	delay_init(168);       	//延时初始化
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);	//中断分组配置
@@ -277,7 +274,7 @@ int main(void)
 	savedStepsInit();
 	
 	// 初始化用来记录设定的运动参数的结构体数组
-	memset(allAxisSetData, 0, sizeof(nAxisSetData)*3);		
+//	memset(allAxisSetData, 0, sizeof(nAxisSetData)*3);		
 	
 	xAxisStepFlag = 2;
 	yAxisStepFlag = 2;
@@ -335,34 +332,40 @@ int main(void)
 			delay_ms(10);	
 		}
 
+#if _TEST
 	// 高精度回转台测试用程序: 8细分，F1000-频率6666
-//	delay_s(2);
-//	TIM4_PWM_Init(ARR_VAL-1, calPSC(Z_AXIS_MIN_CLK)-1);				// 速度初始化
-//	while(steps--)
-//	{	
-//	
-//		// Z轴各项参数初始化
-//		zAxisPlusNum = plusNum;
-//		zAxisClk = clk;
-//		zAxisClk_Cur = Z_AXIS_MIN_CLK;
-//		savePlusNumFlag = 1;
-//		pwmNumTim4 = 0;
-//		zAxisStepFlag = 0;
-//		zAxisDIR_ON;
-//		
-//		// 打开定时器开始运行
-//		TIM_Cmd(TIM4, ENABLE);							// 使能z
-//		TIM7->CNT = 0;											// 定时器重新开始计数
-//		TIM_Cmd(TIM7, ENABLE);							// 使能加减速定时器
-//		
-//		while(zAxisStepFlag != 2) ;					// 运行结束才退出
-//		
-//		delay_s(1);		
-//	}
+	delay_s(2);
+	TIM4_PWM_Init(ARR_VAL-1, calPSC(Z_AXIS_MIN_CLK)-1);				// 速度初始化
+	while(steps--)
+	{	
+	
+		// Z轴各项参数初始化
+		zAxisPlusNum = plusNum;
+		zAxisClk = clk;
+		zAxisClk_Cur = Z_AXIS_MIN_CLK;
+		savePlusNumFlag = 1;
+		pwmNumTim4 = 0;
+		zAxisStepFlag = 0;
+		// 来回运动
+		if(steps % 2)
+			zAxisDIR_ON;
+		else
+			zAxisDIR_OFF;
 		
+		// 打开定时器开始运行
+		TIM_Cmd(TIM4, ENABLE);							// 使能z
+		TIM7->CNT = 0;											// 定时器重新开始计数
+		TIM_Cmd(TIM7, ENABLE);							// 使能加减速定时器
+		
+		while(zAxisStepFlag != 2) ;					// 运行结束才退出
+		
+		delay_s(1);		
+	}
+#endif
+
 	while(1)		// 关闭原来的测试程序
 		{
-//			key_Proc5axisComm((void*)0);
+			key_Proc5axisComm((void*)0);
 
 			if(recvFrameok == 1)	//接收到完整信息；
 			{

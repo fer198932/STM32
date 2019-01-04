@@ -30,7 +30,7 @@ unsigned char backResString[20];
 u32 xAxisPlusNum,yAxisPlusNum,zAxisPlusNum,aAxisPlusNum,bAxisPlusNum;
 u16 xAxisClk,yAxisClk,zAxisClk,aAxisClk,bAxisClk;
 u16 send_xAxisClk,send_yAxisClk,send_zAxisClk,send_aAxisClk,send_bAxisClk;
-unsigned char  xAxisDir,yAxisDir,zAxisDir,aAxisDir,bAxisDir;
+volatile unsigned char xAxisDir,yAxisDir,zAxisDir,aAxisDir,bAxisDir;
 
 u8 xAxisStepFlag = -1; 
 u8 yAxisStepFlag = -1; 
@@ -143,8 +143,7 @@ void controlFunc(void)
 {
 	unsigned char i=0;
 	unsigned char printFlag=0;
-	unsigned char commandKey;
-	
+	u16 commandKey = 0;	
 		
 	commandKey =  uartDataRecvProc[1]+(uartDataRecvProc[2]<<8);		//uartDataRecvProc[1];  //uartDataRecvProc[2] 保留
 
@@ -167,23 +166,28 @@ void controlFunc(void)
 		case 0x0004:		//0e 09 0c 08 00 04 00 00 ff
 			targeToolNo = 1;
 			assemTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0005:
 			targeToolNo = 2;
 			assemTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0006:
 			targeToolNo = 3;
 			assemTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0007:
 			targeToolNo = 4;
 			assemTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		//脱刀	char变量，但是0x500是不是太大了？ 以下指令没有在接口文档中？ byYJY 2018年11月9日11:16:49
-		case 0x0400:
+		case 0x0010:
 			usingToolNo = 1;
 			cleanTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		// 复位回机械零点，并记录下回零点走过的距离
 		case 0x000F:			
@@ -217,14 +221,17 @@ void controlFunc(void)
 		case 0x0500:
 			usingToolNo = 2;
 			cleanTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0600:
 			usingToolNo = 3;
 			cleanTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0700:
 			usingToolNo = 4;
 			cleanTools();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		//换刀	
 		case 0x0405:
@@ -232,18 +239,21 @@ void controlFunc(void)
 			targeToolNo = 2;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0406:
 			usingToolNo = 1;
 			targeToolNo = 3;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0407:
 			usingToolNo = 1;
 			targeToolNo = 4;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 			
 		case 0x0504:
@@ -251,18 +261,21 @@ void controlFunc(void)
 			targeToolNo = 1;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0506:
 			usingToolNo = 2;
 			targeToolNo = 3;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0507:
 			usingToolNo = 2;
 			targeToolNo = 4;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 			
 		case 0x0604:
@@ -270,18 +283,21 @@ void controlFunc(void)
 			targeToolNo = 1;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0605:
 			usingToolNo = 3;
 			targeToolNo = 2;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0607:
 			usingToolNo = 3;
 			targeToolNo = 4;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 				
 		case 0x0704:
@@ -289,18 +305,21 @@ void controlFunc(void)
 			targeToolNo = 1;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0705:
 			usingToolNo = 4;
 			targeToolNo = 2;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		case 0x0706:
 			usingToolNo = 4;
 			targeToolNo = 3;
 			changeToolsStep1();
 			changeToolsStep2();
+			printFlag = 1;				// 换刀相关指令均在ChangeTools.c中进行了回复，这里关闭
 			break;
 		//换刀ok		
 		case 0x0008:		//0E 09 0C 08 00 08 00 FF

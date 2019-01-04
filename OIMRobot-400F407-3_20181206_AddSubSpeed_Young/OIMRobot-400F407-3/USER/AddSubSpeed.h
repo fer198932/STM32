@@ -8,6 +8,7 @@
 #include "ComDataProc.h"
 #include "timer.h"
 #include "string.h"
+#include "OutDataProc.h"
 
 // 设置各轴的最合适频率：该频率下运动误差最小，需标定后确定
 #define X_AXIS_MIN_CLK 		500
