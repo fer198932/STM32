@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\USER;..\HARDWARE\KEY;..\HARDWARE\LCD;..\HARDWARE\ETHERNET;..\HARDWARE\TIMER;..\HARDWARE\LED;..\HARDWARE\SRAM;..\FWLIB\STM32F4x7_ETH_Driver\inc;..\USMART;..\LWIP;..\LWIP\app;..\LWIP\app\TCP_Client;..\LWIP\lwip_app\lwip_comm;..\LWIP\lwip-1.4.1\src\include;..\LWIP\lwip-1.4.1\src\include\ipv4;..\LWIP\lwip-1.4.1\src\include\lwip;..\LWIP\lwip-1.4.1\src\include\netif;..\LWIP\lwip-1.4.1\src\include\lwip;..\LWIP\lwip_app\udp_demo;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWMint;..\HARDWARE\DS18B20</IncludePath>
+              <IncludePath>..\CORE;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\USER;..\HARDWARE\KEY;..\HARDWARE\LCD;..\HARDWARE\ETHERNET;..\HARDWARE\TIMER;..\HARDWARE\LED;..\HARDWARE\SRAM;..\FWLIB\STM32F4x7_ETH_Driver\inc;..\USMART;..\LWIP;..\LWIP\app;..\LWIP\app\TCP_Client;..\LWIP\lwip_app\lwip_comm;..\LWIP\lwip-1.4.1\src\include;..\LWIP\lwip-1.4.1\src\include\ipv4;..\LWIP\lwip-1.4.1\src\include\lwip;..\LWIP\lwip-1.4.1\src\include\netif;..\LWIP\lwip-1.4.1\src\include\lwip;..\LWIP\lwip_app\udp_demo;..\UCOSII\CONFIG;..\UCOSII\CORE;..\UCOSII\PORT;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWMint;..\HARDWARE\DS18B20;..\DATA</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -457,6 +457,11 @@
               <FileName>OutDataProc.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\OutDataProc.c</FilePath>
+            </File>
+            <File>
+              <FileName>AddSubSpeed_S.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\AddSubSpeed_S.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -927,6 +932,16 @@
               <FileName>malloc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MALLOC\malloc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>DATA</GroupName>
+          <Files>
+            <File>
+              <FileName>OffLine_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DATA\OffLine_Data.c</FilePath>
             </File>
           </Files>
         </Group>

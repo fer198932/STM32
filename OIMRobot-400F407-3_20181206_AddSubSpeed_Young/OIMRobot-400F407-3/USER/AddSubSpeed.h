@@ -17,11 +17,11 @@
 #define A_AXIS_MIN_CLK 		500
 #define B_AXIS_MIN_CLK 		500
 
-#define X_AXIS_MAX_CLK 		6000
-#define Y_AXIS_MAX_CLK 		6000
-#define Z_AXIS_MAX_CLK 		6000
-#define A_AXIS_MAX_CLK 		6000
-#define B_AXIS_MAX_CLK 		6000
+#define X_AXIS_MAX_CLK 		10000
+#define Y_AXIS_MAX_CLK 		10000
+#define Z_AXIS_MAX_CLK 		10000
+#define A_AXIS_MAX_CLK 		10000
+#define B_AXIS_MAX_CLK 		10000
 
 #define TIMER_CLK 84e6									// 定时器时钟，84MHz
 #define ARR_VAL 560											// 自动重装值 可以调整，但最好能被TIMER_CLK整除

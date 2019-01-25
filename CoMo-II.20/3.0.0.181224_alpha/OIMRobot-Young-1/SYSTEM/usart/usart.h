@@ -3,36 +3,61 @@
 #include "stdio.h"	
 #include "stm32f4xx_conf.h"
 #include "sys.h" 
+#include "config.h"
+#include "dma.h"
 //////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//Mini STM32开发板
-//串口1初始化		   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.csom
-//修改日期:2011/6/14
-//版本：V1.4
-//版权所有，盗版必究。
-//Copyright(C) 正点原子 2009-2019
-//All rights reserved
-//********************************************************************************
-//V1.3修改说明 
-//支持适应不同频率下的串口波特率设置.
-//加入了对printf的支持
-//增加了串口接收命令功能.
-//修正了printf第一个字符丢失的bug
-//V1.4修改说明
-//1,修改串口初始化IO的bug
-//2,修改了USART_RX_STA,使得串口最大接收字节数为2的14次方
-//3,增加了USART_REC_LEN,用于定义串口最大允许接收的字节数(不大于2的14次方)
-//4,修改了EN_USART1_RX的使能方式
+// 串口程序
 ////////////////////////////////////////////////////////////////////////////////// 	
+
 #define USART_REC_LEN  			200  	//定义最大接收字节数 200
-#define EN_USART1_RX 			1		//使能（1）/禁止（0）串口1接收
+
+#if EN_USART1
+	#define USART_X USART1
+#elif EN_USART2
+	#define USART_X USART2
+#elif EN_USART3
+	#define USART_X USART3
+#else
+#endif
 	  	
 extern u8  USART_RX_BUF[USART_REC_LEN]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
-extern u16 USART_RX_STA;         		//接收状态标记	
+// extern u16 USART_RX_STA;         		//接收状态标记	
 //如果想串口中断接收，请不要注释以下宏定义
 void uart_init(u32 bound);
+
+
+// 串口中断服务程序
+#define USART_IRQ \
+do \
+{ \
+	{ \
+		if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 接收中断(接收到的数据必须是0x0d 0x0a结尾) */ \
+		{ \
+			Res = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清中断 */   \
+			Res = USART_X->DR;		\
+			DMA_USART_SEND(10);  /* 串口发送一次数据 */     \
+		} 	 \
+	} \
+} while(0)
+
+
+
 #endif
+
+//if(USART_RX_STA&0x4000)/* 接收到了0x0d */ \
+//{ \
+//	if(Res!=0x0a)USART_RX_STA=0;/*接收错误,重新开始*/ \
+//	else USART_RX_STA|=0x8000;	/*接收完成了 */  \
+//} \
+//else /*还没收到0X0D*/ \
+//{	\
+//	if(Res==0x0d)USART_RX_STA|=0x4000; \
+//	else \
+//	{ \
+//		USART_RX_BUF[USART_RX_STA&0X3FFF]=Res ; \
+//		USART_RX_STA++; \
+//		if(USART_RX_STA>(USART_REC_LEN-1))USART_RX_STA=0;/*接收数据错误,重新开始接收	  */ \
+//	}		 \
+//} \
 
 
