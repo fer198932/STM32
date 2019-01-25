@@ -46,7 +46,7 @@ int main(void)
 //			printf("限位\r\n");
 		
 //		LED0 = t%2;
-		DMA_USART_SEND(41);
+		DMA_USART_SEND(10);
 		while(1)
 		    {
 				if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
