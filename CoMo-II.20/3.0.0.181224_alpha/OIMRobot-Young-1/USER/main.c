@@ -77,7 +77,7 @@ void Sys_Enable(void)
 {
 //	USART_Cmd(USART_X, ENABLE);			// 串口使能	
 	///////////// 还有各种中断使能  byYJY ///////////////
-	USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  // 使能串口1的DMA发送     
+	USART_DMACmd(USART1, USART_DMAReq_Tx, ENABLE);  // 使能串口1的DMA发送     
 }
 
 
