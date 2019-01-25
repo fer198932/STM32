@@ -9,7 +9,7 @@
 #define SEND_BUF_SIZE 8200	//发送数据长度,最好等于sizeof(TEXT_TO_SEND)+2的整数倍.
 
 u8 SendBuff[SEND_BUF_SIZE];	//发送数据缓冲区
-const u8 TEXT_TO_SEND[]={"ALIENTEK Explorer STM32F4 DMA 串口实验"};	
+u8 TEXT_TO_SEND[]={"ALIENTEK Explorer STM32F4 DMA 串口实验"};	
 
 // DMA配置程序
 // DMA_Streamx:DMA数据流,
