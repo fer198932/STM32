@@ -46,7 +46,7 @@ int main(void)
 //			printf("限位\r\n");
 		
 //		LED0 = t%2;
-		DMA_USART_SEND(10);
+		DMA_USART_SEND(41);
 		while(1)
 		    {
 				if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
@@ -77,7 +77,7 @@ void Sys_Enable(void)
 {
 //	USART_Cmd(USART_X, ENABLE);			// 串口使能	
 	///////////// 还有各种中断使能  byYJY ///////////////
-	
+	USART_DMACmd(USART1,USART_DMAReq_Tx,ENABLE);  // 使能串口1的DMA发送     
 }
 
 
