@@ -35,26 +35,20 @@ int main(void)
 	
   while(1){
 		procLimit();							// 循环扫描是否有限位发生
+		checkBuffer();						// 检查BUFFER是否需要重置
 		
 //    printf("t:%d\r\n",t);
 		delay_ms(500);
 		t++;
 		
+//		TIM_Cmd(TIM7, ENABLE);
 //		if(X_P_Lim())
 //			printf("没有限位\r\n");
 //		else
 //			printf("限位\r\n");
 		
 //		LED0 = t%2;
-		DMA_USART_SEND(41);
-		while(1)
-		    {
-				if(DMA_GetFlagStatus(DMA2_Stream7,DMA_FLAG_TCIF7)!=RESET)//等待DMA2_Steam7传输完成
-				{ 
-					DMA_ClearFlag(DMA2_Stream7,DMA_FLAG_TCIF7);//清除DMA2_Steam7传输完成标志
-					break; 
-		        } 
-		    }	
+
 	}
   
 #endif
@@ -65,11 +59,16 @@ int main(void)
 void Sys_Init(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);					// 中断分组配置
+	buffer_Init();					// 数据缓冲区初始化
+	comData_Init();
 	uart_init(BOUND_X);
-	DMA_USART_Init();		// 串口的DMA传输方式
+	DMA_USART_Init();		// 串口的DMA传输方式初始化
 	delay_init(_SYSCLK);
 	LED_Init();
-	limit_IO_Init();		
+	limit_IO_Init();
+	Timer_Init();	
+	PWM_Init();
+	EXTI_Config_Init();				// 中断IO口初始化 中断最后初始化
 }
 
 // 系统各外设使能函数，如LED使能、中断使能等
@@ -77,7 +76,16 @@ void Sys_Enable(void)
 {
 //	USART_Cmd(USART_X, ENABLE);			// 串口使能	
 	///////////// 还有各种中断使能  byYJY ///////////////
-	USART_DMACmd(USART1, USART_DMAReq_Tx, ENABLE);  // 使能串口1的DMA发送     
+	
+	/* DMA 串口使能 */
+	USART_DMACmd(USART_X, USART_DMAReq_Tx, ENABLE);  // 使能串口的DMA发送     
+	USART_DMACmd(USART_X, USART_DMAReq_Rx, ENABLE);  // 使能串口的DMA接收
+	
+	/* 中断使能 */
+	EXTI_Enable();
+	
+	/* 使能加减速时钟， 测试用，可删除  */
+	TIM_Cmd(TIM7, ENABLE);
 }
 
 

@@ -3,6 +3,8 @@
 #include "sys.h"
 #include "config.h"
 #include "delay.h"
+#include "ComDataProc.h"
+#include "main.h"
 /********************************************************************************************************
 *    限位IO口的相关程序
 ********************************************************************************************************/
@@ -10,10 +12,10 @@
 // IO口初始化函数
 void limit_IO_Init(void);
 // 初始化函数
-static void limitInit(GPIO_XX *GPIO_Temp, const char str[]);
+static void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[]);
 
 // 读取IO口输出电平
-static uint8_t readOutput(GPIO_XX *GPIO_Temp);
+static uint8_t readOutput(GPIO_Structure_XX *GPIO_Temp);
 
 // 0：触发限位，1：没有触发
 uint8_t X_P_Lim(void);

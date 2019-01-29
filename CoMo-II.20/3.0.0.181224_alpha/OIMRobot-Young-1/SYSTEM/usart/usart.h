@@ -5,24 +5,34 @@
 #include "sys.h" 
 #include "config.h"
 #include "dma.h"
+#include "macro_operate.h"
+#include "buffer.h"
+#include "ComDataProc.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 // 串口程序
 ////////////////////////////////////////////////////////////////////////////////// 	
 
-#define USART_REC_LEN  			200  	//定义最大接收字节数 200
+// #define USART_REC_LEN  			BUF_SIZE  	//定义最大接收字节数 200
 
 #if EN_USART1
-	#define USART_X USART1
+	#define USART_X 		USART1
+	#define USART_TX 		"PA9"						// 串口Tx
+	#define USART_RX 		"PA10"					// 串口Rx
 #elif EN_USART2
-	#define USART_X USART2
+	#define USART_X 		USART2
+	#define USART_TX 		"PA2"						// 串口Tx
+	#define USART_RX 		"PA3"						// 串口Rx
 #elif EN_USART3
-	#define USART_X USART3
+	#define USART_X 		USART3
+	#define USART_TX 		"PB10"					// 串口Tx
+	#define USART_RX 		"PB11"					// 串口Rx
 #else
 #endif
-	  	
-extern u8  USART_RX_BUF[USART_REC_LEN]; //接收缓冲,最大USART_REC_LEN个字节.末字节为换行符 
-// extern u16 USART_RX_STA;         		//接收状态标记	
-//如果想串口中断接收，请不要注释以下宏定义
+
+// 初始化GPIO和串口的数据结构体
+static void GPIO_AF_Usart_Init(USART_TypeDef* USARTx, 
+	const char Pin_Tx_str[], const char Pin_Rx_str[]);
+
 void uart_init(u32 bound);
 
 
@@ -30,14 +40,33 @@ void uart_init(u32 bound);
 #define USART_IRQ \
 do \
 { \
+	if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 空闲中断 */ \
 	{ \
-		if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 接收中断(接收到的数据必须是0x0d 0x0a结尾) */ \
-		{ \
-			Res = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清中断 */   \
-			Res = USART_X->DR;		\
-			DMA_USART_SEND(10);  /* 串口发送一次数据 */     \
-		} 	 \
-	} \
+		temp = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清空闲中断 */   \
+		temp = USART_X->DR;		\
+		/* DMA接收方式 */ 		\
+		/* end指向的位置=设置的接收长度-剩余的DMA缓存大小 （始终等于） */ 	\
+		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx);		\
+		if(buffer_Rec.start <= buffer_Rec.end)  /* 正序 */ 		\
+		{ 			\
+			/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */ \
+			if((BUF_SIZE + buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE) 		\
+			{ 	\
+				DMA_Cmd(DMA_Stream_Rx, DISABLE); 	\
+				respMsgError("DMA缓冲区溢出\r\n", 1); 	\
+			} \
+		} 	\
+		else 																		/* 逆序 */  	\
+		{ 	\
+			/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */ 	\
+			if((buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE) 	\
+			{ 	\
+				DMA_Cmd(DMA_Stream_Rx, DISABLE); 	\
+				respMsgError("DMA缓冲区溢出\r\n", 1); 	\
+			} 	\
+		} 	\
+		procDataStep();		/* 根据串口发送的命令进行处理  */  		\
+	} 	  	\
 } while(0)
 
 

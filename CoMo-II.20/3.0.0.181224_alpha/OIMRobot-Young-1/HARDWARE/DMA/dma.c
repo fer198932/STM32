@@ -1,15 +1,12 @@
-#include "dma.h"																	   	  
-#include "delay.h"		 
+#include "dma.h"			
+
 //////////////////////////////////////////////////////////////////////////////////	 
 // DMA程序
 // 1、应用在串口通信
 // 2019年1月25日17:23:04 byYJY 
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
-#define SEND_BUF_SIZE 8200	//发送数据长度,最好等于sizeof(TEXT_TO_SEND)+2的整数倍.
-
-u8 SendBuff[SEND_BUF_SIZE];	//发送数据缓冲区
-u8 TEXT_TO_SEND[]={"ALIENTEK Explorer STM32F4 DMA 串口实验"};	
+// u8 DMA_Rec[BUF_SIZE];
 
 // DMA配置程序
 // DMA_Streamx:DMA数据流,
@@ -18,8 +15,9 @@ u8 TEXT_TO_SEND[]={"ALIENTEK Explorer STM32F4 DMA 串口实验"};
 // m_ar:存储器地址
 // amount:数据传输量  
 // dir:传输方向
-void DMA_Config(DMA_Stream_TypeDef *DMA_Streamx, uint32_t chx, 
-	uint32_t p_ar, uint32_t m_ar, uint32_t amount, uint32_t dir)
+// DMA_Mode_X: 普通模式  还是循环模式
+void DMA_Config(DMA_Stream_TypeDef *DMA_Streamx, uint32_t chx, uint32_t p_ar, 
+	uint32_t m_ar, uint32_t amount, uint32_t dir, uint32_t DMA_Mode_X)
 {
 	DMA_InitTypeDef DMA_InitStructure;
 	
@@ -45,7 +43,7 @@ void DMA_Config(DMA_Stream_TypeDef *DMA_Streamx, uint32_t chx,
 	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable; // 存储器增量模式
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据长度:8位
 	DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte; // 存储器数据长度:8位 
-	DMA_InitStructure.DMA_Mode = DMA_Mode_Normal; // 使用普通模式 
+	DMA_InitStructure.DMA_Mode = DMA_Mode_X; 	// 循环模式或普通模式 如：DMA_Mode_Normal 普通模式 
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium; // 中等优先级 优先级： byYJY
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;  // 不使用FIFO
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full; 
@@ -56,7 +54,7 @@ void DMA_Config(DMA_Stream_TypeDef *DMA_Streamx, uint32_t chx,
 }
 
 // 开启一次DMA传输的程序
-void DMA_Enable(DMA_Stream_TypeDef *DMA_Streamx, uint32_t amount)
+void DMA_Restart(DMA_Stream_TypeDef *DMA_Streamx, uint32_t amount)
 {
 	DMA_Cmd(DMA_Streamx, DISABLE); 											// 关闭DMA传输
 	
@@ -70,10 +68,15 @@ void DMA_Enable(DMA_Stream_TypeDef *DMA_Streamx, uint32_t amount)
 // 串口使用DMA方式的初始化函数
 void DMA_USART_Init(void)
 {
-	DMA_Config(DMA2_Stream7, DMA_Channel_4, (u32)&USART1->DR, (u32)TEXT_TO_SEND,
-		SEND_BUF_SIZE, DMA_DIR_MemoryToPeripheral);
-	
-	
+	/* DMA发送初始化  */
+	DMA_Config(DMA_Stream_Tx, DMA_Channel_Tx, (u32)&USART1->DR, (u32)buffer_Trans.data,
+		BUF_SIZE, DMA_DIR_MemoryToPeripheral, DMA_Mode_Normal);
+	/* DMA接收初始化 */
+	DMA_Config(DMA_Stream_Rx, DMA_Channel_Rx, (u32)&USART1->DR, (u32)buffer_Rec.data,
+		BUF_SIZE, DMA_DIR_PeripheralToMemory, DMA_Mode_Circular);
+	DMA_Cmd(DMA_Stream_Rx, DISABLE);					// 调用一下，否则第一条不会接收
+	DMA_SetCurrDataCounter(DMA_Stream_Rx, BUF_SIZE);
+	DMA_Cmd(DMA_Stream_Rx, ENABLE);
 }
 
 

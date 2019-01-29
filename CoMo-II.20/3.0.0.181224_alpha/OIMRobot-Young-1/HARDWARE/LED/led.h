@@ -11,5 +11,5 @@
 // #define LED(n) BIT_ADDR()
 
 void LED_Init(void); //³õÊ¼»¯
-void Set_Led(GPIO_XX GPIO_led, u8 status);		// 1:µÆÁÁ 0£ºµÆÃð
+void Set_Led(GPIO_Structure_XX GPIO_led, u8 status);		// 1:µÆÁÁ 0£ºµÆÃð
 #endif

@@ -9,6 +9,10 @@
 #include "led.h"
 #include "limit_IO.h"
 #include "dma.h"	
+#include "buffer.h"
+#include "exti.h"
+#include "pwm.h"
+#include "timer.h"
 
 /* 系统功能开关： 1--打开测试代码，0--关闭 */
 // 测试代码，测试代码通常属于验证编写的代码，不算入系统代码
@@ -16,6 +20,9 @@
 
 // 开发板上的测试代码，方便在探索者板子上验证代码
 #define _TEST_ON_ALIENTEK 1
+
+// 测试用
+#define PRIN2DISP 1   			// 打印提示信息，而不是发回控制命令
 
 
 // 系统初始化函数

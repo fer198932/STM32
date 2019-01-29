@@ -11,14 +11,14 @@ static u32 keyValue = 0;
 static u32 keyValueOld = 0;
 
 // 限位点IO口
-static GPIO_XX x_p_limit;
-static GPIO_XX x_n_limit;
-static GPIO_XX y_p_limit;
-static GPIO_XX y_n_limit;
-static GPIO_XX z_p_limit;
-static GPIO_XX z_n_limit;
-static GPIO_XX a_limit;
-static GPIO_XX b_limit;
+static GPIO_Structure_XX x_p_limit;
+static GPIO_Structure_XX x_n_limit;
+static GPIO_Structure_XX y_p_limit;
+static GPIO_Structure_XX y_n_limit;
+static GPIO_Structure_XX z_p_limit;
+static GPIO_Structure_XX z_n_limit;
+static GPIO_Structure_XX a_limit;
+static GPIO_Structure_XX b_limit;
 
 // IO口初始化函数
 void limit_IO_Init(void)
@@ -41,7 +41,8 @@ static void LIMIT_Scan(void)
 	if((0==X_P_Lim()) || (0==X_N_Lim()) || (0==Y_P_Lim()) || (0==Y_N_Lim()) || 
 			(0==Z_P_Lim()) || (0==Z_N_Lim()) || (0==A_Lim()) || (0==B_Lim()))				//  有按键按下
 	{
-		delay_us(10);				// 按键去抖
+//		delay_us(10);				// 按键去抖
+		delay_ms(10);					// 按键去抖
 		
 		keyValue = 0;
 		
@@ -94,7 +95,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = X_P_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITx+\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif			
 		}
 		
 		/* X- 限位 */
@@ -105,7 +112,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = X_N_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITx-\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* Y+ 限位 */
@@ -116,7 +129,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = Y_P_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITy+\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* Y- 限位 */
@@ -127,7 +146,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = Y_N_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITy-\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* Z+ 限位 */
@@ -138,7 +163,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = Z_P_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITz+\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* Z- 限位 */
@@ -149,7 +180,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = Z_N_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITz-\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* A 零位 */
@@ -160,7 +197,13 @@ void procLimit(void)
 			backResString[6] = 0x00;
 			backResString[7] = A_MSG2;
 			
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITa0\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}
 		
 		/* B 零位 */
@@ -169,35 +212,41 @@ void procLimit(void)
 			//////////////////关闭电机在该方向上的运动 byYJY
 			backResString[5] = B_MSG1;
 			backResString[6] = 0x00;
-			backResString[7] = B_MSG1;
-			
+			backResString[7] = B_MSG1;	
+
+#if PRIN2DISP
+			// 串口回复
+			backResString[0] = backResString[0]; 		// 避免warning
+			respUsartMsg("LIMITb0\r\n", length);
+#else
 			respUsartMsg(backResString, length);
+#endif		
 		}		
 	}	
 }
 
 // 初始化函数
-static void limitInit(GPIO_XX *GPIO_Temp, const char str[])
+static void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[])
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	*GPIO_Temp = GPIO_XX_Init(str);
+	GPIO_Structure_Init(str, GPIO_Temp);
 	
-	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_X, ENABLE);		// 使能时钟
+	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);		// 使能时钟
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Temp->GPIO_Pin_X;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Temp->GPIO_Pin_N;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;  			//输入
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//100M
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;  			//上拉输入
 	
-	GPIO_Init(GPIO_Temp->GPIO_Base, &GPIO_InitStructure);
+	GPIO_Init(GPIO_Temp->GPIO_Port, &GPIO_InitStructure);
 }
 
 // 读取IO口输出电平 0:低电平，触发限位 1：高电平，不触发
-static uint8_t readOutput(GPIO_XX *GPIO_Temp)
+static uint8_t readOutput(GPIO_Structure_XX *GPIO_Temp)
 {
 	uint8_t bitStatus;
-	bitStatus = GPIO_ReadInputDataBit(GPIO_Temp->GPIO_Base, GPIO_Temp->GPIO_Pin_X);
+	bitStatus = GPIO_ReadInputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
 	
 	return bitStatus;
 }

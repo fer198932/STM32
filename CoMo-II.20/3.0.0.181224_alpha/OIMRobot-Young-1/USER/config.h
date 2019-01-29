@@ -12,18 +12,31 @@
 #define 	BOUND_X			115200
 
 /* LED IO口 */
-#define 	GPIO_LED		"PF9"
+#define 	GPIO_LED				"PF9"
 
 /* 限位 IO口 */
-#define X_P_LIMIT 		"PE2"					// X+限位
-#define X_N_LIMIT 		"PE3"					// X-限位 兼用为X零位
-#define Y_P_LIMIT 		"PE4"					// Y+限位
-#define Y_N_LIMIT 		"PE5"					// Y-限位 兼用为Y零位
-#define Z_P_LIMIT 		"PE6"					// Z+限位
-#define Z_N_LIMIT 		"PE7"					// Z-限位 兼用为Z零位
-#define A_LIMIT 			"PE8"					// A零位
-#define B_LIMIT 			"PE9"					// B零位
+#define 	X_P_LIMIT 			"PE2"					// X+限位
+#define 	X_N_LIMIT 			"PE3"					// X-限位 兼用为X零位
+#define 	Y_P_LIMIT 			"PF2"					// Y+限位
+#define 	Y_N_LIMIT 			"PF2"					// Y-限位 兼用为Y零位
+#define 	Z_P_LIMIT 			"PF2"					// Z+限位
+#define 	Z_N_LIMIT 			"PF2"					// Z-限位 兼用为Z零位
+#define 	A_LIMIT 				"PF2"					// A零位
+#define 	B_LIMIT 				"PF2"					// B零位
 
+/******* 中断IO口  注意：如PA11只能连接到中断线11 ***********/
+/* 电机的PWM波反馈  中断IO口  */
+#define 	EXTI_X_PLUS			"PA11"
+#define 	EXTI_Y_PLUS			"PA11"
+#define 	EXTI_Z_PLUS			"PA11"
+#define 	EXTI_A_PLUS			"PA11"
+#define 	EXTI_B_PLUS			"PA11"
+
+
+
+// 测试按钮中断 可以删除
+#define 	_KEY1 						"PE4" 		// 按下后拉高
+//#define 	_KEY1 						"PE3" 		// 按下后拉低
 
 
 
@@ -33,10 +46,11 @@
 #define FrameEnd		0xFF     //数据帧尾
 
 /*********串口通信数据帧控制字**********/
-#define SELFCHECK 		0x0B     //自检
-#define CONTROLINFO		0x0C     //控制
-#define DATAINFO		0x0D     //数据
-#define STATUSINFO		0x0E     //状态
+#define SELFCHECK 		0x0B     	// 自检
+#define CONTROLINFO		0x0C     	// 控制
+#define DATAINFO			0x0D     	// 数据
+#define STATUSINFO		0x0E     	// 状态
+#define INVALID_CMD 	0x00 			// 无效命令，默认状态或没有新命令
 
 /* 限位回复信息 */
 #define X_P_MSG1  	0x31			// X+ 限位
@@ -63,6 +77,7 @@
 #define B_MSG1  		0x36			// B 零位
 #define B_MSG2  		0x03			// B 零位
 
-
+/* 运动系统的运动轴数量  */
+#define AXIS_NUM 		5     	// 5轴系统 顺序：X、Y、Z、A、B
 
 #endif
