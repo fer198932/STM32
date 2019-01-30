@@ -25,12 +25,26 @@
 #define 	B_LIMIT 				"PF2"					// B零位
 
 /******* 中断IO口  注意：如PA11只能连接到中断线11 ***********/
-/* 电机的PWM波反馈  中断IO口  */
-#define 	EXTI_X_PLUS			"PA11"
+/* 电机的PWM波  中断及输出IO口  */
+#define 	EXTI_X_PLUS			"PA11" 				// 接收PWM的中断IO口
+#define 	PWM_X_EXTI			"PA11"				// 输出PWM到中断的IO口
+#define 	PWM_X_OUT				"PA11"  			// 输出PWM到电机的IO口
+
 #define 	EXTI_Y_PLUS			"PA11"
+#define 	PWM_Y_EXTI			"PA11"				// 输出PWM到中断的IO口
+#define 	PWM_Y_OUT				"PA11"  			// 输出PWM到电机的IO口
+
 #define 	EXTI_Z_PLUS			"PA11"
+#define 	PWM_Z_EXTI			"PA11"				// 输出PWM到中断的IO口
+#define 	PWM_Z_OUT				"PA11"  			// 输出PWM到电机的IO口
+
 #define 	EXTI_A_PLUS			"PA11"
+#define 	PWM_A_EXTI			"PA11"				// 输出PWM到中断的IO口
+#define 	PWM_A_OUT				"PA11"  			// 输出PWM到电机的IO口
+
 #define 	EXTI_B_PLUS			"PA11"
+#define 	PWM_B_EXTI			"PA11"				// 输出PWM到中断的IO口
+#define 	PWM_B_OUT				"PA11"  			// 输出PWM到电机的IO口
 
 
 

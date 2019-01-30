@@ -86,6 +86,9 @@ void Sys_Enable(void)
 	
 	/* 使能加减速时钟， 测试用，可删除  */
 	TIM_Cmd(TIM7, ENABLE);
+	
+	/* 使能pwm， 测试用，可删除  */
+	PWM_Cmd(X_PWM, ENABLE, X_CH1_EXTI);
 }
 
 

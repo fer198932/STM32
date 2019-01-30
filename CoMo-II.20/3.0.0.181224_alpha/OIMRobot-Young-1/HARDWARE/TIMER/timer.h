@@ -9,6 +9,7 @@
 
 /****   公式： TIM_OUT = TIM_ARR * TIM_PSC / TIM_CLK   *******/
 #define 	TIM_OUT						20																	// 输出时间，  单位us	 取值范围：3~21854
+#define 	TIM_FREQ					(1e6 / TIM_OUT) 										// 输出频率   单位Hz  如：当前为50kHz
 #define  	TIM_CLK 					(_SYSCLK/2) 												// 定时器时钟，单位MHz (84MHz)
 #define 	TIM_ARR 					28 																	// 重装载值
 #define 	TIM_PSC 					(TIM_CLK * TIM_OUT / TIM_ARR) 			// 预分频系数
