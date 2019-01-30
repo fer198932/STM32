@@ -14,5 +14,8 @@
 void PWM_Init(void);
 
 
+// 定时器输出PIN脚初始化
+static void GPIO_PWM_Init(GPIO_Structure_XX *GPIO_Temp, const char Pin_PWM_str[]);
+
 
 #endif

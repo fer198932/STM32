@@ -150,46 +150,55 @@ void TIM_Structure_Init(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure)
 		case (u32)TIM1:
 			TIM_Structure->RCC_Periph_N = RCC_APB2Periph_TIM1;			// 时钟线
 //			TIM_Structure->IRQ_Channel_N = TIM1_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM1; 									// 复用功能
 			break;
 		
 		case (u32)TIM2:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM2;			// 时钟线
 			TIM_Structure->IRQ_Channel_N = TIM2_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM2; 									// 复用功能
 			break;
 		
 		case (u32)TIM3:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM3;			// 时钟线
 			TIM_Structure->IRQ_Channel_N = TIM3_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM3; 									// 复用功能
 			break;
 		
 		case (u32)TIM4:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM4;			// 时钟线
 			TIM_Structure->IRQ_Channel_N = TIM4_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM4; 									// 复用功能
 			break;
 		
 		case (u32)TIM5:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM5;			// 时钟线
 			TIM_Structure->IRQ_Channel_N = TIM5_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM5; 									// 复用功能
 			break;
 		
 		case (u32)TIM6:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM6;			// 时钟线
 //			TIM_Structure->IRQ_Channel_N = TIM6_IRQn;								// 中断服务程序
+//			TIM_Structure->GPIO_AF = GPIO_AF_TIM6; 									// 复用功能
 			break;
 		
 		case (u32)TIM7:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM7;			// 时钟线
 			TIM_Structure->IRQ_Channel_N = TIM7_IRQn;								// 中断服务程序
+//			TIM_Structure->GPIO_AF = GPIO_AF_TIM7; 									// 复用功能
 			break;
 		
 		case (u32)TIM12:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM12;			// 时钟线
 //			TIM_Structure->IRQ_Channel_N = TIM12_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM12; 									// 复用功能
 			break;
 		
 		case (u32)TIM14:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM14;			// 时钟线
 //			TIM_Structure->IRQ_Channel_N = TIM14_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM14; 									// 复用功能
 			break;
 		
 		default:

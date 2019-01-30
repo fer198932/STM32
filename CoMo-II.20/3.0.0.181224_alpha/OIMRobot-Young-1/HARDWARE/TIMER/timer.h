@@ -34,9 +34,10 @@ do 		\
 // 定时器初始化
 void Timer_Init(void);
 
+
 // 定时器初始化函数 注：arr可以为u32
 void Tim_Base_Init(TIM_TypeDef* TIM_N, u16 arr, u16 psc, FunctionalState Enable_IRQ,
-	uint8_t IRQPreempPriority, uint8_t IRQSubPriority);
+	uint8_t IRQPreempPriority, uint8_t IRQSubPriority, AF_Structure_XX* TIM_AF_Structure);
 
 
 /* 定时器的宏操作 */
