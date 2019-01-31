@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER;..\HARDWARE\StepMotor</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -477,6 +477,11 @@
               <FileName>timer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\TIMER\timer.c</FilePath>
+            </File>
+            <File>
+              <FileName>StepMotor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\StepMotor\StepMotor.c</FilePath>
             </File>
           </Files>
         </Group>

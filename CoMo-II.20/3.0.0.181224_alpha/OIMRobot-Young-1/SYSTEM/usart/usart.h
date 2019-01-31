@@ -50,12 +50,13 @@ do \
 		/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */ \
 		if((BUF_SIZE + buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE) 		\
 		{ 	\
+			DMA_Out_Flag = SET; /* 不常发生，不用判断 */  \
 			DMA_Cmd(DMA_Stream_Rx, DISABLE); 	\
-			USARTRx_DMAOut_Flag = ERROR; 			\
+			/*	USARTRx_DMAOut_Flag = ERROR; 		*/	\
 			respMsgError("DMA缓冲区溢出\r\n", 1); 	\
 		} \
-		if(NOT_OK == USARTRx_IfOK_Flag) 	/* 如果指令还在处理中 */		\
-			USARTRx_IfOK_Flag = IS_OK; 		/* 接收到一帧数据 */ 			\
+		if(RESET == USART_IDLE_Flag) 	/* 如果指令还在处理中 */		\
+			USART_IDLE_Flag = SET; 		/* 接收到一帧数据 */ 			\
 	} 	  	\
 } while(0)
 
@@ -94,7 +95,7 @@ do \
 //			} 	\
 //		} 	\
 //		if(IS_OK == DataPro_IsOK_Flag) /* 数据处理完后才能进行一下次处理 */ 	\
-//			procDataStep();		/* 根据串口发送的命令进行处理  */  		\
+//			UsartDataProc();		/* 根据串口发送的命令进行处理  */  		\
 //	} 	  	\
 //} while(0)
 

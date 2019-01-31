@@ -47,7 +47,7 @@ typedef struct {
 void comData_Init(void);
 
 // 从缓冲区得到数据并进行处理、启动相关电机的程序
-void procDataStep(void);
+void UsartDataProc(void);
 
 // 处理对应区间上的缓冲区数据
 static IfOK_Status bufData_Proc_Region(PosCur posCur);

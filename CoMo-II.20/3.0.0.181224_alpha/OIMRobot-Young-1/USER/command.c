@@ -3,21 +3,62 @@
 ********************************************************************************************************/
 #include "command.h"
 
+extern volatile	FunctionalState 	Cmd_Copied_Falg; 			// 串口数据是否可复制的标签（命令执行完后才可)
+
 // 串口发来的数据
 extern Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
-extern Plus_Data plus_Data;		// 脉冲数据，控制电机运动
+extern Plus_Data plus_Data;			// 脉冲数据，控制电机运动
 
-Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
-Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
+Proc_Data cmd_Proc_Data; 				// 命令数据，有成员指向plus_Data
+Plus_Data cmd_Plus_Data;				// 脉冲数据，控制电机运动
+
+extern volatile FunctionalState	 nAxisStatus[AXIS_NUM];  		// 各轴是否可以运动 
+
+
+// 执行命令
+void CMD_Execute(void)
+{
+	usartData2cmd(); 		// 复制串口命令到本地
+	
+	switch(cmd_Proc_Data.cmd_Type)
+	{
+		case SELFCHECK:
+			selfCheckFunc();
+			break;
+		
+		case CONTROLINFO:
+			
+			break;
+		
+		case DATAINFO:
+			motionDataProc();
+			break;
+		
+		case STATUSINFO:
+			
+			break;
+		
+		case INVALID_CMD:
+			respMsgError("无效命令！\r\n", 1);
+			break;
+		
+		default:
+			respMsgError("命令解析后运行时错误！\r\n", 1);
+			break;		
+		
+	}
+	
+}
 
 // 将串口发来的数据复制到本地的结构体中 
 static void usartData2cmd(void)
 {
 	cmd_Plus_Data = plus_Data;
 	cmd_Proc_Data = proc_Data;
-	cmd_Proc_Data.cmd_Data = &plus_Data; 		// 重新指向
-	// 标志位 数据复制完后，可以进行下一次指令
-//	DataPro_IsOK_Flag = IS_OK;
+	cmd_Proc_Data.cmd_Data = &cmd_Plus_Data; 		// 重新指向
+	
+	// 标志位 数据复制完后，可以进行下一次串口数据处理
+	Cmd_Copied_Falg = ENABLE; 			
 }
 
 // 自检程序
@@ -48,9 +89,10 @@ void selfCheckFunc(void)
 // 运动数据处理程序
 void motionDataProc(void)
 {
-	
-	// 数据复制
-	usartData2cmd();
+	u8 i;
+	// 各轴状态初始化 都不许动
+	for(i=0; i<AXIS_NUM; i++)
+		nAxisStatus[i] = DISABLE;
 	
 	// 步进电机同时开始运动
 	StepMotor_Start();

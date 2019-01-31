@@ -18,6 +18,9 @@ extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
 // 脉冲数的中断计数
 volatile u32 pluNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
 
+// 各轴是否可以运动 
+extern volatile 	FunctionalState	 nAxisStatus[AXIS_NUM];
+
 // 外部中断初始化		 	
 void EXTI_Config_Init(void)
 {

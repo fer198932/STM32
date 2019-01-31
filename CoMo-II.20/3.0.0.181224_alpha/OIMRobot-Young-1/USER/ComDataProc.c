@@ -4,10 +4,10 @@
 #include "ComDataProc.h"
 
 // 串口接收一帧数据完成的标志
-volatile 	IfOK_Status 	USARTRx_IfOK_Flag 	= 	NOT_OK;
+// volatile 	IfOK_Status 	USARTRx_IfOK_Flag 	= 	NOT_OK;
 
 // 串口DMA数据溢出的标志
-volatile 	ErrorStatus 	USARTRx_DMAOut_Flag 	= 	SUCCESS;
+// volatile 	ErrorStatus 	USARTRx_DMAOut_Flag 	= 	SUCCESS;
 
 // 数据是否处理完毕
 // volatile IfOK_Status 	DataPro_IsOK_Flag = IS_OK;
@@ -23,36 +23,47 @@ void comData_Init(void)
 }
 
 
-// 从缓冲区得到数据并进行处理、启动相关电机的程序
-void procDataStep(void)
+// 从缓冲区得到数据并进行处理
+void UsartDataProc(void)
 {
-//	DataPro_IsOK_Flag = NOT_OK;		// 锁定标志位进行数据处理
-	
 	if(IS_OK == bufData_Proc())
 	{
-		switch(proc_Data.cmd_Type)
-		{
-			case 0x0B:
-				selfCheckFunc();
-				break;
-			case 0x0C:
-				
-				break;
-			case 0x0D:
-				motionDataProc();
-				break;
-			case 0x0E:
-				
-				break;
-			default:
-				respMsgError("命令解析后运行时错误！\r\n", 1);
-				break;			
-		}
+		
 	}
-	else
+	else 
 	{
 		respMsgError("命令数据解析有误或为空！\r\n", 1);
 	}
+		
+	
+	
+//	DataPro_IsOK_Flag = NOT_OK;		// 锁定标志位进行数据处理
+	
+//	if(IS_OK == bufData_Proc())
+//	{
+//		switch(proc_Data.cmd_Type)
+//		{
+//			case 0x0B:
+//				selfCheckFunc();
+//				break;
+//			case 0x0C:
+//				
+//				break;
+//			case 0x0D:
+//				motionDataProc();
+//				break;
+//			case 0x0E:
+//				
+//				break;
+//			default:
+//				respMsgError("命令解析后运行时错误！\r\n", 1);
+//				break;			
+//		}
+//	}
+//	else
+//	{
+//		respMsgError("命令数据解析有误或为空！\r\n", 1);
+//	}
 	
 //	DataPro_IsOK_Flag = IS_OK; 		// 处理完一条指令后再打开处理下一条
 }

@@ -48,6 +48,7 @@ do 		\
 	if(pluNumPWM[n] >= cmd_Plus_Data.plusNum[n])  	\
 	{ \
 		nAxis_StepMotor_Stop(TIM_N); 				\
+		nAxisStatus[n] = ENABLE; /* 该轴可运动 */		\
 		pluNumPWM[n] = 0; 		\
 		respUsartMsg("PWM_EXTI\r\n", 10);		\
 	} \

@@ -15,6 +15,13 @@
 ********************************************************************************************************/
 #include "main.h"
 
+/* 全局变量 (主要为各种标志位) */
+volatile 	FlagStatus 	DMA_Out_Flag 	= RESET;								// DMA溢出，重新初始化
+volatile 	FlagStatus 	USART_IDLE_Flag 	= RESET; 						// 串口空闲中断标志，串口数据处理
+volatile 	FunctionalState 	Cmd_Done_Flag	= ENABLE;					// 指令处理完成标志
+volatile	FunctionalState 	Cmd_Copied_Falg = ENABLE; 			// 串口数据是否可复制的标签（命令执行完后才可)
+
+
 #if _TEST_ON_ALIENTEK
 void Delay(__IO uint32_t nCount);
 
@@ -41,17 +48,26 @@ int main(void)
 		checkBuffer();						
 		
 		/* 如果发生了串口的DMA溢出，重新初始化 */
-		if(ERROR == USARTRx_DMAOut_Flag) 
+		if(SET == DMA_Out_Flag) 
 		{
 			DMA_USART_Init();
-			USARTRx_DMAOut_Flag = SUCCESS;
+			DMA_Out_Flag = RESET;
 		}
 		
-		/* 根据串口发送的命令进行处理  */
-		if(IS_OK == USARTRx_IfOK_Flag) 		
+		/* 发生串口空闲中断并且可以进行数据复制时才进入  */
+		if((SET == USART_IDLE_Flag)	&& (ENABLE == Cmd_Copied_Falg))
 		{
-			procDataStep();		
-			USARTRx_IfOK_Flag = NOT_OK; 		// 指令处理完后重新处理下一条指令
+			Cmd_Copied_Falg = DISABLE; 				// 命令复制完成前不允许再处理数据
+			UsartDataProc();		
+			USART_IDLE_Flag = RESET; 		
+		}
+		
+		/* 执行命令 */
+		if(ENABLE == Cmd_Done_Flag)
+		{
+			Cmd_Done_Flag = DISABLE; 			// 执行完成前不许再次进入
+			CMD_Execute();
+			// 执行完成在其它地方判断
 		}
 		
 		
