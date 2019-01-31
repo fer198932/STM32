@@ -11,6 +11,13 @@ static GPIO_Structure_XX GPIO_EXTI_Plus[AXIS_NUM]; 			// µç»ú·´À¡µÄPWM½ÓÊÕÖÐ¶Ï Ë
 static	GPIO_Structure_XX 	GPIO_Key1;
 #endif	
 
+// Ö¸ÁîÖÐÉè¶¨µÄÔË¶¯²ÎÊý
+extern Proc_Data cmd_Proc_Data; 		// ÃüÁîÊý¾Ý£¬ÓÐ³ÉÔ±Ö¸Ïòplus_Data
+extern Plus_Data cmd_Plus_Data;			// Âö³åÊý¾Ý£¬¿ØÖÆµç»úÔË¶¯
+
+// Âö³åÊýµÄÖÐ¶Ï¼ÆÊý
+volatile u32 pluNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
+
 // Íâ²¿ÖÐ¶Ï³õÊ¼»¯		 	
 void EXTI_Config_Init(void)
 {
@@ -30,18 +37,18 @@ void EXTI_Config_Init(void)
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
 void EXTI0_IRQHandler(void)
-{ 
+{ 	
 	EXTI_ClearITPendingBit(EXTI_Line0);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM;
+	EXTI_IRQ_PWM(0, X_PWM);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
 void EXTI1_IRQHandler(void)
-{ 
+{ 	
 	EXTI_ClearITPendingBit(EXTI_Line1);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM;
+	EXTI_IRQ_PWM(1, Y_PWM);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -49,7 +56,7 @@ void EXTI2_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line2);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM;
+	EXTI_IRQ_PWM(2, Z_PWM);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -57,7 +64,7 @@ void EXTI3_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line3);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM;
+	EXTI_IRQ_PWM(3, A_PWM);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -65,7 +72,7 @@ void EXTI4_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line4);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM;
+	EXTI_IRQ_PWM(0, X_PWM);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -128,7 +135,8 @@ static void EXTI_GPIO_Init(GPIO_Structure_XX *GPIO_Temp, const char str[])
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	GPIO_Structure_Init(str, GPIO_Temp);
+	if(!GPIO_Structure_Make(str, GPIO_Temp))
+		return;
 	
 	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);		// Ê¹ÄÜÊ±ÖÓ
 	
@@ -163,10 +171,10 @@ static void EXTI_Cmd(uint32_t EXTI_Line_N, FunctionalState state)
 void EXTI_Enable(void)
 {
 	EXTI_Cmd((GPIO_EXTI_Plus+0)->EXTI_Line_N, ENABLE);
-	EXTI_Cmd((GPIO_EXTI_Plus+0)->EXTI_Line_N, ENABLE);
-	EXTI_Cmd((GPIO_EXTI_Plus+0)->EXTI_Line_N, ENABLE);
-	EXTI_Cmd((GPIO_EXTI_Plus+0)->EXTI_Line_N, ENABLE);
-	EXTI_Cmd((GPIO_EXTI_Plus+0)->EXTI_Line_N, ENABLE);
+	EXTI_Cmd((GPIO_EXTI_Plus+1)->EXTI_Line_N, ENABLE);
+	EXTI_Cmd((GPIO_EXTI_Plus+2)->EXTI_Line_N, ENABLE);
+	EXTI_Cmd((GPIO_EXTI_Plus+3)->EXTI_Line_N, ENABLE);
+	EXTI_Cmd((GPIO_EXTI_Plus+4)->EXTI_Line_N, ENABLE);
 	
 	EXTI_Cmd(GPIO_Key1.EXTI_Line_N, ENABLE);	
 	

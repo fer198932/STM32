@@ -41,10 +41,16 @@ static void EXTI_Cmd(uint32_t EXTI_Line_N, FunctionalState state);
 void EXTI_Enable(void);
 
 /* 为脉冲服务的中断程序 */
-#define EXTI_IRQ_PWM  			\
+#define EXTI_IRQ_PWM(n, TIM_N)  			\
 do 		\
 { \
-	 respUsartMsg("KEY1\r\n", 6); 		\
+	pluNumPWM[n]++; 			\
+	if(pluNumPWM[n] >= cmd_Plus_Data.plusNum[n])  	\
+	{ \
+		nAxis_StepMotor_Stop(TIM_N); 				\
+		pluNumPWM[n] = 0; 		\
+		respUsartMsg("PWM_EXTI\r\n", 10);		\
+	} \
 } while(0)
 
 

@@ -13,6 +13,7 @@
 #include "exti.h"
 #include "pwm.h"
 #include "timer.h"
+#include "StepMotor.h"	
 
 /* 系统功能开关： 1--打开测试代码，0--关闭 */
 // 测试代码，测试代码通常属于验证编写的代码，不算入系统代码

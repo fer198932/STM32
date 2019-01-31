@@ -8,7 +8,16 @@
 #include "command.h"
 #include "buffer.h"
 
-typedef enum { IS_OK = 0, NOT_OK = !IS_OK} BufData_Status;
+typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
+
+// 串口接收一帧数据完成的标志
+extern	 volatile 	IfOK_Status 	USARTRx_IfOK_Flag;
+
+// 串口DMA数据溢出的标志
+extern volatile 	ErrorStatus 	USARTRx_DMAOut_Flag;
+
+// 数据是否处理完毕
+// extern	volatile	IfOK_Status 	DataPro_IsOK_Flag;
 
 // 位置游标
 typedef struct {
@@ -29,9 +38,9 @@ typedef struct {
 
 // 脉冲数据结构体 
 typedef struct {
-	u32 plusNum[AXIS_NUM];		// 脉冲数
-	u32 clk[AXIS_NUM];				// 频率：决定了运动速度
-	u8 dir[AXIS_NUM];					// 电机运动方向
+	u32 				plusNum[AXIS_NUM];				// 脉冲数
+	u32 				clk[AXIS_NUM];						// 频率：决定了运动速度
+	u8				 	dir[AXIS_NUM];						// 电机运动方向
 } Plus_Data;
 
 // 命令数据结构体的初始化
@@ -41,19 +50,28 @@ void comData_Init(void);
 void procDataStep(void);
 
 // 处理对应区间上的缓冲区数据
-static BufData_Status bufData_Proc_Region(PosCur posCur);
+static IfOK_Status bufData_Proc_Region(PosCur posCur);
 
 // proc结构体指向对应数据结构体
 static void proc_pt_motionData(void* _data);
 
 // 检查从缓冲区读取的数据是否合格
-static BufData_Status bufData_Proc(void);
+static IfOK_Status bufData_Proc(void);
 
 // 得到命令设定的数据长度
 static u16 getSetDataSize(PosCur posCur);
 
+// 得到命令设定的脉冲数 shift：偏移量 0-4 对应5轴
+static u32 getSetDataPlusNum(PosCur posCur, u8 shift);
+
+// 得到命令设定的频率 shift：偏移量 0-4 对应5轴
+static u32 getSetDataClk(PosCur posCur, u8 shift);
+
+// 得到命令设定的方向 shift：偏移量 0-4 对应5轴
+static u8 getSetDataDir(PosCur posCur, u8 shift);
+
 // 检查OK后，设定命令数据的结构体
-static BufData_Status setCmdData(PosCur posCur);
+static IfOK_Status setCmdData(PosCur posCur);
 
 // 设置回复字符串的格式
 void setRespStr(u8 resStr[], u16 length);

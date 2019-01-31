@@ -31,14 +31,21 @@ typedef struct {
 	
 } GPIO_Structure_XX;
 
+//// PWM结构体
+//typedef struct {
+//	TIM_TypeDef* 				TIM_N; 							// 定时器
+//	uint16_t 						TIM_Channel_N; 			// 对应的通道
+//	GPIO_Structure_XX*	GPIO_PWM_N;	 				// 指向的GPIO口		
+//} PWM_Structure_XX;
+
 // 获得GPIO的pin脚
 // #define GPIO_Pin_N(GPIO_Pin) 		GPIO_Pin_9
 
 // 根据字符串构造初始化的GPIO结构体
-void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp);
+ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp);
 
 // 构造TIM的结构体
-void TIM_Structure_Init(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure);
+ErrorStatus TIM_Structure_Make(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure);
 
 
 #endif

@@ -17,39 +17,44 @@
 /* 限位 IO口 */
 #define 	X_P_LIMIT 			"PE2"					// X+限位
 #define 	X_N_LIMIT 			"PE3"					// X-限位 兼用为X零位
-#define 	Y_P_LIMIT 			"PF2"					// Y+限位
-#define 	Y_N_LIMIT 			"PF2"					// Y-限位 兼用为Y零位
-#define 	Z_P_LIMIT 			"PF2"					// Z+限位
-#define 	Z_N_LIMIT 			"PF2"					// Z-限位 兼用为Z零位
-#define 	A_LIMIT 				"PF2"					// A零位
-#define 	B_LIMIT 				"PF2"					// B零位
+#define 	Y_P_LIMIT 			"PA11"					// Y+限位
+#define 	Y_N_LIMIT 			"PA11"					// Y-限位 兼用为Y零位
+#define 	Z_P_LIMIT 			"PA11"					// Z+限位
+#define 	Z_N_LIMIT 			"PA11"					// Z-限位 兼用为Z零位
+#define 	A_LIMIT 				"PA11"					// A零位
+#define 	B_LIMIT 				"PA11"					// B零位
 
 /******* 中断IO口  注意：如PA11只能连接到中断线11 ***********/
-/* 电机的PWM波  中断及输出IO口  */
-#define 	EXTI_X_PLUS			"PA11" 				// 接收PWM的中断IO口
-#define 	PWM_X_EXTI			"PA11"				// 输出PWM到中断的IO口
-#define 	PWM_X_OUT				"PA11"  			// 输出PWM到电机的IO口
+/* 步进电机的相关IO口  方向、中断及输出IO口 注：PWM的IO口不能随便选择！ */
+#define 	EXTI_X_PLUS			"PC4" 		/* 中断线4 */				// 接收PWM的中断IO口
+#define 	PWM_X_EXTI			"PA7"			/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
+#define 	PWM_X_OUT				"PA6"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		
+#define 	DIR_X						"PA4" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Y_PLUS			"PA11"
-#define 	PWM_Y_EXTI			"PA11"				// 输出PWM到中断的IO口
-#define 	PWM_Y_OUT				"PA11"  			// 输出PWM到电机的IO口
+#define 	EXTI_Y_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_Y_EXTI			"XXX"		/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
+#define 	PWM_Y_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	DIR_Y						"XXX" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Z_PLUS			"PA11"
-#define 	PWM_Z_EXTI			"PA11"				// 输出PWM到中断的IO口
-#define 	PWM_Z_OUT				"PA11"  			// 输出PWM到电机的IO口
+#define 	EXTI_Z_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_Z_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
+#define 	PWM_Z_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	DIR_Z						"XXX" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_A_PLUS			"PA11"
-#define 	PWM_A_EXTI			"PA11"				// 输出PWM到中断的IO口
-#define 	PWM_A_OUT				"PA11"  			// 输出PWM到电机的IO口
+#define 	EXTI_A_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_A_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
+#define 	PWM_A_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	DIR_A						"XXX" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_B_PLUS			"PA11"
-#define 	PWM_B_EXTI			"PA11"				// 输出PWM到中断的IO口
-#define 	PWM_B_OUT				"PA11"  			// 输出PWM到电机的IO口
+#define 	EXTI_B_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_B_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
+#define 	PWM_B_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	DIR_B						"XXX" 		/*          */ 			// 电机运动方向
 
 
 
 // 测试按钮中断 可以删除
-#define 	_KEY1 						"PE4" 		// 按下后拉高
+#define 	_KEY1 						"XXX" 		// 按下后拉高
 //#define 	_KEY1 						"PE3" 		// 按下后拉低
 
 

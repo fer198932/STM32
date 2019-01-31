@@ -11,7 +11,8 @@ void LED_Init(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
 	GPIO_Structure_XX GPIO_led;
-	GPIO_Structure_Init(GPIO_LED, &GPIO_led);
+	if(!GPIO_Structure_Make(GPIO_LED, &GPIO_led))
+		return;
 	
 	RCC_AHB1PeriphClockCmd(GPIO_led.RCC_Periph_N,ENABLE); //使能GPIOD的时钟
 	

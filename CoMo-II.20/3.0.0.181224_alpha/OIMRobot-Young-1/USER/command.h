@@ -8,7 +8,8 @@
 // 自检程序
 void selfCheckFunc(void);
 
-
+// 运动数据处理程序
+void motionDataProc(void);
 
 
 

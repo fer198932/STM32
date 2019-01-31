@@ -5,7 +5,7 @@
 *                                 (c) Copyright 2018, DOYO JONO, CQ
 *                                          All Rights Reserved
 *
-*                                            STM32F407ZG
+*                                            STM32F407ZG （仅限该芯片！！）
 *                                              
 * File : Main.C
 * By  : Young
@@ -34,11 +34,36 @@ int main(void)
 	Sys_Enable();	// 系统使能函数
 	
   while(1){
-		procLimit();							// 循环扫描是否有限位发生
-		checkBuffer();						// 检查BUFFER是否需要重置
+		/* 循环扫描是否有限位发生  */
+		procLimit();		
+
+		/*  检查BUFFER是否需要重置 */
+		checkBuffer();						
+		
+		/* 如果发生了串口的DMA溢出，重新初始化 */
+		if(ERROR == USARTRx_DMAOut_Flag) 
+		{
+			DMA_USART_Init();
+			USARTRx_DMAOut_Flag = SUCCESS;
+		}
+		
+		/* 根据串口发送的命令进行处理  */
+		if(IS_OK == USARTRx_IfOK_Flag) 		
+		{
+			procDataStep();		
+			USARTRx_IfOK_Flag = NOT_OK; 		// 指令处理完后重新处理下一条指令
+		}
+		
+		
+		
+		// 换向测试
+//		if(t%2)
+//			XAxisDir_Pos;
+//		else
+//			XAxisDir_Neg;
 		
 //    printf("t:%d\r\n",t);
-		delay_ms(500);
+//		delay_ms(500);
 		t++;
 		
 //		TIM_Cmd(TIM7, ENABLE);
@@ -55,7 +80,7 @@ int main(void)
 }
 
 
-// 系统初始化函数
+// 系统初始化函数 （初始化函数尽量只调用一次，因为野指针的存在可能导致系统问题）
 void Sys_Init(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);					// 中断分组配置
@@ -69,6 +94,7 @@ void Sys_Init(void)
 	Timer_Init();	
 	PWM_Init();
 	EXTI_Config_Init();				// 中断IO口初始化 中断最后初始化
+	StepMotor_Init();				// 步进电机方向IO口初始化
 }
 
 // 系统各外设使能函数，如LED使能、中断使能等
@@ -88,7 +114,8 @@ void Sys_Enable(void)
 	TIM_Cmd(TIM7, ENABLE);
 	
 	/* 使能pwm， 测试用，可删除  */
-	PWM_Cmd(X_PWM, ENABLE, X_CH1_EXTI);
+	PWM_Cmd(X_PWM, ENABLE, X_CH_EXTI);
+	PWM_Cmd(X_PWM, ENABLE, X_CH_OUT);
 }
 
 

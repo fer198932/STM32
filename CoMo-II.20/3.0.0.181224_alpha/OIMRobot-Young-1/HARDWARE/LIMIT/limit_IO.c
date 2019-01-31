@@ -5,6 +5,8 @@
 
 static const u16 length = 9;
 
+// static ErrorStatus limit_Status[8]; 				// 判断各个限位IO口是否初始化
+
 static u8 backResString[length]; 						// 回复的字符串
 
 static u32 keyValue = 0;
@@ -230,7 +232,8 @@ static void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[])
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	GPIO_Structure_Init(str, GPIO_Temp);
+	if(!GPIO_Structure_Make(str, GPIO_Temp))
+		return;
 	
 	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);		// 使能时钟
 	

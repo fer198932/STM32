@@ -12,20 +12,20 @@ static  	GPIO_Structure_XX 		GPIO_PWM_Plus[AXIS_NUM];
 void PWM_Init(void)
 {
 	/*  各轴PWM初始化  */
-	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH1_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH2_OUT);
+	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH_EXTI);
+	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH_OUT);
 	
-	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH1_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH2_OUT);
+	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH_EXTI);
+	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH_OUT);
 	
-	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH1_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH2_OUT);
+	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH_EXTI);
+	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH_OUT);
 	
-	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH1_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH2_OUT);
+	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH_EXTI);
+	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH_OUT);
 	
-	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH1_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH2_OUT);
+	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH_EXTI);
+	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH_OUT);
 	
 	
 }
@@ -57,7 +57,7 @@ static void Tim_PWM_Init(GPIO_Structure_XX *GPIO_Temp, TIM_TypeDef* TIM_N, const
 	Set_PWM_Channel(TIM_N, &TIM_OCInitStructure, ch1, (arr>>1));
 	
 	// 关闭PWM，并强制拉高
-	PWM_Cmd(TIM_N, DISABLE, ch1);
+	PWM_Cmd(TIM_N, DISABLE, ch1);	
 }
 
 // 定时器输出PIN脚初始化
@@ -66,7 +66,8 @@ static void GPIO_PWM_Init(GPIO_Structure_XX *GPIO_Temp, const char Pin_PWM_str[]
 	GPIO_InitTypeDef 		GPIO_InitStructure;
 	
 	// GPIO结构体构造
-	GPIO_Structure_Init(Pin_PWM_str, GPIO_Temp);	
+	if(!GPIO_Structure_Make(Pin_PWM_str, GPIO_Temp))
+		return;	
 	
 	// 使能时钟
 	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);
@@ -137,7 +138,7 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 {
 	if(ENABLE == state) 		// 开启
 	{
-		PWM_Forced2High(TIM_N, state, ch);
+		PWM_Forced2High(TIM_N, DISABLE, ch);
 		delay_us(5);
 		TIM_Cmd(TIM_N, ENABLE);
 	}		
@@ -145,7 +146,7 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 	{
 		TIM_Cmd(TIM_N, DISABLE);  							// 关闭TIM
 		delay_us(5);
-		PWM_Forced2High(TIM_N, state, ch);  		// 强制拉高
+		PWM_Forced2High(TIM_N, ENABLE, ch);  		// 强制拉高
 	}
 }
 

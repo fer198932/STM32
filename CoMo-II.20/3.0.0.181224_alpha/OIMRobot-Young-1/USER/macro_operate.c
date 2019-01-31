@@ -6,12 +6,12 @@
 extern void respMsgError(const char str[], u8 status);
 
 // 根据字符串构造初始化的GPIO结构体
-void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
+ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp)
 {	
 	if('P' != str[0])
 	{
 		respMsgError("构造GPIO错误\r\n", 1);
-		return;
+		return ERROR;
 	}
 	
 	switch(str[1])
@@ -28,6 +28,12 @@ void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
 			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOB;
 			break;
 		
+		case 'C':
+			GPIO_Temp->GPIO_Port = GPIOC;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOC;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOC;
+			break;
+		
 		case 'E':
 			GPIO_Temp->GPIO_Port = GPIOE;
 			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOE;
@@ -42,7 +48,7 @@ void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
 		
 		default:
 			respMsgError("构造GPIO错误\r\n", 1);
-			break;
+			return ERROR;
 		
 	}
 	
@@ -87,8 +93,7 @@ void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
 					
 					default:
 						respMsgError("构造GPIO错误\r\n", 1);
-						break;
-					
+						return ERROR;					
 				}				
 			}
 			break;
@@ -124,6 +129,22 @@ void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
 			GPIO_Temp->EXTI_Line_N = EXTI_Line5;
 			GPIO_Temp->NVIC_IRQ_N = EXTI9_5_IRQn;
 			break;
+		
+		case '6':
+			GPIO_Temp->GPIO_Pin_N = GPIO_Pin_6;
+			GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource6;
+			GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource6;
+			GPIO_Temp->EXTI_Line_N = EXTI_Line6;
+			GPIO_Temp->NVIC_IRQ_N = EXTI9_5_IRQn;
+			break;
+		
+		case '7':
+			GPIO_Temp->GPIO_Pin_N = GPIO_Pin_7;
+			GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource7;
+			GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource7;
+			GPIO_Temp->EXTI_Line_N = EXTI_Line7;
+			GPIO_Temp->NVIC_IRQ_N = EXTI9_5_IRQn;
+			break;
 			
 		case '9':
 			GPIO_Temp->GPIO_Pin_N = GPIO_Pin_9;
@@ -135,12 +156,13 @@ void GPIO_Structure_Init(const char str[], GPIO_Structure_XX *GPIO_Temp)
 		
 		default:
 			respMsgError("构造GPIO错误\r\n", 1);
-			break;		
+			return ERROR;		
 	}
+	return SUCCESS;
 }
 
 // 构造TIM的结构体
-void TIM_Structure_Init(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure)
+ErrorStatus TIM_Structure_Make(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure)
 {
 	// 映射
 	TIM_Structure->AF_TypeDef = TIM_N;
@@ -189,6 +211,18 @@ void TIM_Structure_Init(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure)
 //			TIM_Structure->GPIO_AF = GPIO_AF_TIM7; 									// 复用功能
 			break;
 		
+		case (u32)TIM9:
+			TIM_Structure->RCC_Periph_N = RCC_APB2Periph_TIM9;			// 时钟线
+//			TIM_Structure->IRQ_Channel_N = TIM9_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM9; 									// 复用功能
+			break;
+		
+		case (u32)TIM11:
+			TIM_Structure->RCC_Periph_N = RCC_APB2Periph_TIM11;					// 时钟线
+	//		TIM_Structure->IRQ_Channel_N = TIM11_IRQn;								// 中断服务程序
+			TIM_Structure->GPIO_AF = GPIO_AF_TIM11; 									// 复用功能
+			break;
+		
 		case (u32)TIM12:
 			TIM_Structure->RCC_Periph_N = RCC_APB1Periph_TIM12;			// 时钟线
 //			TIM_Structure->IRQ_Channel_N = TIM12_IRQn;								// 中断服务程序
@@ -203,9 +237,32 @@ void TIM_Structure_Init(TIM_TypeDef* TIM_N, AF_Structure_XX *TIM_Structure)
 		
 		default:
 			respMsgError("TIM设置错误！\r\n", 1);
-			break;
+			return ERROR;
 	}
+	return SUCCESS;
 }
+
+// 构造PWM的结构体
+//void PWM_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp, 
+//	PWM_Structure_XX* PWM_Temp)
+//{
+//	// 映射
+//	PWM_Temp->GPIO_PWM_N = GPIO_Temp;
+//	
+//	GPIO_Structure_Make(str, GPIO_Temp);
+//	
+//	switch(str[1])
+//	{
+//		case 'A':
+//			
+//			break;
+//		
+//		default:
+//			respMsgError("构造GPIO错误\r\n", 1);
+//			break;
+//		
+//	}
+//}
 
 
 

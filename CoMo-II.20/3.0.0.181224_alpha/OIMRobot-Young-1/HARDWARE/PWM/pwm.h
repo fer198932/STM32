@@ -9,24 +9,24 @@
 
 /*  TIM 定义  */
 #define 		X_PWM  			TIM3
-#define 		X_CH1_EXTI	1 					// 对应通道 PWM_X_EXTI
-#define 		X_CH2_OUT		2 					// 对应通道 PWM_X_OUT
+#define 		X_CH_EXTI		2 					// 对应通道 PWM_X_EXTI
+#define 		X_CH_OUT		1 					// 对应通道 PWM_X_OUT
 
 #define 		Y_PWM  			TIM2
-#define 		Y_CH1_EXTI	1
-#define 		Y_CH2_OUT		4
+#define 		Y_CH_EXTI		1
+#define 		Y_CH_OUT		4
 
 #define 		Z_PWM  			TIM4
-#define 		Z_CH1_EXTI 	3
-#define 		Z_CH2_OUT		4
+#define 		Z_CH_EXTI 	3
+#define 		Z_CH_OUT		4
 
 #define 		A_PWM  			TIM9
-#define 		A_CH1_EXTI	1
-#define 		A_CH2_OUT		2
+#define 		A_CH_EXTI		1
+#define 		A_CH_OUT		2
 
 #define 		B_PWM  			TIM12
-#define 		B_CH1_EXTI	1
-#define 		B_CH2_OUT		2
+#define 		B_CH_EXTI		1
+#define 		B_CH_OUT		2
 
 // PWM初始化函数
 void PWM_Init(void);

@@ -3,6 +3,15 @@
 ********************************************************************************************************/
 #include "ComDataProc.h"
 
+// 串口接收一帧数据完成的标志
+volatile 	IfOK_Status 	USARTRx_IfOK_Flag 	= 	NOT_OK;
+
+// 串口DMA数据溢出的标志
+volatile 	ErrorStatus 	USARTRx_DMAOut_Flag 	= 	SUCCESS;
+
+// 数据是否处理完毕
+// volatile IfOK_Status 	DataPro_IsOK_Flag = IS_OK;
+
 Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
 Plus_Data plus_Data;		// 脉冲数据，控制电机运动
 
@@ -17,6 +26,8 @@ void comData_Init(void)
 // 从缓冲区得到数据并进行处理、启动相关电机的程序
 void procDataStep(void)
 {
+//	DataPro_IsOK_Flag = NOT_OK;		// 锁定标志位进行数据处理
+	
 	if(IS_OK == bufData_Proc())
 	{
 		switch(proc_Data.cmd_Type)
@@ -28,7 +39,7 @@ void procDataStep(void)
 				
 				break;
 			case 0x0D:
-				
+				motionDataProc();
 				break;
 			case 0x0E:
 				
@@ -42,10 +53,12 @@ void procDataStep(void)
 	{
 		respMsgError("命令数据解析有误或为空！\r\n", 1);
 	}
+	
+//	DataPro_IsOK_Flag = IS_OK; 		// 处理完一条指令后再打开处理下一条
 }
 
 // 检查从缓冲区读取的数据是否合格
-static BufData_Status bufData_Proc(void)
+static IfOK_Status bufData_Proc(void)
 {
 	PosCur posCur;				// 位置游标
 	posCur.start = buffer_Rec.start;
@@ -94,7 +107,7 @@ static BufData_Status bufData_Proc(void)
 }
 
 // 处理对应区间上的缓冲区数据
-static BufData_Status bufData_Proc_Region(PosCur posCur)
+static IfOK_Status bufData_Proc_Region(PosCur posCur)
 {
 	u16 dataSize;
 	if(posCur.start <  posCur.end) 					// 缓冲区正序
@@ -141,18 +154,44 @@ static u16 getSetDataSize(PosCur posCur)
 	return ((buffer_Rec.data[posCur.start+2]<<8) + (buffer_Rec.data[posCur.start+1]<<0));
 }
 
+// 得到命令设定的脉冲数 shift：偏移量 0-4 对应5轴
+static u32 getSetDataPlusNum(PosCur posCur, u8 shift)
+{
+	shift *= 6;
+	return ((buffer_Rec.data[posCur.start+7+shift]<<16) + 
+		(buffer_Rec.data[posCur.start+6+shift]<<8) + 
+		(buffer_Rec.data[posCur.start+5+shift]<<0));
+}
+
+// 得到命令设定的频率 shift：偏移量 0-4 对应5轴
+static u32 getSetDataClk(PosCur posCur, u8 shift)
+{
+	shift *= 6;
+	return (((buffer_Rec.data[posCur.start+10+shift]<<16)&0x7F) + 
+		(buffer_Rec.data[posCur.start+9+shift]<<8) + 
+		(buffer_Rec.data[posCur.start+8+shift]<<0));
+}
+
+// 得到命令设定的方向 shift：偏移量 0-4 对应5轴
+static u8 getSetDataDir(PosCur posCur, u8 shift)
+{
+	shift *= 6;
+	return 	(buffer_Rec.data[posCur.start+10+shift]>>7);
+}
+
 // 检查OK后，设定命令数据的结构体
-static BufData_Status setCmdData(PosCur posCur)
+static IfOK_Status setCmdData(PosCur posCur)
 {
 	buffer_Rec.start = (++posCur.end);			// 截掉已经处理的数据段
 	
 	if(posCur.start <  posCur.end) 					// 缓冲区正序
 	{
 		proc_Data.cmd_Type = buffer_Rec.data[posCur.start];
+		
 		switch(proc_Data.cmd_Type)
 		{
 			case 0x0B: 			// 自检
-				proc_Data.cmd_Excute = buffer_Rec.data[posCur.start+3]; 
+				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + buffer_Rec.data[posCur.start+3]; 
 				proc_Data.resp_Excute = proc_Data.cmd_Excute;
 				return IS_OK;
 //				break;
@@ -161,6 +200,34 @@ static BufData_Status setCmdData(PosCur posCur)
 				return IS_OK;
 //				break;
 			case 0x0D: 			// 数据
+				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + (buffer_Rec.data[posCur.start+3]<<0);
+				proc_Data.resp_Excute = proc_Data.cmd_Excute;
+				
+				/* 脉冲数据 */
+				// X轴
+				plus_Data.plusNum[0] = getSetDataPlusNum(posCur, 0);
+				plus_Data.clk[0] = getSetDataClk(posCur, 0);
+				plus_Data.dir[0] = getSetDataDir(posCur, 0);
+				
+				// Y轴
+				plus_Data.plusNum[1] = getSetDataPlusNum(posCur, 1);
+				plus_Data.clk[1] = getSetDataClk(posCur, 1);
+				plus_Data.dir[1] = getSetDataDir(posCur, 1);
+			
+				// Z轴
+				plus_Data.plusNum[2] = getSetDataPlusNum(posCur, 2);
+				plus_Data.clk[2] = getSetDataClk(posCur, 2);
+				plus_Data.dir[2] = getSetDataDir(posCur, 2);
+				
+				// A轴
+				plus_Data.plusNum[3] = getSetDataPlusNum(posCur, 3);
+				plus_Data.clk[3] = getSetDataClk(posCur, 3);
+				plus_Data.dir[3] = getSetDataDir(posCur, 3);
+				
+				// B轴
+				plus_Data.plusNum[4] = getSetDataPlusNum(posCur, 4);
+				plus_Data.clk[4] = getSetDataClk(posCur, 4);
+				plus_Data.dir[4] = getSetDataDir(posCur, 4);
 				
 				return IS_OK;
 //				break;

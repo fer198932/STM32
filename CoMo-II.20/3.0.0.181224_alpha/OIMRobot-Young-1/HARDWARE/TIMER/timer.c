@@ -33,7 +33,8 @@ void Tim_Base_Init(TIM_TypeDef* TIM_N, u16 arr, u16 psc, FunctionalState Enable_
 	NVIC_InitTypeDef 					NVIC_InitStructure;
 	
 	// 构造TIM结构体
-	TIM_Structure_Init(TIM_N, TIM_AF_Structure);
+	if(!TIM_Structure_Make(TIM_N, TIM_AF_Structure))
+		return;
 	
 	// 使能时钟
 	if((u32)TIM1 > (u32)TIM_N) 			// 时钟线 TIM2、3、4、5、6、7、12、13、14
@@ -45,7 +46,7 @@ void Tim_Base_Init(TIM_TypeDef* TIM_N, u16 arr, u16 psc, FunctionalState Enable_
 	TIM_TimeBaseInitStructure.TIM_Period = arr-1;													// 重装载值
 	TIM_TimeBaseInitStructure.TIM_Prescaler = psc-1;											// 预分频系数
 	TIM_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up; 		// 向上计数模式
-	TIM_TimeBaseInitStructure.TIM_ClockDivision=TIM_CKD_DIV1; 					
+	TIM_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1; 					
 	
 	TIM_TimeBaseInit(TIM_N, &TIM_TimeBaseInitStructure);
 	
