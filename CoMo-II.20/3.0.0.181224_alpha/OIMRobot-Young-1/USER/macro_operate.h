@@ -3,6 +3,9 @@
 #include "sys.h"
 /* 宏操作函数 */
 
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+
 // 复用功能结构体
 typedef struct {
 	uint32_t RCC_Periph_N;  							// 时钟线 如：RCC_APB1Periph_USART3 

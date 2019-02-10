@@ -82,7 +82,7 @@ int main(void)
 //		delay_ms(500);
 		t++;
 		
-//		TIM_Cmd(TIM7, ENABLE);
+//		TIM_Cmd(ADDSUB_TIMER, ENABLE);
 //		if(X_P_Lim())
 //			printf("没有限位\r\n");
 //		else
@@ -127,7 +127,7 @@ void Sys_Enable(void)
 	EXTI_Enable();
 	
 	/* 使能加减速时钟， 测试用，可删除  */
-//	TIM_Cmd(TIM7, ENABLE);
+//	TIM_Cmd(ADDSUB_TIMER, ENABLE);
 	
 	/* 使能pwm， 测试用，可删除  */
 //	PWM_Cmd(X_PWM, ENABLE, X_CH_EXTI);

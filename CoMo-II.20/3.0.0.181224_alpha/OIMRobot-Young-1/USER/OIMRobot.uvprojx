@@ -438,6 +438,11 @@
               <FileType>1</FileType>
               <FilePath>.\command.c</FilePath>
             </File>
+            <File>
+              <FileName>AddSubSpeed_L.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\AddSubSpeed_L.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
