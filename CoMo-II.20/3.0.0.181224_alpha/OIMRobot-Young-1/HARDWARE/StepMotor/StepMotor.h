@@ -30,6 +30,9 @@
 
 // 运动或停止 寄存器方式，提高效率
 // #define 	nAxis_StepMotor_Start(TIM_N) 			((TIM_N)->CR1 |= TIM_CR1_CEN)
+
+#define 	nAxis_Motion_Flag 	(nAxisStatus[0] | nAxisStatus[1] | nAxisStatus[2] | nAxisStatus[3] | nAxisStatus[4])
+
 #define	nAxis_StepMotor_Start(n) 	\
 do \
 {	\

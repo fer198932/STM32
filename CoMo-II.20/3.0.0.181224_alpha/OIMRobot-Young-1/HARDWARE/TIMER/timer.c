@@ -5,10 +5,19 @@
 #include "timer.h"
 
 
+extern 	PSC_Data_Array				Psc_Data_Cur[AXIS_NUM];							// 存储PSC值的结构体数组
+extern 	NAxis_TIM_Structure		nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
+extern 	AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];		// 加减速状态标记
+
+
+// 记录加减速定时器运行的步数
+u16 addSubSpeed_StepNum[AXIS_NUM] = {0, 0, 0, 0, 0};
+
+
 // 定时器中断服务函数
 void TIM7_IRQHandler(void)						
 {
-	static u32 temp = 0; // 测试用，可删除
+//	static u32 temp = 0; // 测试用，可删除
 	if(TIM_GetITStatus(TIM7,TIM_IT_Update)==SET) 		// 溢出中断
 	{
 		TIM_ClearITPendingBit(TIM7,TIM_IT_Update);			// 清除中断标志位
@@ -65,7 +74,41 @@ void Tim_Base_Init(TIM_TypeDef* TIM_N, u16 arr, u16 psc, FunctionalState Enable_
 	TIM_Cmd(TIM_N, DISABLE);
 }
 
-
+// 加减速定时器的中断服务程序
+static void addSubTime_IRQ_MARCO(void)
+{
+	u8 i;
+	
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		/* 步数递增超出范围，不进行动作  */
+		if((ADD_SPEED == addSubSpeed_Status[i]) && 
+			(addSubSpeed_StepNum[i] >=  (int)Psc_Data_Cur[i].length))
+		{
+			addSubSpeed_Status[i] = CONST_SPEED; 			// 匀速阶段
+			continue;
+		}
+		
+		/* 该轴未开启加减速 */
+		if(DISABLE == Psc_Data_Cur[i].enAddSubFlag) 
+			continue;
+		
+		/* 加速阶段  */
+		if(ADD_SPEED == addSubSpeed_Status[i])
+		{
+			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+				Psc_Data_Cur[i].psc_data[addSubSpeed_StepNum[i]++]); 		
+			continue;
+		}
+		
+		/* 减速阶段  */
+		if(SUB_SPEED == addSubSpeed_Status[i])
+		{			
+			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+				Psc_Data_Cur[i].psc_data[--addSubSpeed_StepNum[i]]);
+		}
+	}
+}
 
 
 

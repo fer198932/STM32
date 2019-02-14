@@ -12,7 +12,7 @@ extern Plus_Data plus_Data;			// 脉冲数据，控制电机运动
 Proc_Data cmd_Proc_Data; 				// 命令数据，有成员指向plus_Data
 Plus_Data cmd_Plus_Data;				// 脉冲数据，控制电机运动
 
-extern volatile FunctionalState	 nAxisStatus[AXIS_NUM];  		// 各轴是否可以运动 
+extern FunctionalState	 nAxisStatus[AXIS_NUM];  		// 各轴是否可以运动的标志
 
 
 // 执行命令
@@ -91,15 +91,16 @@ void selfCheckFunc(void)
 
 // 运动数据处理程序
 void motionDataProc(void)
-{
-	u8 i;
-	// 各轴状态初始化 都不许动
-	for(i=0; i<AXIS_NUM; i++)
-		nAxisStatus[i] = DISABLE;
+{	
+	// 运动状态初始化
+	AddSubSpeed_Init();
 	
 	// 步进电机同时开始运动
 	StepMotor_Start();
 	
+	// 加减速定时器开启
+	ADDSUB_TIMER->CNT = 0;
+	TIM_Cmd(ADDSUB_TIMER, ENABLE);
 }
 
 

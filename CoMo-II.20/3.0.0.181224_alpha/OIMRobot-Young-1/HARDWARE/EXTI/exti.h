@@ -44,17 +44,15 @@ void EXTI_Enable(void);
 #define EXTI_IRQ_PWM(n, TIM_N, nAxis)  			\
 do 		\
 { \
-	pluNumPWM[n]++; 			\
-	if(pluNumPWM[n] > cmd_Plus_Data.plusNum[n])  	\
-	{ \
-		nAxis_StepMotor_Stop(nAxis); 				\
-		nAxisStatus[n] = ENABLE; /* 该轴可运动 */		\
-		pluNumPWM[n] = 0; 		\
-		respUsartMsg("PWM_EXTI\r\n", 10);		\
-	} \
+	\
 } while(0)
 
 
+// 测试用的中断服务程序
+static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out);
+
+// 测试用的各轴停止函数
+static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out);
 
 
 

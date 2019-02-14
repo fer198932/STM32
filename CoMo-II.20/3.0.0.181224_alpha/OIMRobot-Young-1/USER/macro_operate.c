@@ -145,6 +145,14 @@ ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp)
 			GPIO_Temp->EXTI_Line_N = EXTI_Line7;
 			GPIO_Temp->NVIC_IRQ_N = EXTI9_5_IRQn;
 			break;
+		
+		case '8':
+			GPIO_Temp->GPIO_Pin_N = GPIO_Pin_8;
+			GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource8;
+			GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource8;
+			GPIO_Temp->EXTI_Line_N = EXTI_Line8;
+			GPIO_Temp->NVIC_IRQ_N = EXTI9_5_IRQn;
+			break;
 			
 		case '9':
 			GPIO_Temp->GPIO_Pin_N = GPIO_Pin_9;

@@ -5,48 +5,117 @@
 #include "pwm.h"
 
 /* PWM 初始化的结构体  */
-static  	GPIO_Structure_XX 		GPIO_PWM_Plus[AXIS_NUM];
-// static 		AF_Structure_XX 			AF_PWM_Plus[AXIS_NUM];
+NAxis_TIM_Structure 				nAxis_TIM_Structure[AXIS_NUM];
 
 // PWM初始化函数
 void PWM_Init(void)
 {
-	/*  各轴PWM初始化  */
-	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+0, X_PWM, PWM_X_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, X_CH_OUT);
-	
-	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+1, Y_PWM, PWM_Y_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Y_CH_OUT);
-	
-	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+2, Z_PWM, PWM_Z_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, Z_CH_OUT);
-	
-	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+3, A_PWM, PWM_A_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, A_CH_OUT);
-	
-	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_EXTI, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH_EXTI);
-	Tim_PWM_Init(GPIO_PWM_Plus+4, B_PWM, PWM_B_OUT, 0x04, 0x04, TIM_ARR, TIM_PSC, B_CH_OUT);
-	
-	
+	u8 i;
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		/*  构建PIN脚与TIM之间的映射关系  */
+		nAxis2TIM(i, &nAxis_TIM_Structure[i]);
+		
+		/*  各轴PWM初始化  */
+		Tim_PWM_Init(&nAxis_TIM_Structure[i], 0x04, 0x04, TIM_ARR, TIM_PSC, PWM_EXTI);
+//		delay_us(5);
+		Tim_PWM_Init(&nAxis_TIM_Structure[i], 0x04, 0x04, TIM_ARR, TIM_PSC, PWM_OUT);
+//		delay_us(5);
+	}
 }
 
-// 定时器初始化 1、ch1、ch2为PWM输出通道(为0啥都不干) 2、中断优先级无效 可写0x04
-static void Tim_PWM_Init(GPIO_Structure_XX *GPIO_Temp, TIM_TypeDef* TIM_N, const char Pin_PWM_str[], 
-	uint8_t NVIC_IRQPreemptionPriority,	uint8_t NVIC_IRQSubPriority, u16 arr, u16 psc, u8 ch1)
+// 获得指定轴与TIM之间的映射关系
+void nAxis2TIM(u8 nAxis, NAxis_TIM_Structure* 	nAxis_TIM_Structure)
+{
+//	TIM_Temp = TIM_Temp;		// 屏蔽warning 不能屏蔽！
+	switch(nAxis)
+	{
+		case 0: 								// X轴
+			nAxis_TIM_Structure->nAxis = nAxis;
+			nAxis_TIM_Structure->TIM_N = X_PWM;
+			nAxis_TIM_Structure->ch_exti = X_CH_EXTI;
+			nAxis_TIM_Structure->ch_out = X_CH_OUT;
+			if(ERROR == GPIO_Structure_Make(PWM_X_EXTI, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			if(ERROR == GPIO_Structure_Make(PWM_X_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			break;
+		case 1:									// Y轴
+			nAxis_TIM_Structure->nAxis = nAxis;
+			nAxis_TIM_Structure->TIM_N = Y_PWM;
+			nAxis_TIM_Structure->ch_exti = Y_CH_EXTI;
+			nAxis_TIM_Structure->ch_out = Y_CH_OUT;
+			if(ERROR == GPIO_Structure_Make(PWM_Y_EXTI, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			if(ERROR == GPIO_Structure_Make(PWM_Y_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			break;
+		case 2:									// Z轴
+			nAxis_TIM_Structure->nAxis = nAxis;
+			nAxis_TIM_Structure->TIM_N = Z_PWM;
+			nAxis_TIM_Structure->ch_exti = Z_CH_EXTI;
+			nAxis_TIM_Structure->ch_out = Z_CH_OUT;
+			if(ERROR == GPIO_Structure_Make(PWM_Z_EXTI, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			if(ERROR == GPIO_Structure_Make(PWM_Z_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			break;
+		case 3:									// A轴
+			nAxis_TIM_Structure->nAxis = nAxis;
+			nAxis_TIM_Structure->TIM_N = A_PWM;
+			nAxis_TIM_Structure->ch_exti = A_CH_EXTI;
+			nAxis_TIM_Structure->ch_out = A_CH_OUT;
+			if(ERROR == GPIO_Structure_Make(PWM_A_EXTI, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			if(ERROR == GPIO_Structure_Make(PWM_A_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			break;
+		case 4:									// B轴
+			nAxis_TIM_Structure->nAxis = nAxis;
+			nAxis_TIM_Structure->TIM_N = B_PWM;
+			nAxis_TIM_Structure->ch_exti = B_CH_EXTI;
+			nAxis_TIM_Structure->ch_out = B_CH_OUT;
+			if(ERROR == GPIO_Structure_Make(PWM_B_EXTI, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			if(ERROR == GPIO_Structure_Make(PWM_B_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+				nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+			break;
+		default:
+			respMsgError("PWM中设定的轴数过多\r\n", 1);
+	}
+}
+
+
+
+
+// 定时器初始化 1、PWM_ch为PWM输出通道 2、中断优先级无效 可写0x04
+void Tim_PWM_Init(const NAxis_TIM_Structure* 	nAxis_TIM_Structure, uint8_t NVIC_IRQPreemptionPriority, 
+	uint8_t NVIC_IRQSubPriority, u16 arr, u16 psc, PWM_Channel PWM_ch)
 {
 	AF_Structure_XX 		TIM_AF_Structure;
 	TIM_OCInitTypeDef  	TIM_OCInitStructure;
 	
-	// GPIO 初始化
-	GPIO_PWM_Init(GPIO_Temp, Pin_PWM_str); 	
+	// PIN脚设置有误，直接退出初始化
+	if(GPIO_ERROR == nAxis_TIM_Structure->nAxis)
+		return;
 	
 	// 定时器初始化
-	Tim_Base_Init(TIM_N, arr, psc, DISABLE, 
+	Tim_Base_Init(nAxis_TIM_Structure->TIM_N, arr, psc, DISABLE, 
 		NVIC_IRQPreemptionPriority, NVIC_IRQSubPriority, &TIM_AF_Structure);
 	
+	// GPIO 初始化
+	if(PWM_EXTI == PWM_ch)  // EXTI
+		GPIO_PWM_Init(&nAxis_TIM_Structure->GPIO_PWM_EXTI); 
+	else 										// OUT
+		GPIO_PWM_Init(&nAxis_TIM_Structure->GPIO_PWM_OUT); 	
+	
 	// 复用映射
-	GPIO_PinAFConfig(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_PinSource_N, 
-		TIM_AF_Structure.GPIO_AF);
+	if(PWM_EXTI == PWM_ch) 	// EXTI
+		GPIO_PinAFConfig(nAxis_TIM_Structure->GPIO_PWM_EXTI.GPIO_Port, 
+			nAxis_TIM_Structure->GPIO_PWM_EXTI.GPIO_PinSource_N, TIM_AF_Structure.GPIO_AF);
+	else										// OUT
+		GPIO_PinAFConfig(nAxis_TIM_Structure->GPIO_PWM_OUT.GPIO_Port, 
+			nAxis_TIM_Structure->GPIO_PWM_OUT.GPIO_PinSource_N, TIM_AF_Structure.GPIO_AF);
 	
 	// 初始化PWM输出通道
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1; 								// 选择定时器模式:TIM脉冲宽度调制模式2
@@ -54,20 +123,28 @@ static void Tim_PWM_Init(GPIO_Structure_XX *GPIO_Temp, TIM_TypeDef* TIM_N, const
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High; 				// 输出极性 注：默认拉高  byYJY
 	
 	// 设置输出通道
-	Set_PWM_Channel(TIM_N, &TIM_OCInitStructure, ch1, (arr>>1));
+	if(PWM_EXTI == PWM_ch) 	// EXTI
+		Set_PWM_Channel(nAxis_TIM_Structure->TIM_N, &TIM_OCInitStructure, 
+			nAxis_TIM_Structure->ch_exti, (arr>>1));
+	else										// OUT
+		Set_PWM_Channel(nAxis_TIM_Structure->TIM_N, &TIM_OCInitStructure, 
+			nAxis_TIM_Structure->ch_out, (arr>>1));
 	
 	// 关闭PWM，并强制拉高
-	PWM_Cmd(TIM_N, DISABLE, ch1);	
+	if(PWM_EXTI == PWM_ch) 	// EXTI
+		PWM_Cmd(nAxis_TIM_Structure->TIM_N, DISABLE, nAxis_TIM_Structure->ch_exti);	
+	else										// OUT
+		PWM_Cmd(nAxis_TIM_Structure->TIM_N, DISABLE, nAxis_TIM_Structure->ch_out);	
 }
 
 // 定时器输出PIN脚初始化
-static void GPIO_PWM_Init(GPIO_Structure_XX *GPIO_Temp, const char Pin_PWM_str[])
+static void GPIO_PWM_Init(const GPIO_Structure_XX *GPIO_Temp)
 {
 	GPIO_InitTypeDef 		GPIO_InitStructure;
 	
 	// GPIO结构体构造
-	if(!GPIO_Structure_Make(Pin_PWM_str, GPIO_Temp))
-		return;	
+//	if(!GPIO_Structure_Make(Pin_PWM_str, GPIO_Temp))
+//		return;	
 	
 	// 使能时钟
 	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);
@@ -93,7 +170,7 @@ static void Set_PWM_Channel(TIM_TypeDef* TIM_N, TIM_OCInitTypeDef*  TIM_OCInitSt
 		
 		case 1:
 			// 通道1
-			TIM_OC1Init(TIM_N, TIM_OCInitStructure); 				 								// 根据T指定的参数初始化外设
+			TIM_OC1Init(TIM_N, TIM_OCInitStructure); 				 									// 根据T指定的参数初始化外设
 			TIM_OC1PreloadConfig(TIM_N, TIM_OCPreload_Enable); 								// 使能TIM在CCR上的预装载寄存器
 			TIM_ARRPreloadConfig(TIM_N, ENABLE);															// ARPE使能 			
 			// 设定占空比 按50%
@@ -102,7 +179,7 @@ static void Set_PWM_Channel(TIM_TypeDef* TIM_N, TIM_OCInitTypeDef*  TIM_OCInitSt
 		
 		case 2:
 			// 通道2
-			TIM_OC2Init(TIM_N, TIM_OCInitStructure); 				 								// 根据T指定的参数初始化外设
+			TIM_OC2Init(TIM_N, TIM_OCInitStructure); 				 									// 根据T指定的参数初始化外设
 			TIM_OC2PreloadConfig(TIM_N, TIM_OCPreload_Enable); 								// 使能TIM在CCR上的预装载寄存器
 			TIM_ARRPreloadConfig(TIM_N, ENABLE);															// ARPE使能 			
 			// 设定占空比 按50%
@@ -111,7 +188,7 @@ static void Set_PWM_Channel(TIM_TypeDef* TIM_N, TIM_OCInitTypeDef*  TIM_OCInitSt
 		
 		case 3:
 			// 通道3
-			TIM_OC3Init(TIM_N, TIM_OCInitStructure); 				 								// 根据T指定的参数初始化外设
+			TIM_OC3Init(TIM_N, TIM_OCInitStructure); 				 									// 根据T指定的参数初始化外设
 			TIM_OC3PreloadConfig(TIM_N, TIM_OCPreload_Enable); 								// 使能TIM在CCR上的预装载寄存器
 			TIM_ARRPreloadConfig(TIM_N, ENABLE);															// ARPE使能 			
 			// 设定占空比 按50%
@@ -120,7 +197,7 @@ static void Set_PWM_Channel(TIM_TypeDef* TIM_N, TIM_OCInitTypeDef*  TIM_OCInitSt
 		
 		case 4:
 			// 通道4
-			TIM_OC4Init(TIM_N, TIM_OCInitStructure); 				 								// 根据T指定的参数初始化外设
+			TIM_OC4Init(TIM_N, TIM_OCInitStructure); 				 									// 根据T指定的参数初始化外设
 			TIM_OC4PreloadConfig(TIM_N, TIM_OCPreload_Enable); 								// 使能TIM在CCR上的预装载寄存器
 			TIM_ARRPreloadConfig(TIM_N, ENABLE);															// ARPE使能 			
 			// 设定占空比 按50%
@@ -138,8 +215,8 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 {
 	if(ENABLE == state) 		// 开启
 	{
-		PWM_Forced2High(TIM_N, DISABLE, ch);
-		delay_us(5);
+		PWM_Forced2High(TIM_N, DISABLE, ch); 		// 取消强制拉高
+//		delay_us(5);
 		TIM_Cmd(TIM_N, ENABLE);
 	}		
 	else 										// 关闭
@@ -227,9 +304,21 @@ static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 	}	
 }
 
+// 通过CLK频率计算预分频系数 PSC 注意寄存器溢出问题
+u16 calPSC(u32 clk)
+{
+	u16 psc;
+	psc = PSC_CLK / clk;
+	return psc;
+}
 
-
-
+// 通过PSC计算频率， 注意寄存器溢出问题  单位HZ
+u32 calClk_PSC(u16 psc)
+{
+	u32 clk;
+	clk = PSC_CLK / psc;
+	return clk;
+}
 
 
 

@@ -31,24 +31,24 @@
 #define 	PWM_X_OUT				"PA6"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		
 #define 	DIR_X						"PA4" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Y_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
-#define 	PWM_Y_EXTI			"XXX"		/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
-#define 	PWM_Y_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
-#define 	DIR_Y						"XXX" 		/*          */ 			// 电机运动方向
+#define 	EXTI_Y_PLUS			"PA1"			/* 中断线1 */				// 接收PWM的中断IO口
+#define 	PWM_Y_EXTI			"PA3"			/* TIM2_CH4 */			// 输出PWM到中断的IO口   	
+#define 	PWM_Y_OUT				"PA5"  		/* TIM2_CH1 */			// 输出PWM到电机的IO口
+#define 	DIR_Y						"PC3" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Z_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
-#define 	PWM_Z_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
-#define 	PWM_Z_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
-#define 	DIR_Z						"XXX" 		/*          */ 			// 电机运动方向
+#define 	EXTI_Z_PLUS			"PE0"			/* 中断线0 */				// 接收PWM的中断IO口
+#define 	PWM_Z_EXTI			"PB8"			/* TIM4_CH3 */			// 输出PWM到中断的IO口
+#define 	PWM_Z_OUT				"PB9"  		/* TIM4_CH4 */			// 输出PWM到电机的IO口
+#define 	DIR_Z						"PB7" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_A_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
-#define 	PWM_A_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
-#define 	PWM_A_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	EXTI_A_PLUS			"XXX"			/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_A_EXTI			"PE6"			/* TIM3_CH1 */			// 输出PWM到中断的IO口
+#define 	PWM_A_OUT				"XXX"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口
 #define 	DIR_A						"XXX" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_B_PLUS			"XXX"		/* 中断线11 */			// 接收PWM的中断IO口
-#define 	PWM_B_EXTI			"XXX"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
-#define 	PWM_B_OUT				"XXX"  	/* TIM3_CH1 */			// 输出PWM到电机的IO口
+#define 	EXTI_B_PLUS			"XXX"			/* 中断线11 */			// 接收PWM的中断IO口
+#define 	PWM_B_EXTI			"PB14"		/* TIM3_CH1 */			// 输出PWM到中断的IO口
+#define 	PWM_B_OUT				"XXX"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口
 #define 	DIR_B						"XXX" 		/*          */ 			// 电机运动方向
 
 

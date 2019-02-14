@@ -439,9 +439,9 @@
               <FilePath>.\command.c</FilePath>
             </File>
             <File>
-              <FileName>AddSubSpeed_L.c</FileName>
+              <FileName>AddSubSpeed_S.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\AddSubSpeed_L.c</FilePath>
+              <FilePath>.\AddSubSpeed_S.c</FilePath>
             </File>
           </Files>
         </Group>

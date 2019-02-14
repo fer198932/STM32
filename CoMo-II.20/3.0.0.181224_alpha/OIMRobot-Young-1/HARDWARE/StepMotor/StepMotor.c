@@ -11,7 +11,7 @@ extern Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
 extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
 
 // 各轴是否可以运动 
-volatile 	FunctionalState	 nAxisStatus[AXIS_NUM] = {ENABLE, ENABLE, ENABLE, ENABLE, ENABLE};
+FunctionalState	 nAxisStatus[AXIS_NUM] = {DISABLE, DISABLE, DISABLE, DISABLE, DISABLE};
 
 // 电机方向IO口
 GPIO_Structure_XX  	StepMotor_Dir[AXIS_NUM];
@@ -78,7 +78,7 @@ void StepMotor_Start(void)
 	// X轴
 	if((0 == cmd_Plus_Data.plusNum[0]) || (0 == cmd_Plus_Data.clk[0]))
 	{
-		nAxisStatus[0] = ENABLE;
+		nAxisStatus[0] = DISABLE;
 	}
 	else 
 	{
@@ -91,7 +91,7 @@ void StepMotor_Start(void)
 	// Y轴
 	if((0 == cmd_Plus_Data.plusNum[1]) || (0 == cmd_Plus_Data.clk[1]))
 	{
-		nAxisStatus[1] = ENABLE;
+		nAxisStatus[1] = DISABLE;
 	}
 	else 
 	{
@@ -103,7 +103,7 @@ void StepMotor_Start(void)
 	// Z轴
 	if((0 == cmd_Plus_Data.plusNum[2]) || (0 == cmd_Plus_Data.clk[2]))
 	{
-		nAxisStatus[2] = ENABLE;
+		nAxisStatus[2] = DISABLE;
 	}
 	else 
 	{
@@ -115,7 +115,7 @@ void StepMotor_Start(void)
 	// A轴
 	if((0 == cmd_Plus_Data.plusNum[3]) || (0 == cmd_Plus_Data.clk[3]))
 	{
-		nAxisStatus[3] = ENABLE;
+		nAxisStatus[3] = DISABLE;
 	}
 	else 
 	{
@@ -127,7 +127,7 @@ void StepMotor_Start(void)
 	// B轴
 	if((0 == cmd_Plus_Data.plusNum[4]) || (0 == cmd_Plus_Data.clk[4]))
 	{
-		nAxisStatus[4] = ENABLE;
+		nAxisStatus[4] = DISABLE;
 	}
 	else 
 	{

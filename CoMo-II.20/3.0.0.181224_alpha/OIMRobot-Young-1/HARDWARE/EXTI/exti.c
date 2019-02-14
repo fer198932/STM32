@@ -11,15 +11,20 @@ static GPIO_Structure_XX GPIO_EXTI_Plus[AXIS_NUM]; 			// µç»ú·´À¡µÄPWM½ÓÊÕÖÐ¶Ï Ë
 static	GPIO_Structure_XX 	GPIO_Key1;
 #endif	
 
+
 // Ö¸ÁîÖÐÉè¶¨µÄÔË¶¯²ÎÊý
 extern Proc_Data cmd_Proc_Data; 		// ÃüÁîÊý¾Ý£¬ÓÐ³ÉÔ±Ö¸Ïòplus_Data
 extern Plus_Data cmd_Plus_Data;			// Âö³åÊý¾Ý£¬¿ØÖÆµç»úÔË¶¯
 
-// Âö³åÊýµÄÖÐ¶Ï¼ÆÊý
-volatile u32 pluNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
+// ´æ´¢PSCÖµµÄ½á¹¹ÌåÊý×é
+extern PSC_Data_Array	Psc_Data_Cur[AXIS_NUM];
+extern AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];		// ¼Ó¼õËÙ×´Ì¬±ê¼Ç
+extern FunctionalState	 		nAxisStatus[AXIS_NUM];  	// ¸÷ÖáÊÇ·ñ¿ÉÒÔÔË¶¯µÄ±êÖ¾
 
-// ¸÷ÖáÊÇ·ñ¿ÉÒÔÔË¶¯ 
-extern volatile 	FunctionalState	 nAxisStatus[AXIS_NUM];
+
+// Âö³åÊýµÄÖÐ¶Ï¼ÆÊý
+u32 pluNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
+
 
 // Íâ²¿ÖÐ¶Ï³õÊ¼»¯		 	
 void EXTI_Config_Init(void)
@@ -43,7 +48,9 @@ void EXTI0_IRQHandler(void)
 { 	
 	EXTI_ClearITPendingBit(EXTI_Line0);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM(0, X_PWM, X);
+//	EXTI_IRQ_PWM(2, Z_PWM, Z);
+	
+	EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -51,7 +58,9 @@ void EXTI1_IRQHandler(void)
 { 	
 	EXTI_ClearITPendingBit(EXTI_Line1);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM(1, Y_PWM, Y);
+//	EXTI_IRQ_PWM(1, Y_PWM, Y);
+	
+	EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -59,7 +68,7 @@ void EXTI2_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line2);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM(2, Z_PWM, Z);
+//	EXTI_IRQ_PWM(2, Z_PWM, Z);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -67,7 +76,7 @@ void EXTI3_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line3);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM(3, A_PWM, A);
+//	EXTI_IRQ_PWM(3, A_PWM, A);
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -75,13 +84,15 @@ void EXTI4_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line4);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
 	
-	EXTI_IRQ_PWM(0, X_PWM, X);
+	EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+	
+//	EXTI_IRQ_PWM(0, X_PWM, X);
 	
 //	pluNumPWM[0]++; 			\
 //	if(pluNumPWM[0] >= cmd_Plus_Data.plusNum[0])  	\
 //	{ \
 //		nAxis_StepMotor_Stop(X); 				\
-//		nAxisStatus[0] = ENABLE; /* ¸ÃÖá¿ÉÔË¶¯ */		\
+//		nAxisStatus[n] = DISABLE; /* ÔË¶¯½áÊø ¸ÃÖá²»¿ÉÔË¶¯ */			\
 //		pluNumPWM[0] = 0; 		\
 //		respUsartMsg("PWM_EXTI\r\n", 10);		\
 //	} \
@@ -192,6 +203,54 @@ void EXTI_Enable(void)
 	EXTI_Cmd(GPIO_Key1.EXTI_Line_N, ENABLE);	
 	
 //	EXTI_Cmd(EXTI_Line4, ENABLE);
+}
+
+// ²âÊÔÓÃµÄ¸÷ÖáÍ£Ö¹º¯Êý
+static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out)
+{
+	PWM_Cmd(TIM_N, DISABLE, ch_exti); 	
+	PWM_Cmd(TIM_N, DISABLE, ch_out); 	
+}
+
+// ²âÊÔÓÃµÄÖÐ¶Ï·þÎñ³ÌÐò
+static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
+{	
+	pluNumPWM[n]++;
+	
+	/* ½øÈë¼õËÙ½×¶Î */
+	if((SUB_SPEED != addSubSpeed_Status[n]) && 
+		(Psc_Data_Cur[n].addSpeed_NeedPlusNum > (cmd_Plus_Data.plusNum[n] - pluNumPWM[n])))
+	{
+//		ADDSUB_TIMER->CNT = 0;
+		addSubSpeed_Status[n] = SUB_SPEED; 
+	}
+	
+	/*  ÔË¶¯Íê³É ¹Ø±ÕPWM */
+	if(cmd_Plus_Data.plusNum[n] < pluNumPWM[n])
+	{
+		nAxis_StepMotor_Stop_MACRO(TIM_N, ch_exti, ch_out); 		//  ×¢ÒâÕâÀïÓÃºê¶¨Òå
+		
+		nAxisStatus[n] = DISABLE;
+		
+		respUsartMsg("PWM_EXTI\r\n", 10);
+		
+		/* ËùÓÐµÄÖá¶¼Í£Ö¹²ÅÍ£Ö¹ ADDSUB_TIMER  */
+		if(0 == nAxis_Motion_Flag)
+		{
+			TIM_Cmd(ADDSUB_TIMER, DISABLE);
+		}
+	}
+	
+	/* test
+	static u32 temp = 0;
+	
+	temp++;
+	if(100000 == temp) 	// 2ÃëÒ»´Î
+	{	
+		respUsartMsg("PWM_EXTI\r\n", 10);		 
+		temp = 0;
+	}
+	// test */	
 }
 
 

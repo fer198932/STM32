@@ -4,6 +4,7 @@
 #include "sys.h"
 #include "config.h"
 #include "main.h"
+#include "AddSubSpeed_S.h"
 
 // Ö´ÐÐÃüÁî
 void CMD_Execute(void);

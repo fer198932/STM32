@@ -37,6 +37,7 @@ int main(void)
 	
 	u32 t=0;
 	
+	
 	Sys_Init();		// 系统初始化函数
 	Sys_Enable();	// 系统使能函数
 	
@@ -132,6 +133,12 @@ void Sys_Enable(void)
 	/* 使能pwm， 测试用，可删除  */
 //	PWM_Cmd(X_PWM, ENABLE, X_CH_EXTI);
 //	PWM_Cmd(X_PWM, ENABLE, X_CH_OUT);
+//	
+//	PWM_Cmd(Y_PWM, ENABLE, Y_CH_EXTI);
+//	PWM_Cmd(Y_PWM, ENABLE, Y_CH_OUT);
+//	
+//	PWM_Cmd(Z_PWM, ENABLE, Z_CH_EXTI);
+//	PWM_Cmd(Z_PWM, ENABLE, Z_CH_OUT); 
 }
 
 
