@@ -46,12 +46,15 @@ int main(void)
 		procLimit();		
 
 		/*  检查BUFFER是否需要重置 */
-		checkBuffer();						
+		if(RESET == USART_IDLE_Flag)
+			checkBuffer();						
 		
 		/* 如果发生了串口的DMA溢出，重新初始化 */
 		if(SET == DMA_Out_Flag) 
 		{
+			// 这里有问题
 			DMA_USART_Init();
+			buffer_Init();
 			DMA_Out_Flag = RESET;
 		}
 		

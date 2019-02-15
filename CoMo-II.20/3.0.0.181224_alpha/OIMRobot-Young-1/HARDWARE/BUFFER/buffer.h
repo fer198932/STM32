@@ -25,7 +25,7 @@ typedef struct {
 } Buffer;
 
 extern Buffer buffer_Rec; 				// 接收数据的缓冲区
-extern Buffer buffer_Trans;			// 发送数据的缓冲区
+extern Buffer buffer_Trans;				// 发送数据的缓冲区
 
 // buffer的初始化函数 全部初始化为0 不考虑默认初始化情况
 void buffer_Init(void);

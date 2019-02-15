@@ -8,7 +8,9 @@
 #include "command.h"
 #include "buffer.h"
 
+
 typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
+
 
 // 串口接收一帧数据完成的标志
 extern	 volatile 	IfOK_Status 	USARTRx_IfOK_Flag;
@@ -40,7 +42,7 @@ typedef struct {
 typedef struct {
 	u32 				plusNum[AXIS_NUM];				// 脉冲数
 	u32 				clk[AXIS_NUM];						// 频率：决定了运动速度
-	u8				 	dir[AXIS_NUM];						// 电机运动方向
+	Motor_Dir	 	dir[AXIS_NUM];						// 电机运动方向
 } Plus_Data;
 
 // 命令数据结构体的初始化

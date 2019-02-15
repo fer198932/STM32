@@ -24,28 +24,15 @@ static u32 nAxisClk_Cur[AXIS_NUM];
 static u8 maxClkNum = AXIS_NUM;				// 最大频率对应的轴 等于AXIS_NUM表示有误或未设置
 
 
-// 重置相关运动参数
-static void resetMotionData(void)
-{
-	u8 i;
-	mymemset(Psc_Data_Cur, 0, AXIS_NUM * sizeof(PSC_Data_Array));
-	mymemset(nAxisClk_Cur, 0, sizeof(nAxisClk_Cur));
-	maxClk = 0;
-	minClk = 0;
-	maxClkNum = AXIS_NUM;
-	mymemset(pluNumPWM, 0, sizeof(pluNumPWM));
-	for(i=0; i<AXIS_NUM; i++)
-	{
-		addSubSpeed_StepNum[i] = 0;
-		addSubSpeed_Status[i] = ADD_SPEED; 			// 加速状态
-	}	
-}
 
 // 加减速相关参数设置的初始化
 void AddSubSpeed_Init(void)
 {
 	// 重置相关运动参数
 	resetMotionData();
+	
+	// 设定运动方向
+	setStepMotorDir();
 	
 	// 调整频率到合适范围
 	adjustClk();
@@ -74,6 +61,33 @@ static void	nAxisMotion_Init(void)
 		nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, calPSC(nAxisClk_Cur[i]));
 	}
 	delay_ms(1); 		// 一定延迟，使得PSC值设置好
+}
+
+// 重置相关运动参数
+static void resetMotionData(void)
+{
+	u8 i;
+	mymemset(Psc_Data_Cur, 0, AXIS_NUM * sizeof(PSC_Data_Array));
+	mymemset(nAxisClk_Cur, 0, sizeof(nAxisClk_Cur));
+	maxClk = 0;
+	minClk = 0;
+	maxClkNum = AXIS_NUM;
+	mymemset(pluNumPWM, 0, sizeof(pluNumPWM));
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		addSubSpeed_StepNum[i] = 0;
+		addSubSpeed_Status[i] = ADD_SPEED; 			// 加速状态
+	}	
+}
+
+// 设定运动方向
+static void	setStepMotorDir(void)
+{
+	u8 i;
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		Motor_Dir_Set(StepMotor_Dir+i, cmd_Plus_Data.dir[i]);
+	}
 }
 
 

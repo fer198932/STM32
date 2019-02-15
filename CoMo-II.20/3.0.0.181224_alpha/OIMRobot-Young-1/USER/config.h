@@ -28,10 +28,11 @@
 /* 步进电机的相关IO口  方向、中断及输出IO口 注：PWM的IO口不能随便选择！ */
 #define 	EXTI_X_PLUS			"PC4" 		/* 中断线4 */				// 接收PWM的中断IO口
 #define 	PWM_X_EXTI			"PA7"			/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
-#define 	PWM_X_OUT				"PA6"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		
+//#define 	PWM_X_OUT				"PA6"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		
+#define 	PWM_X_OUT				"PB4"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用
 #define 	DIR_X						"PA4" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Y_PLUS			"PA1"			/* 中断线1 */				// 接收PWM的中断IO口
+#define 	EXTI_Y_PLUS			"PA12"			/* 中断线12 */		// 接收PWM的中断IO口  探索者板子上不能用中断线1，初始化时会被打断
 #define 	PWM_Y_EXTI			"PA3"			/* TIM2_CH4 */			// 输出PWM到中断的IO口   	
 #define 	PWM_Y_OUT				"PA5"  		/* TIM2_CH1 */			// 输出PWM到电机的IO口
 #define 	DIR_Y						"PC3" 		/*          */ 			// 电机运动方向
@@ -98,5 +99,8 @@
 
 /* 运动系统的运动轴数量  */
 #define AXIS_NUM 		5     	// 5轴系统 顺序：X、Y、Z、A、B
+
+// 尺寸链包含有问题，暂时未解决，先放在这
+typedef enum {TBD_DIR = 0, POS_DIR = 1, NEG_DIR = 2} Motor_Dir; 		// 电机运动方向
 
 #endif

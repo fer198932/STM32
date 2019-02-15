@@ -55,6 +55,9 @@ static void calSModelLine(float fre, u16 period[], float len,
 // 加减速相关参数设置的初始化
 void AddSubSpeed_Init(void);
 
+// 设定运动方向
+static void	setStepMotorDir(void);
+
 // 频率调整，使得频率位于合适范围内。0：调整ok，1：有轴运行在最低频率以下
 static u8 adjustClk(void);
 

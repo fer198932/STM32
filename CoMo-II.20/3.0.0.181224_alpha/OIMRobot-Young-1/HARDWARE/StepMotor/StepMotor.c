@@ -51,6 +51,10 @@ static void Motor_Dir_Init(GPIO_Structure_XX *GPIO_Temp, const char str[])
 void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 {	
 	volatile uint8_t dirOld;  		// 最开始的方向
+	
+	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
+		return;
+	
 	dirOld = GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
 	
 	// 需要换向

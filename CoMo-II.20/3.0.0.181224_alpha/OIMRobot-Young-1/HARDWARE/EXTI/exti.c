@@ -31,10 +31,15 @@ void EXTI_Config_Init(void)
 {
 	/* 电机PWM反馈接收IO口初始化 中断线0-4 抢占优先级为0x0-最高 */
 	RCC_Periph_N(GPIO_EXTI_Plus+0, EXTI_X_PLUS, EXTI_Trigger_Rising, 0x00, 0x00);
+//	delay_ms(5);
 	RCC_Periph_N(GPIO_EXTI_Plus+1, EXTI_Y_PLUS, EXTI_Trigger_Rising, 0x00, 0x00);
+//	delay_ms(5);
 	RCC_Periph_N(GPIO_EXTI_Plus+2, EXTI_Z_PLUS, EXTI_Trigger_Rising, 0x00, 0x01);
+//	delay_ms(5);
 	RCC_Periph_N(GPIO_EXTI_Plus+3, EXTI_A_PLUS, EXTI_Trigger_Rising, 0x00, 0x02);
+//	delay_ms(5);
 	RCC_Periph_N(GPIO_EXTI_Plus+4, EXTI_B_PLUS, EXTI_Trigger_Rising, 0x00, 0x02);
+//	delay_ms(5);
 
 #if _TEST	
 	/* 按钮中断，测试用  */

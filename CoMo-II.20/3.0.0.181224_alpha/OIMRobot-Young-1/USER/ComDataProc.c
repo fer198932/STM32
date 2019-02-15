@@ -5,15 +5,6 @@
 
 extern volatile 	FunctionalState 	Cmd_Execute_Flag;					// 指令处理完成标志
 
-// 串口接收一帧数据完成的标志
-// volatile 	IfOK_Status 	USARTRx_IfOK_Flag 	= 	NOT_OK;
-
-// 串口DMA数据溢出的标志
-// volatile 	ErrorStatus 	USARTRx_DMAOut_Flag 	= 	SUCCESS;
-
-// 数据是否处理完毕
-// volatile IfOK_Status 	DataPro_IsOK_Flag = IS_OK;
-
 Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
 Plus_Data plus_Data;		// 脉冲数据，控制电机运动
 
@@ -37,38 +28,6 @@ void UsartDataProc(void)
 	{
 		respMsgError("命令数据解析有误或为空！\r\n", 1);
 	}
-		
-	
-	
-//	DataPro_IsOK_Flag = NOT_OK;		// 锁定标志位进行数据处理
-	
-//	if(IS_OK == bufData_Proc())
-//	{
-//		switch(proc_Data.cmd_Type)
-//		{
-//			case 0x0B:
-//				selfCheckFunc();
-//				break;
-//			case 0x0C:
-//				
-//				break;
-//			case 0x0D:
-//				motionDataProc();
-//				break;
-//			case 0x0E:
-//				
-//				break;
-//			default:
-//				respMsgError("命令解析后运行时错误！\r\n", 1);
-//				break;			
-//		}
-//	}
-//	else
-//	{
-//		respMsgError("命令数据解析有误或为空！\r\n", 1);
-//	}
-	
-//	DataPro_IsOK_Flag = IS_OK; 		// 处理完一条指令后再打开处理下一条
 }
 
 // 检查从缓冲区读取的数据是否合格
@@ -221,27 +180,57 @@ static IfOK_Status setCmdData(PosCur posCur)
 				// X轴
 				plus_Data.plusNum[0] = getSetDataPlusNum(posCur, 0);
 				plus_Data.clk[0] = getSetDataClk(posCur, 0);
-				plus_Data.dir[0] = getSetDataDir(posCur, 0);
+			
+				if((0 == plus_Data.plusNum[0]) && (0 == plus_Data.clk[0]))  	// 方向设定
+					plus_Data.dir[0] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 0))
+					plus_Data.dir[0] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[0] = NEG_DIR;																	// 负向
 				
 				// Y轴
 				plus_Data.plusNum[1] = getSetDataPlusNum(posCur, 1);
 				plus_Data.clk[1] = getSetDataClk(posCur, 1);
-				plus_Data.dir[1] = getSetDataDir(posCur, 1);
+				
+				if((0 == plus_Data.plusNum[1]) || (0 == plus_Data.clk[1]))  	// 方向设定
+					plus_Data.dir[1] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 1))
+					plus_Data.dir[1] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[1] = NEG_DIR;																	// 负向
 			
 				// Z轴
 				plus_Data.plusNum[2] = getSetDataPlusNum(posCur, 2);
 				plus_Data.clk[2] = getSetDataClk(posCur, 2);
-				plus_Data.dir[2] = getSetDataDir(posCur, 2);
+				
+				if((0 == plus_Data.plusNum[2]) || (0 == plus_Data.clk[2]))  	// 方向设定
+					plus_Data.dir[2] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 2))
+					plus_Data.dir[2] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[2] = NEG_DIR;																	// 负向
 				
 				// A轴
 				plus_Data.plusNum[3] = getSetDataPlusNum(posCur, 3);
 				plus_Data.clk[3] = getSetDataClk(posCur, 3);
-				plus_Data.dir[3] = getSetDataDir(posCur, 3);
+				
+				if((0 == plus_Data.plusNum[3]) || (0 == plus_Data.clk[3]))  	// 方向设定
+					plus_Data.dir[3] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 3))
+					plus_Data.dir[3] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[3] = NEG_DIR;																	// 负向
 				
 				// B轴
 				plus_Data.plusNum[4] = getSetDataPlusNum(posCur, 4);
 				plus_Data.clk[4] = getSetDataClk(posCur, 4);
-				plus_Data.dir[4] = getSetDataDir(posCur, 4);
+				
+				if((0 == plus_Data.plusNum[4]) || (0 == plus_Data.clk[4]))  	// 方向设定
+					plus_Data.dir[4] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 4))
+					plus_Data.dir[4] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[4] = NEG_DIR;																	// 负向
 				
 				return IS_OK;
 //				break;

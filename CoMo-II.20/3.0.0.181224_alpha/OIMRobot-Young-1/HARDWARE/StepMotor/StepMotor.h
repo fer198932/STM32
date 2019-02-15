@@ -50,7 +50,7 @@ do \
 
 extern 	GPIO_Structure_XX  	StepMotor_Dir[AXIS_NUM];
 
-typedef enum {NEG_DIR = 0, POS_DIR = !NEG_DIR} Motor_Dir; 		// 电机运动方向
+// typedef enum {TBD_DIR = 0, POS_DIR = 1, NEG_DIR = 2} Motor_Dir; 		// 电机运动方向
 
 // 步进电机初始化 主要是方向IO口的初始化
 void StepMotor_Init(void);
