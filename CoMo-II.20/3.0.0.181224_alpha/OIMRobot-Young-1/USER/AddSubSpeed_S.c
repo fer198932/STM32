@@ -58,7 +58,7 @@ static void	nAxisMotion_Init(void)
 	{
 //		pluNumPWM[i] = cmd_Plus_Data.plusNum[i];
 		nAxisStatus[i] = ENABLE;
-		nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, calPSC(nAxisClk_Cur[i]));
+		nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, calPSC(nAxisClk_Cur[i], i));
 	}
 	delay_ms(1); 		// 一定延迟，使得PSC值设置好
 }
@@ -187,6 +187,7 @@ static u8 adjustClk(void)
 static void cal_S_Line(void)
 {
 	u8 i;
+	u16 minStepNum_Length; 			// 最小的步进数	
 	float needPlusNum, needTotalTime;
 	float freq_Temp;
 	
@@ -204,8 +205,8 @@ static void cal_S_Line(void)
 			// 将加速需要的脉冲数保存到结构体中，作为判断减速阶段的条件
 			Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
 			
-			// 如果总的脉冲数不够进行加减速，那就将加减速步数减半
-			while(needPlusNum > cmd_Plus_Data.plusNum[i])		
+			// 如果总的脉冲数不够进行一次完整加减速，那就将加减速步数减半
+			while(2 * needPlusNum > cmd_Plus_Data.plusNum[i])		
 			{
 				if(Psc_Data_Cur[i].length > MIN_STEP_NUM*2)
 				{
@@ -229,20 +230,31 @@ static void cal_S_Line(void)
 		}
 	}
 	
+	// 根据最小的步进数修正加减速曲线，或者修正不需要加减速的轴
+	minStepNum_Length = calMinStepNumLength(Psc_Data_Cur);	
 	needTotalTime = calTotalNeedTime(maxClkNum);
-	// 设置完毕后再修正不需要进行加减速的轴
+	
 	for(i=0; i<AXIS_NUM; i++)
 	{
 		if(DISABLE == Psc_Data_Cur[i].enAddSubFlag)  		// 不需要加减速的轴
 		{
 			//  根据最大频率花费的时间修正频率
-			nAxisClk_Cur[i] = cmd_Plus_Data.plusNum[i] / needTotalTime;			
+			nAxisClk_Cur[i] = cmd_Plus_Data.plusNum[i] * MHz_2_Hz / needTotalTime;			
 			if(nAxisClk_Cur[i] > cmd_Plus_Data.clk[i])
 				nAxisClk_Cur[i] = cmd_Plus_Data.clk[i];
 		}
-		else
+		else	// 修正步进数不等于最小值的轴
 		{
 			nAxisClk_Cur[i] = n_Axis_Min_Clk(i);
+			if(Psc_Data_Cur[i].length != minStepNum_Length)
+			{
+				Psc_Data_Cur[i].length = minStepNum_Length;
+				calSModelLine(freq_Temp, Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length,
+						cmd_Plus_Data.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE);
+				needPlusNum = 
+					calAddSpeed_NeedPlusNum(Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length);
+				Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
+			}
 		}
 	}
 }
@@ -255,6 +267,10 @@ static void calSModelLine(float fre, u16 period[], float len,
 	float deno;
 	float melo;
 	float delt = fre_max - fre_min;
+	
+	// byYJY ///////////////////////////////
+//	mymemset(period, 0, DATA_LENGTH * sizeof(u16));
+	
 	for(i=0; i<len; i++)
 	{
 		melo = flexible * (i-len/2) / (len/2);
@@ -325,7 +341,7 @@ static void boostClk(void)
 }
 
 // 返回当前轴允许的最大、最小频率
-static u32 n_Axis_Max_Clk(u8 i)
+u32 n_Axis_Max_Clk(u8 i)
 {
 	switch(i)
 	{
@@ -343,7 +359,7 @@ static u32 n_Axis_Max_Clk(u8 i)
 			return 0x0;
 	}
 }
-static u32 n_Axis_Min_Clk(u8 i)
+u32 n_Axis_Min_Clk(u8 i)
 {
 	switch(i)
 	{
@@ -411,6 +427,23 @@ static float calTotalNeedTime(u8 nAxis)
 	
 }
 
+
+// 计算最小的步进数
+static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[])
+{
+	u8 i;
+	u16 minStepNumLength = MIN_STEP_LENGTH__INIT_VAULE;
+	
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		if(0 != Psc_Data_Cur[i].length)
+		{
+			minStepNumLength = min(minStepNumLength, Psc_Data_Cur[i].length);
+		}
+	}
+	
+	return minStepNumLength;
+}
 
 
 

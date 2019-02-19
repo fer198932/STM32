@@ -29,13 +29,15 @@
 #define		AddSub_Step_DIV		((float)10)			// 最大频率按该值进行分段 如0~10000时，即分为1000段
 
 #define 	MIN_STEP_NUM			((float)5.0) 		// 小于该值的步数认为不合理
+	
+#define 	MIN_STEP_LENGTH__INIT_VAULE		0xFFFF	// 最小步进数的初始值，正常情况下不会出现该值
 
 typedef enum {ADD_SPEED = 0, CONST_SPEED = 1, SUB_SPEED = 2} AddSubSpeedStatus;
 
 // 保存PSC值的结构体
 typedef struct {
 	u16 							length;
-	u16 							psc_data[DATA_LENGTH-1];
+	u16 							psc_data[DATA_LENGTH];
 	FunctionalState		enAddSubFlag; 												// 使能加减速的开关
 	float 						addSpeed_NeedPlusNum; 			// 加速阶段需要的脉冲数
 } PSC_Data_Array;
@@ -73,8 +75,8 @@ static void reduceClk(void);
 static void boostClk(void);
 
 // 返回当前轴允许的最大、最小频率
-static u32 n_Axis_Max_Clk(u8 i);
-static u32 n_Axis_Min_Clk(u8 i);
+u32 n_Axis_Max_Clk(u8 i);
+u32 n_Axis_Min_Clk(u8 i);
 
 // 是否可以升频的判断 
 static FunctionalState ifBoostClkOK(void);
@@ -98,6 +100,9 @@ static void resetMotionData(void);
 
 // 各轴的运动状态初始化
 static void	nAxisMotion_Init(void);
+
+// 计算最小的步进数
+static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[]);
 
 
 

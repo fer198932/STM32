@@ -3,7 +3,9 @@
 ********************************************************************************************************/
 #include "ComDataProc.h"
 
-extern volatile 	FunctionalState 	Cmd_Execute_Flag;					// 指令处理完成标志
+extern	volatile 	FunctionalState 	Cmd_Execute_Flag;					// 指令处理完成标志
+//extern	volatile 	FlagStatus 				USART_IDLE_Flag; 				// 串口空闲中断标志，串口数据处理
+extern volatile 	u32 	Offline_Data_Num;					// 脱机加工数据的标志
 
 Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
 Plus_Data plus_Data;		// 脉冲数据，控制电机运动
@@ -28,6 +30,9 @@ void UsartDataProc(void)
 	{
 		respMsgError("命令数据解析有误或为空！\r\n", 1);
 	}
+	
+	// 重置缓冲区
+	buffer_Reset();
 }
 
 // 检查从缓冲区读取的数据是否合格
@@ -176,63 +181,19 @@ static IfOK_Status setCmdData(PosCur posCur)
 				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + (buffer_Rec.data[posCur.start+3]<<0);
 				proc_Data.resp_Excute = proc_Data.cmd_Excute;
 				
-				/* 脉冲数据 */
-				// X轴
-				plus_Data.plusNum[0] = getSetDataPlusNum(posCur, 0);
-				plus_Data.clk[0] = getSetDataClk(posCur, 0);
-			
-				if((0 == plus_Data.plusNum[0]) && (0 == plus_Data.clk[0]))  	// 方向设定
-					plus_Data.dir[0] = TBD_DIR;																	// 方向未定
-				else if(0 == getSetDataDir(posCur, 0))
-					plus_Data.dir[0] = POS_DIR;																	// 正向
-				else
-					plus_Data.dir[0] = NEG_DIR;																	// 负向
-				
-				// Y轴
-				plus_Data.plusNum[1] = getSetDataPlusNum(posCur, 1);
-				plus_Data.clk[1] = getSetDataClk(posCur, 1);
-				
-				if((0 == plus_Data.plusNum[1]) || (0 == plus_Data.clk[1]))  	// 方向设定
-					plus_Data.dir[1] = TBD_DIR;																	// 方向未定
-				else if(0 == getSetDataDir(posCur, 1))
-					plus_Data.dir[1] = POS_DIR;																	// 正向
-				else
-					plus_Data.dir[1] = NEG_DIR;																	// 负向
-			
-				// Z轴
-				plus_Data.plusNum[2] = getSetDataPlusNum(posCur, 2);
-				plus_Data.clk[2] = getSetDataClk(posCur, 2);
-				
-				if((0 == plus_Data.plusNum[2]) || (0 == plus_Data.clk[2]))  	// 方向设定
-					plus_Data.dir[2] = TBD_DIR;																	// 方向未定
-				else if(0 == getSetDataDir(posCur, 2))
-					plus_Data.dir[2] = POS_DIR;																	// 正向
-				else
-					plus_Data.dir[2] = NEG_DIR;																	// 负向
-				
-				// A轴
-				plus_Data.plusNum[3] = getSetDataPlusNum(posCur, 3);
-				plus_Data.clk[3] = getSetDataClk(posCur, 3);
-				
-				if((0 == plus_Data.plusNum[3]) || (0 == plus_Data.clk[3]))  	// 方向设定
-					plus_Data.dir[3] = TBD_DIR;																	// 方向未定
-				else if(0 == getSetDataDir(posCur, 3))
-					plus_Data.dir[3] = POS_DIR;																	// 正向
-				else
-					plus_Data.dir[3] = NEG_DIR;																	// 负向
-				
-				// B轴
-				plus_Data.plusNum[4] = getSetDataPlusNum(posCur, 4);
-				plus_Data.clk[4] = getSetDataClk(posCur, 4);
-				
-				if((0 == plus_Data.plusNum[4]) || (0 == plus_Data.clk[4]))  	// 方向设定
-					plus_Data.dir[4] = TBD_DIR;																	// 方向未定
-				else if(0 == getSetDataDir(posCur, 4))
-					plus_Data.dir[4] = POS_DIR;																	// 正向
-				else
-					plus_Data.dir[4] = NEG_DIR;																	// 负向
-				
-				return IS_OK;
+				// 根据指令码判断执行哪个命令
+				switch(proc_Data.cmd_Excute)
+				{
+					case PLUS_DATA: 						// 脉冲数据处理
+						plus_Data_Proc(posCur);
+						return IS_OK;
+					case OFFLINE_DATA:					// 脱机加工
+						offline_Data_Proc(posCur);
+						return IS_OK;
+					default:
+						respMsgError("数据指令码解析错误！\r\n", 1);
+						return NOT_OK;
+				}
 //				break;
 			case 0x0E: 			// 状态
 				
@@ -307,5 +268,78 @@ void respUsartMsg(const u8 backResString[], u16 length)
 //	}	
 }
 
+// 处理脉冲数据的函数，帧标识0X0D、指令码0X22
+static void plus_Data_Proc(PosCur posCur)
+{
+	/* 脉冲数据 */
+				// X轴
+				plus_Data.plusNum[0] = getSetDataPlusNum(posCur, 0);
+				plus_Data.clk[0] = getSetDataClk(posCur, 0);
+			
+				if((0 == plus_Data.plusNum[0]) && (0 == plus_Data.clk[0]))  	// 方向设定
+					plus_Data.dir[0] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 0))
+					plus_Data.dir[0] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[0] = NEG_DIR;																	// 负向
+				
+				// Y轴
+				plus_Data.plusNum[1] = getSetDataPlusNum(posCur, 1);
+				plus_Data.clk[1] = getSetDataClk(posCur, 1);
+				
+				if((0 == plus_Data.plusNum[1]) || (0 == plus_Data.clk[1]))  	// 方向设定
+					plus_Data.dir[1] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 1))
+					plus_Data.dir[1] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[1] = NEG_DIR;																	// 负向
+			
+				// Z轴
+				plus_Data.plusNum[2] = getSetDataPlusNum(posCur, 2);
+				plus_Data.clk[2] = getSetDataClk(posCur, 2);
+				
+				if((0 == plus_Data.plusNum[2]) || (0 == plus_Data.clk[2]))  	// 方向设定
+					plus_Data.dir[2] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 2))
+					plus_Data.dir[2] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[2] = NEG_DIR;																	// 负向
+				
+				// A轴
+				plus_Data.plusNum[3] = getSetDataPlusNum(posCur, 3);
+				plus_Data.clk[3] = getSetDataClk(posCur, 3);
+				
+				if((0 == plus_Data.plusNum[3]) || (0 == plus_Data.clk[3]))  	// 方向设定
+					plus_Data.dir[3] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 3))
+					plus_Data.dir[3] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[3] = NEG_DIR;																	// 负向
+				
+				// B轴
+				plus_Data.plusNum[4] = getSetDataPlusNum(posCur, 4);
+				plus_Data.clk[4] = getSetDataClk(posCur, 4);
+				
+				if((0 == plus_Data.plusNum[4]) || (0 == plus_Data.clk[4]))  	// 方向设定
+					plus_Data.dir[4] = TBD_DIR;																	// 方向未定
+				else if(0 == getSetDataDir(posCur, 4))
+					plus_Data.dir[4] = POS_DIR;																	// 正向
+				else
+					plus_Data.dir[4] = NEG_DIR;																	// 负向
+	
+}
+
+// 脱机加工 帧标识0X0D、指令码0X25
+// 如： 0E 09 0D 10 00 25 00 01 00 00 00 E2 E1 6A 0F FF
+static void offline_Data_Proc(PosCur posCur)
+{
+	proc_Data.cmd_Value = (buffer_Rec.data[posCur.start+5]<<0) + 
+		(buffer_Rec.data[posCur.start+6]<<8) + (buffer_Rec.data[posCur.start+7]<<16) + 
+		(buffer_Rec.data[posCur.start+8]<<24);
+	
+	// 数据长度设置
+//	proc_Data.offline_length = LENGTH_OFFL;
+	Offline_Data_Num = LENGTH_OFFL;
+}
 
 

@@ -8,12 +8,10 @@
 *   输入输出BUFFER的管理程序
 ********************************************************************************************************/
 
-#define BUF_SIZE 				(1024-4)			// 缓冲区大小 单位字节-8位 保证1024四字节对齐
+#define BUF_SIZE 				100			// 缓冲区大小 单位字节-8位 
 
 // 剩余空间小于该值时，关闭DMA，避免数据被覆盖(串口发送的数据最大不要超过该值)
-#define RESERVED_SIZE 	64						
-
-// typedef enum { POS_SEQ = 0, NEG_SEQ = !POS_SEQ } sequence; 	// 默认为POS_SEQ状态
+#define RESERVED_SIZE 	10						
 
 // 管理输入输出数据的缓冲区
 typedef struct {
@@ -31,10 +29,8 @@ extern Buffer buffer_Trans;				// 发送数据的缓冲区
 void buffer_Init(void);
 
 // buffer重置函数 重置接收数据的缓冲区
-static void buffer_Reset(void);
+void buffer_Reset(void);
 
-// 检查BUFFER是否足够大，否则就重置BUFFER
-void checkBuffer(void);
 
 #endif 
 

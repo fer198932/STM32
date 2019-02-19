@@ -32,12 +32,12 @@
 #define 	PWM_X_OUT				"PB4"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用
 #define 	DIR_X						"PA4" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Y_PLUS			"PA12"			/* 中断线12 */		// 接收PWM的中断IO口  探索者板子上不能用中断线1，初始化时会被打断
+#define 	EXTI_Y_PLUS			"PA2"			/* 中断线2  */		// 接收PWM的中断IO口  探索者板子上不能用中断线1，初始化时会被打断
 #define 	PWM_Y_EXTI			"PA3"			/* TIM2_CH4 */			// 输出PWM到中断的IO口   	
 #define 	PWM_Y_OUT				"PA5"  		/* TIM2_CH1 */			// 输出PWM到电机的IO口
 #define 	DIR_Y						"PC3" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Z_PLUS			"PE0"			/* 中断线0 */				// 接收PWM的中断IO口
+#define 	EXTI_Z_PLUS			"PB6"			/* 中断线6 */				// 接收PWM的中断IO口
 #define 	PWM_Z_EXTI			"PB8"			/* TIM4_CH3 */			// 输出PWM到中断的IO口
 #define 	PWM_Z_OUT				"PB9"  		/* TIM4_CH4 */			// 输出PWM到电机的IO口
 #define 	DIR_Z						"PB7" 		/*          */ 			// 电机运动方向
@@ -71,6 +71,10 @@
 #define DATAINFO			0x0D     	// 数据
 #define STATUSINFO		0x0E     	// 状态
 #define INVALID_CMD 	0x00 			// 无效命令，默认状态或没有新命令
+
+/* 	0x0D // 数据 : 对应指令码	 */
+#define PLUS_DATA				0x22			// 脉冲数据处理
+#define OFFLINE_DATA		0x25			// 脱机加工指令码
 
 /* 限位回复信息 */
 #define X_P_MSG1  	0x31			// X+ 限位

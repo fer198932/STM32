@@ -90,7 +90,7 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 
 // 通过CLK频率计算预分频系数 PSC
-u16 calPSC(u32 clk);
+u16 calPSC(u32 clk, u8 nAxis);
 // 通过PSC计算频率， 注意寄存器溢出问题  单位HZ
 u32 calClk_PSC(u16 psc);
 

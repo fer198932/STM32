@@ -21,6 +21,9 @@ volatile 	FlagStatus 	USART_IDLE_Flag 	= RESET; 						// ´®¿Ú¿ÕÏĞÖĞ¶Ï±êÖ¾£¬´®¿ÚÊ
 volatile 	FunctionalState 	Cmd_Execute_Flag	= DISABLE;					// Ö¸Áî´¦ÀíÍê³É±êÖ¾
 volatile	FunctionalState 	Cmd_Copied_Falg = ENABLE; 			// ´®¿ÚÊı¾İÊÇ·ñ¿É¸´ÖÆµÄ±êÇ©£¨ÃüÁîÖ´ĞĞÍêºó²Å¿É)
 
+volatile 	FunctionalState 	Offline_Work_Flag = DISABLE; 		// ½øÈëÍÑ»ú¼Ó¹¤µÄ±ê¼Ç
+volatile 	u32 	Offline_Data_Num = 0;					// ÍÑ»ú¼Ó¹¤Êı¾İµÄ±àºÅ
+
 
 #if _TEST_ON_ALIENTEK
 void Delay(__IO uint32_t nCount);
@@ -44,22 +47,9 @@ int main(void)
   while(1){
 		/* Ñ­»·É¨ÃèÊÇ·ñÓĞÏŞÎ»·¢Éú  */
 		procLimit();		
-
-		/*  ¼ì²éBUFFERÊÇ·ñĞèÒªÖØÖÃ */
-		if(RESET == USART_IDLE_Flag)
-			checkBuffer();						
-		
-		/* Èç¹û·¢ÉúÁË´®¿ÚµÄDMAÒç³ö£¬ÖØĞÂ³õÊ¼»¯ */
-		if(SET == DMA_Out_Flag) 
-		{
-			// ÕâÀïÓĞÎÊÌâ
-			DMA_USART_Init();
-			buffer_Init();
-			DMA_Out_Flag = RESET;
-		}
 		
 		/* ·¢Éú´®¿Ú¿ÕÏĞÖĞ¶Ï²¢ÇÒ¿ÉÒÔ½øĞĞÊı¾İ¸´ÖÆÊ±²Å½øÈë  */
-		if((SET == USART_IDLE_Flag)	&& (ENABLE == Cmd_Copied_Falg))
+		if(SET == USART_IDLE_Flag)
 		{
 			Cmd_Copied_Falg = DISABLE; 				// ÃüÁî¸´ÖÆÍê³ÉÇ°²»ÔÊĞíÔÙ´¦ÀíÊı¾İ
 			UsartDataProc();		
@@ -73,6 +63,21 @@ int main(void)
 			CMD_Execute();
 			// Ö´ĞĞÍê³ÉÔÚÆäËüµØ·½ÅĞ¶Ï
 		}
+		
+		/* ÍÑ»ú¼Ó¹¤ */
+		if((0 != Offline_Data_Num) && (ENABLE == Offline_Work_Flag))
+		{
+			delay_ms(1);
+			
+			Offline_Work_Flag = DISABLE;
+			Offline_Data_Num--;
+			offlineWork(LENGTH_OFFL - Offline_Data_Num - 1);
+			
+			// test
+			printf("t:%d\r\n", Offline_Data_Num);
+			
+		}
+		
 		
 		
 		

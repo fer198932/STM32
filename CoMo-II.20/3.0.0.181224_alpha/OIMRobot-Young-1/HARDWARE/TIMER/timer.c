@@ -81,34 +81,70 @@ static void addSubTime_IRQ_MARCO(void)
 	
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		/* 步数递增超出范围，不进行动作  */
-		if((ADD_SPEED == addSubSpeed_Status[i]) && 
-			(addSubSpeed_StepNum[i] >=  (int)Psc_Data_Cur[i].length))
+		/* 该轴开启加减速 */
+		if(ENABLE == Psc_Data_Cur[i].enAddSubFlag) 
 		{
-			addSubSpeed_Status[i] = CONST_SPEED; 			// 匀速阶段
-			continue;
-		}
-		
-		/* 该轴未开启加减速 */
-		if(DISABLE == Psc_Data_Cur[i].enAddSubFlag) 
-			continue;
-		
-		/* 加速阶段  */
-		if(ADD_SPEED == addSubSpeed_Status[i])
-		{
-			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
-				Psc_Data_Cur[i].psc_data[addSubSpeed_StepNum[i]++]); 		
-			continue;
-		}
-		
-		/* 减速阶段  */
-		if(SUB_SPEED == addSubSpeed_Status[i])
-		{			
-			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
-				Psc_Data_Cur[i].psc_data[--addSubSpeed_StepNum[i]]);
+			/* 加速阶段 */
+			if((ADD_SPEED == addSubSpeed_Status[i]) && 
+				(addSubSpeed_StepNum[i] <  Psc_Data_Cur[i].length))
+			{
+				nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+					Psc_Data_Cur[i].psc_data[addSubSpeed_StepNum[i]++]);
+			} 
+			
+			/* 匀速阶段 */
+			else if(ADD_SPEED == addSubSpeed_Status[i])
+			{
+				addSubSpeed_Status[i] = CONST_SPEED;
+			} 
+			
+			
+			/* 减速阶段 */
+			else if((SUB_SPEED == addSubSpeed_Status[i]) && 
+				(addSubSpeed_StepNum[i] !=  0))
+			{
+				nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+					Psc_Data_Cur[i].psc_data[--addSubSpeed_StepNum[i]]);
+			}			
 		}
 	}
 }
+
+
+//static void addSubTime_IRQ_MARCO(void)
+//{
+//	u8 i;
+//	
+//	for(i=0; i<AXIS_NUM; i++)
+//	{
+//		/* 步数递增超出范围，不进行动作  */
+//		if((ADD_SPEED == addSubSpeed_Status[i]) && 
+//			(addSubSpeed_StepNum[i] >=  Psc_Data_Cur[i].length))
+//		{
+//			addSubSpeed_Status[i] = CONST_SPEED; 			// 匀速阶段
+//			continue;
+//		}
+//		
+//		/* 该轴未开启加减速 */
+//		if(DISABLE == Psc_Data_Cur[i].enAddSubFlag) 
+//			continue;
+//		
+//		/* 加速阶段  */
+//		if(ADD_SPEED == addSubSpeed_Status[i])
+//		{
+//			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+//				Psc_Data_Cur[i].psc_data[addSubSpeed_StepNum[i]++]); 		
+//			continue;
+//		}
+//		
+//		/* 减速阶段  */
+//		if(SUB_SPEED == addSubSpeed_Status[i])
+//		{			
+//			nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
+//				Psc_Data_Cur[i].psc_data[--addSubSpeed_StepNum[i]]);
+//		}
+//	}
+//}
 
 
 

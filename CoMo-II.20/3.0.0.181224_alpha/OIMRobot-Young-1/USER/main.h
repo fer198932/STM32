@@ -26,6 +26,10 @@
 #define PRIN2DISP 1   			// 打印提示信息，而不是发回控制命令
 
 
+// 脱机加工开关
+#define OFFLINE_WORK 	1
+
+
 // 系统初始化函数
 void Sys_Init(void);
 

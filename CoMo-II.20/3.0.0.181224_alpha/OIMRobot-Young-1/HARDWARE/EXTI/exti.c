@@ -4,6 +4,8 @@
 
 #include "exti.h"
 
+extern volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
+
 static GPIO_Structure_XX GPIO_EXTI_Plus[AXIS_NUM]; 			// 电机反馈的PWM接收中断 顺序：X、Y、Z、A、B
 
 #if _TEST	
@@ -65,13 +67,15 @@ void EXTI1_IRQHandler(void)
 	
 //	EXTI_IRQ_PWM(1, Y_PWM, Y);
 	
-	EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+	
 }
 
 // 中断服务程序
 void EXTI2_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line2);			// 清除中断标志位
+	
+	EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
 	
 //	EXTI_IRQ_PWM(2, Z_PWM, Z);
 }
@@ -89,19 +93,48 @@ void EXTI4_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line4);			// 清除中断标志位
 	
-	EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+	EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT); 
 	
-//	EXTI_IRQ_PWM(0, X_PWM, X);
-	
-//	pluNumPWM[0]++; 			\
-//	if(pluNumPWM[0] >= cmd_Plus_Data.plusNum[0])  	\
-//	{ \
-//		nAxis_StepMotor_Stop(X); 				\
-//		nAxisStatus[n] = DISABLE; /* 运动结束 该轴不可运动 */			\
-//		pluNumPWM[0] = 0; 		\
-//		respUsartMsg("PWM_EXTI\r\n", 10);		\
-//	} \
-	
+//	/* 中断服务程序 */
+//	EXTI->PR = EXTI_Line4; 	/* 清除中断 */
+//	
+//	pluNumPWM[0]++;
+//	
+//	/* 进入减速阶段 */
+//	if((SUB_SPEED != addSubSpeed_Status[0]) && 
+//		(Psc_Data_Cur[0].addSpeed_NeedPlusNum > (cmd_Plus_Data.plusNum[0] - pluNumPWM[0])))
+//	{
+////		ADDSUB_TIMER->CNT = 0;
+//		addSubSpeed_Status[0] = SUB_SPEED; 
+//	}
+//	
+//	/*  运动完成 关闭PWM */
+//	if(cmd_Plus_Data.plusNum[0] < pluNumPWM[0])
+//	{
+//		/* nAxis_StepMotor_Stop_MACRO(TIM_N, ch_exti, ch_out); 		*/
+//		// 通道2 ch_exti
+//		X_PWM->CR1 &= (uint16_t)~TIM_CR1_CEN;															// 停止PWm脉冲
+//		X_PWM->CCMR1 = ((X_PWM->CCMR1) & ((uint16_t)~TIM_CCMR1_OC2M)) | 
+//										((uint16_t)(TIM_ForcedAction_Active << 8)); 			// PWM电平强制拉高		
+//		// 通道1 ch_out
+//		X_PWM->CR1 &= (uint16_t)~TIM_CR1_CEN;															// 停止PWm脉冲	
+//		X_PWM->CCMR1 = ((X_PWM->CCMR1) & ((uint16_t)~TIM_CCMR1_OC1M)) | 
+//										((uint16_t)(TIM_ForcedAction_Active)); 			// PWM电平强制拉高		
+//		
+//		nAxisStatus[0] = DISABLE;
+//		
+//		/* respUsartMsg("PWM_EXTI\r\n", 10); */
+//		
+//		/* 所有的轴都停止才停止 ADDSUB_TIMER  */
+//		if(0 == nAxis_Motion_Flag)
+//		{
+//#if OFFLINE_WORK
+//			Offline_Work_Flag = ENABLE;
+//#endif
+//			/* TIM_Cmd(ADDSUB_TIMER, DISABLE); */
+//			X_PWM->CR1 &= (uint16_t)~TIM_CR1_CEN;
+//		}
+//	}	
 }
 
 // 中断服务程序
@@ -114,6 +147,17 @@ void EXTI9_5_IRQHandler(void)
 		EXTI_ClearITPendingBit(EXTI_Line5);				// 清除中断标志位
 		respUsartMsg("KEY1\r\n", 6);							// 打印
 		
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line6) != RESET)		// KEY1测试
+	{
+		EXTI_ClearITPendingBit(EXTI_Line6);				// 清除中断标志位
+		
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+		
+		
+		
+//		respUsartMsg("EXTI_6\r\n", 8);							// 打印		
 	}
 
 }
@@ -223,7 +267,7 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 	pluNumPWM[n]++;
 	
 	/* 进入减速阶段 */
-	if((SUB_SPEED != addSubSpeed_Status[n]) && 
+	if((CONST_SPEED == addSubSpeed_Status[n]) && 
 		(Psc_Data_Cur[n].addSpeed_NeedPlusNum > (cmd_Plus_Data.plusNum[n] - pluNumPWM[n])))
 	{
 //		ADDSUB_TIMER->CNT = 0;
@@ -231,18 +275,21 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 	}
 	
 	/*  运动完成 关闭PWM */
-	if(cmd_Plus_Data.plusNum[n] < pluNumPWM[n])
+	if(cmd_Plus_Data.plusNum[n] <= pluNumPWM[n])
 	{
 		nAxis_StepMotor_Stop_MACRO(TIM_N, ch_exti, ch_out); 		//  注意这里用宏定义
 		
 		nAxisStatus[n] = DISABLE;
 		
-		respUsartMsg("PWM_EXTI\r\n", 10);
-		
 		/* 所有的轴都停止才停止 ADDSUB_TIMER  */
 		if(0 == nAxis_Motion_Flag)
 		{
+#if OFFLINE_WORK
+			Offline_Work_Flag = ENABLE;
+#endif
 			TIM_Cmd(ADDSUB_TIMER, DISABLE);
+			
+			respUsartMsg("PWM_EXTI\r\n", 10);
 		}
 	}
 	

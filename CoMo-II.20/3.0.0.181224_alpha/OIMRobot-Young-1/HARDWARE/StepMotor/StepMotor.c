@@ -47,15 +47,13 @@ static void Motor_Dir_Init(GPIO_Structure_XX *GPIO_Temp, const char str[])
   GPIO_Init(GPIO_Temp->GPIO_Port, &GPIO_InitStructure);									// 初始化GPIO	
 }
 
-// 电机运动方向设定
+// 电机运动方向设定 
 void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 {	
-	volatile uint8_t dirOld;  		// 最开始的方向
+	static volatile uint8_t dirOld = 0;  		// 最开始的方向
 	
 	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
 		return;
-	
-	dirOld = GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
 	
 	// 需要换向
 	if(dirOld != dir)
@@ -69,12 +67,42 @@ void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 			GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
 		}
 		
-		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
+//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
 		delay_us(DIR_EX_DALAY); 			// 一定延时
+		dirOld = dir;
 	}
 	
 	// else 不用换向
 }
+
+// 电机运动方向设定 备份1 
+//void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
+//{	
+//	volatile uint8_t dirOld;  		// 最开始的方向
+//	
+//	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
+//		return;
+//	
+//	dirOld = GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
+//	
+//	// 需要换向
+//	if(dirOld != dir)
+//	{
+//		if(POS_DIR == dir) 			// 正向
+//		{
+//			GPIO_SetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
+//		}
+//		else      							// 负向
+//		{
+//			GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
+//		}
+//		
+//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
+//		delay_us(DIR_EX_DALAY); 			// 一定延时
+//	}
+//	
+//	// else 不用换向
+//}
 
 // 步进电机同时开始运动（保证同步） 寄存器方式，提高效率
 void StepMotor_Start(void)

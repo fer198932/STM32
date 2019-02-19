@@ -4,6 +4,10 @@
 
 #include "pwm.h"
 
+// 返回当前轴允许的最大、最小频率
+extern u32 n_Axis_Max_Clk(u8 i);
+extern u32 n_Axis_Min_Clk(u8 i);
+
 /* PWM 初始化的结构体  */
 NAxis_TIM_Structure 				nAxis_TIM_Structure[AXIS_NUM];
 
@@ -305,10 +309,17 @@ static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 }
 
 // 通过CLK频率计算预分频系数 PSC 注意寄存器溢出问题
-u16 calPSC(u32 clk)
+u16 calPSC(u32 clk, u8 nAxis)
 {
 	u16 psc;
-	psc = PSC_CLK / clk;
+	if((clk >= n_Axis_Min_Clk(nAxis)) && (clk <= n_Axis_Max_Clk(nAxis)))
+	{
+		psc = PSC_CLK / clk;
+	}
+	else
+	{
+		psc = PSC_CLK / n_Axis_Min_Clk(nAxis);
+	}
 	return psc;
 }
 

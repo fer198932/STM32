@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER;..\HARDWARE\StepMotor</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER;..\HARDWARE\StepMotor;..\DATA</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -442,6 +442,11 @@
               <FileName>AddSubSpeed_S.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\AddSubSpeed_S.c</FilePath>
+            </File>
+            <File>
+              <FileName>OffLine_Data.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DATA\OffLine_Data.c</FilePath>
             </File>
           </Files>
         </Group>

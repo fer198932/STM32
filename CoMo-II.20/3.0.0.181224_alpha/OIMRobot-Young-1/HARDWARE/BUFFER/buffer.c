@@ -17,7 +17,7 @@ void buffer_Init(void)
 }
 
 // buffer重置函数 重置接收数据的缓冲区
-static void buffer_Reset(void)
+void buffer_Reset(void)
 {
 	buffer_Rec.start = 0;
 	buffer_Rec.end = 0;
@@ -25,13 +25,7 @@ static void buffer_Reset(void)
 	DMA_Restart(DMA_Stream_Rx, BUF_SIZE);
 }
 
-// 检查BUFFER是否足够大，否则就重置BUFFER
-void checkBuffer(void)
-{
-	// 如果缓冲区小于预留值，重新设置缓冲区
-	if((BUF_SIZE - buffer_Rec.end) < RESERVED_SIZE)
-		buffer_Reset();	
-}
+
 
 
 

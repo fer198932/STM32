@@ -3,7 +3,8 @@
 ********************************************************************************************************/
 #include "command.h"
 
-extern volatile	FunctionalState 	Cmd_Copied_Falg; 			// 串口数据是否可复制的标签（命令执行完后才可)
+extern volatile		FunctionalState 		Cmd_Copied_Falg; 			// 串口数据是否可复制的标签（命令执行完后才可)
+extern volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
 
 // 串口发来的数据
 extern Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
@@ -92,15 +93,28 @@ void selfCheckFunc(void)
 // 运动数据处理程序
 void motionDataProc(void)
 {	
-	// 运动状态初始化
-	AddSubSpeed_Init();
-	
-	// 步进电机同时开始运动
-	StepMotor_Start();
-	
-	// 加减速定时器开启
-	ADDSUB_TIMER->CNT = 0;
-	TIM_Cmd(ADDSUB_TIMER, ENABLE);
+	switch(cmd_Proc_Data.cmd_Excute)
+	{
+		case PLUS_DATA:
+			// 运动状态初始化
+			AddSubSpeed_Init();
+			
+			// 步进电机同时开始运动
+			StepMotor_Start();
+			
+			// 加减速定时器开启
+//			ADDSUB_TIMER->CNT = 0;
+//			TIM_Cmd(ADDSUB_TIMER, ENABLE);
+			break;
+		
+		case OFFLINE_DATA:
+			Offline_Work_Flag = ENABLE;
+			break;
+		
+		default:
+			respMsgError("运动数据指令码有误\r\n", 1);
+			break;			
+	}
 }
 
 

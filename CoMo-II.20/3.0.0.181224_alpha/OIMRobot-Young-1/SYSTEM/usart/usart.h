@@ -42,21 +42,15 @@ do \
 { \
 	if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 空闲中断 */ \
 	{ \
+		/* DMA接收方式 */ 		\
 		temp = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清空闲中断 */   \
 		temp = USART_X->DR;		\
-		/* DMA接收方式 */ 		\
+			\
 		/* end指向的位置=设置的接收长度-剩余的DMA缓存大小 （始终等于） */ 	\
 		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx);		\
-		/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */ \
-		if((BUF_SIZE + buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE) 		\
-		{ 	\
-			DMA_Out_Flag = SET; /* 不常发生，不用判断 */  \
-			DMA_Cmd(DMA_Stream_Rx, DISABLE); 	\
-			/*	USARTRx_DMAOut_Flag = ERROR; 		*/	\
-			respMsgError("DMA缓冲区溢出\r\n", 1); 	\
-		} \
+			\
 		if(RESET == USART_IDLE_Flag) 	/* 如果指令处理完成 */		\
-			USART_IDLE_Flag = SET; 		/* 接收到一帧数据 */ 			\
+			USART_IDLE_Flag = SET; 			/* 接收到一帧数据 */ 			\
 	} 	  	\
 } while(0)
 
@@ -66,6 +60,19 @@ do \
 
 
 //// 串口中断服务程序
+
+/* DMA溢出判断，存档  */
+//		/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */ \
+//		if((BUF_SIZE + buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE) 		\
+//		{ 	\
+//			DMA_Out_Flag = SET; /* 不常发生，不用判断 */  \
+//			DMA_Cmd(DMA_Stream_Rx, DISABLE); 	\
+//			/*	USARTRx_DMAOut_Flag = ERROR; 		*/	\
+//			respMsgError("DMA缓冲区溢出\r\n", 1); 	\
+//		} \
+		
+
+
 //#define USART_IRQ \
 //do \
 //{ \

@@ -7,6 +7,7 @@
 #include "main.h"
 #include "command.h"
 #include "buffer.h"
+#include "OffLine_Data.h"
 
 
 typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
@@ -29,13 +30,14 @@ typedef struct {
 
 // 从串口得到的处理后的命令
 typedef struct {
-	u8 cmd_Type;  					// 命令类型、帧标识 如：#define SELFCHECK 		0x0B     //自检
-	u8 cmd_Excute;					// 需要执行的命令、指令码
-	u8 cmd_Value;						// 命令取值
+	u8 			cmd_Type;  						// 命令类型、帧标识 如：#define SELFCHECK 		0x0B     //自检
+	u8 			cmd_Excute;						// 需要执行的命令、指令码
+	u32 		cmd_Value;						// 命令取值
+//	u32			offline_length;				// 脱机加工数据的长度
 	
-	u8 resp_Excute;					// 回复指令码 通常resp_Excute=cmd_Excute
-	u8 resp_Status;					// 回复状态
-	void* cmd_Data; 				// 指向命令的数据结构体，脉冲数据等情况下需要用到
+	u8 			resp_Excute;					// 回复指令码 通常resp_Excute=cmd_Excute
+	u8 			resp_Status;					// 回复状态
+	void* 	cmd_Data; 						// 指向命令的数据结构体，脉冲数据等情况下需要用到
 } Proc_Data; 
 
 // 脉冲数据结构体 
@@ -50,6 +52,12 @@ void comData_Init(void);
 
 // 从缓冲区得到数据并进行处理、启动相关电机的程序
 void UsartDataProc(void);
+
+// 处理脉冲数据的函数，帧标识0X0D、指令码0X22
+static void plus_Data_Proc(PosCur posCur);
+
+// 脱机加工 帧标识0X0D、指令码0X25
+static void offline_Data_Proc(PosCur posCur);
 
 // 处理对应区间上的缓冲区数据
 static IfOK_Status bufData_Proc_Region(PosCur posCur);

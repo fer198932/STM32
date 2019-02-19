@@ -41,11 +41,44 @@ static void EXTI_Cmd(uint32_t EXTI_Line_N, FunctionalState state);
 void EXTI_Enable(void);
 
 /* 为脉冲服务的中断程序 */
-#define EXTI_IRQ_PWM(n, TIM_N, nAxis)  			\
-do 		\
-{ \
-	\
-} while(0)
+//#define EXTI_IRQ_PWM(EXTI_Line_n, n, TIM_N, nAxis)  			\
+//do 		\
+//{ \
+//	EXTI->PR = EXTI_Line_n; 	/* 清除中断 */
+//	
+//	pluNumPWM[n]++;
+//	
+//	/* 进入减速阶段 */
+//	if((SUB_SPEED != addSubSpeed_Status[n]) && 
+//		(Psc_Data_Cur[n].addSpeed_NeedPlusNum > (cmd_Plus_Data.plusNum[n] - pluNumPWM[n])))
+//	{
+////		ADDSUB_TIMER->CNT = 0;
+//		addSubSpeed_Status[n] = SUB_SPEED; 
+//	}
+//	
+//	/*  运动完成 关闭PWM */
+//	if(cmd_Plus_Data.plusNum[n] < pluNumPWM[n])
+//	{
+//		/* nAxis_StepMotor_Stop_MACRO(TIM_N, ch_exti, ch_out); 		*/
+//		/* 手写才行 */
+//		
+//		nAxisStatus[n] = DISABLE;
+//		
+//		/* respUsartMsg("PWM_EXTI\r\n", 10); */
+//		
+//		/* 所有的轴都停止才停止 ADDSUB_TIMER  */
+//		if(0 == nAxis_Motion_Flag)
+//		{
+//#if OFFLINE_WORK
+//			Offline_Work_Flag = ENABLE;
+//#endif
+//			/* TIM_Cmd(ADDSUB_TIMER, DISABLE); */
+//			TIM_N->CR1 &= (uint16_t)~TIM_CR1_CEN;
+//		}
+//	}
+//	
+//	\
+//} while(0)
 
 
 // 测试用的中断服务程序
