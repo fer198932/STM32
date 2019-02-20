@@ -4,6 +4,10 @@
 
 #include "macro_operate.h"				// 宏操作
 
+/* 系统功能开关： 1--打开测试代码，0--关闭 */
+// 开发板上的测试代码，方便在探索者板子上验证代码
+#define _TEST_ON_ALIENTEK 1
+
 /*  系统时钟 */
 #define _SYSCLK	168								// 系统时钟168MHz
 
@@ -32,7 +36,11 @@
 #define 	PWM_X_OUT				"PB4"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用
 #define 	DIR_X						"PA4" 		/*          */ 			// 电机运动方向
 
-#define 	EXTI_Y_PLUS			"PA2"			/* 中断线2  */		// 接收PWM的中断IO口  探索者板子上不能用中断线1，初始化时会被打断
+#if _TEST_ON_ALIENTEK
+	#define 	EXTI_Y_PLUS			"PA2"			/* 中断线2  */		// 接收PWM的中断IO口  探索者板子上不能用中断线1，初始化时会被打断
+#else
+	#define 	EXTI_Y_PLUS			"PA1"			/* 中断线1  */		// 接收PWM的中断IO口  
+#endif
 #define 	PWM_Y_EXTI			"PA3"			/* TIM2_CH4 */			// 输出PWM到中断的IO口   	
 #define 	PWM_Y_OUT				"PA5"  		/* TIM2_CH1 */			// 输出PWM到电机的IO口
 #define 	DIR_Y						"PC3" 		/*          */ 			// 电机运动方向
@@ -106,5 +114,6 @@
 
 // 尺寸链包含有问题，暂时未解决，先放在这
 typedef enum {TBD_DIR = 0, POS_DIR = 1, NEG_DIR = 2} Motor_Dir; 		// 电机运动方向
+
 
 #endif

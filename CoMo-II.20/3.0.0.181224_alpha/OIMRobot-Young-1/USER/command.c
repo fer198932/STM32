@@ -101,10 +101,13 @@ void motionDataProc(void)
 			
 			// 步进电机同时开始运动
 			StepMotor_Start();
-			
+
+#if NO_ADDSUBSPEED
+		/* 关闭加减速 */
+#else		
 			// 加减速定时器开启
-//			ADDSUB_TIMER->CNT = 0;
-//			TIM_Cmd(ADDSUB_TIMER, ENABLE);
+			EN_ADDSUB_TIMER;
+#endif
 			break;
 		
 		case OFFLINE_DATA:

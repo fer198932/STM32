@@ -35,9 +35,7 @@ void Delay(__IO uint32_t nCount)
 #endif
 
 int main(void)
-{
-#if _TEST_ON_ALIENTEK
-	
+{	
 	u32 t=0;
 	
 	
@@ -100,8 +98,6 @@ int main(void)
 //		LED0 = t%2;
 
 	}
-  
-#endif
 }
 
 

@@ -220,7 +220,7 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 	if(ENABLE == state) 		// 开启
 	{
 		PWM_Forced2High(TIM_N, DISABLE, ch); 		// 取消强制拉高
-//		delay_us(5);
+		delay_us(5);
 		TIM_Cmd(TIM_N, ENABLE);
 	}		
 	else 										// 关闭

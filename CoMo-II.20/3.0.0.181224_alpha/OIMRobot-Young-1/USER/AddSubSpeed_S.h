@@ -102,7 +102,7 @@ static void resetMotionData(void);
 static void	nAxisMotion_Init(void);
 
 // 计算最小的步进数
-static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[]);
+//static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[]);
 
 
 

@@ -25,7 +25,18 @@ do 		\
 } while(0)
 
 
+#define		EN_ADDSUB_TIMER 		/* 使能加减速定时器  */ 		\
+do 	\
+{ 	\
+	ADDSUB_TIMER->CNT = 0; 	\
+	TIM_Cmd(ADDSUB_TIMER, ENABLE); 	\
+}while(0)
 
+#define		DIS_ADDSUB_TIMER 		/* 关闭加减速定时器  */ 		\
+do 	\
+{ 	\
+	TIM_Cmd(ADDSUB_TIMER, DISABLE); 	\
+}while(0)
 
 
 // 定时器初始化

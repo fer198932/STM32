@@ -4,7 +4,8 @@
 
 #include "OffLine_Data.h"
 
-extern 		Plus_Data		 cmd_Plus_Data;						// 脉冲数据，控制电机运动
+extern 							Plus_Data		 				cmd_Plus_Data;						// 脉冲数据，控制电机运动
+extern 	volatile 		FunctionalState 		Offline_Work_Flag; 				// 进入脱机加工的标记
 
 // 脱机加工
 void offlineWork(u32 num)
@@ -19,8 +20,10 @@ void offlineWork(u32 num)
 	StepMotor_Start();
 	
 	// 加减速定时器开启
-	ADDSUB_TIMER->CNT = 0;
-	TIM_Cmd(ADDSUB_TIMER, ENABLE);
+	if(ENABLE != Offline_Work_Flag)
+	{
+		EN_ADDSUB_TIMER;
+	}
 }
 
 // 运动数据设置

@@ -7,8 +7,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // 指令中设定的运动参数
-extern Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
-extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
+extern 	Proc_Data 	cmd_Proc_Data; 														// 命令数据，有成员指向plus_Data
+extern 	Plus_Data 	cmd_Plus_Data;														// 脉冲数据，控制电机运动
+extern 	volatile 		FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
 
 // 各轴是否可以运动 
 FunctionalState	 nAxisStatus[AXIS_NUM] = {DISABLE, DISABLE, DISABLE, DISABLE, DISABLE};
@@ -50,29 +51,23 @@ static void Motor_Dir_Init(GPIO_Structure_XX *GPIO_Temp, const char str[])
 // 电机运动方向设定 
 void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 {	
-	static volatile uint8_t dirOld = 0;  		// 最开始的方向
+//	static volatile uint8_t dirOld = 0;  		// 最开始的方向
 	
 	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
 		return;
 	
-	// 需要换向
-	if(dirOld != dir)
+	if(POS_DIR == dir) 			// 正向
 	{
-		if(POS_DIR == dir) 			// 正向
-		{
-			GPIO_SetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
-		}
-		else      							// 负向
-		{
-			GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
-		}
-		
-//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
-		delay_us(DIR_EX_DALAY); 			// 一定延时
-		dirOld = dir;
+		GPIO_SetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
+	}
+	else      							// 负向
+	{
+		GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
 	}
 	
-	// else 不用换向
+//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
+	delay_us(DIR_EX_DALAY); 			// 一定延时
+
 }
 
 // 电机运动方向设定 备份1 
@@ -167,6 +162,11 @@ void StepMotor_Start(void)
 //		PWM_Cmd(B_PWM, ENABLE, B_CH_EXTI);
 //		PWM_Cmd(B_PWM, ENABLE, B_CH_OUT);
 	}		
+
+#if OFFLINE_WORK
+	if(0 == nAxis_Motion_Flag)
+		Offline_Work_Flag = ENABLE;
+#endif	
 }
 
 // 步进电机同时停止（同步）

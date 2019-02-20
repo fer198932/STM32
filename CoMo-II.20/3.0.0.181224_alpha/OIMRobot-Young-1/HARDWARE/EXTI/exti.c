@@ -65,6 +65,12 @@ void EXTI1_IRQHandler(void)
 { 	
 	EXTI_ClearITPendingBit(EXTI_Line1);			// 清除中断标志位
 	
+#if _TEST_ON_ALIENTEK
+	/* 啥都不干 */
+#else
+	EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#endif
+	
 //	EXTI_IRQ_PWM(1, Y_PWM, Y);
 	
 	
@@ -75,7 +81,11 @@ void EXTI2_IRQHandler(void)
 { 
 	EXTI_ClearITPendingBit(EXTI_Line2);			// 清除中断标志位
 	
+#if _TEST_ON_ALIENTEK	
 	EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#else
+	/* 啥都不干 */
+#endif
 	
 //	EXTI_IRQ_PWM(2, Z_PWM, Z);
 }
@@ -287,7 +297,8 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 #if OFFLINE_WORK
 			Offline_Work_Flag = ENABLE;
 #endif
-			TIM_Cmd(ADDSUB_TIMER, DISABLE);
+//			TIM_Cmd(ADDSUB_TIMER, DISABLE);
+			DIS_ADDSUB_TIMER;
 			
 			respUsartMsg("PWM_EXTI\r\n", 10);
 		}

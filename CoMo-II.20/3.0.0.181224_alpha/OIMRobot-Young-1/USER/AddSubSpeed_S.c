@@ -57,8 +57,16 @@ static void	nAxisMotion_Init(void)
 	for(i=0; i<AXIS_NUM; i++)
 	{
 //		pluNumPWM[i] = cmd_Plus_Data.plusNum[i];
+#if NO_ADDSUBSPEED
+		nAxisClk_Cur[i] = cmd_Plus_Data.clk[i];
+#else
+//		nAxisClk_Cur[i] = () ? : ;
+#endif
 		nAxisStatus[i] = ENABLE;
-		nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, calPSC(nAxisClk_Cur[i], i));
+		nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, calPSC(nAxisClk_Cur[i], i));	
+		
+		// 主动发起事件，更新寄存器
+		TIM_GenerateEvent(nAxis_TIM_Structure[i].TIM_N, TIM_EventSource_Update);
 	}
 	delay_ms(1); 		// 一定延迟，使得PSC值设置好
 }
@@ -187,7 +195,7 @@ static u8 adjustClk(void)
 static void cal_S_Line(void)
 {
 	u8 i;
-	u16 minStepNum_Length; 			// 最小的步进数	
+//	u16 minStepNum_Length; 			// 最小的步进数	
 	float needPlusNum, needTotalTime;
 	float freq_Temp;
 	
@@ -206,23 +214,23 @@ static void cal_S_Line(void)
 			Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
 			
 			// 如果总的脉冲数不够进行一次完整加减速，那就将加减速步数减半
-			while(2 * needPlusNum > cmd_Plus_Data.plusNum[i])		
-			{
-				if(Psc_Data_Cur[i].length > MIN_STEP_NUM*2)
-				{
-					Psc_Data_Cur[i].length = Psc_Data_Cur[i].length >> 1; 	// 有精度丢失
-					calSModelLine(freq_Temp, Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length,
-						cmd_Plus_Data.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE);
-					needPlusNum = 
-						calAddSpeed_NeedPlusNum(Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length);
-					Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
-				}
-				else 																// 无法满足加减速条件，关闭加减速
-				{
-					Psc_Data_Cur[i].enAddSubFlag = DISABLE; 		
-					break;
-				}
-			}
+//			while(2 * needPlusNum > cmd_Plus_Data.plusNum[i])		
+//			{
+//				if(Psc_Data_Cur[i].length > MIN_STEP_NUM*2)
+//				{
+//					Psc_Data_Cur[i].length = Psc_Data_Cur[i].length >> 1; 	// 有精度丢失
+//					calSModelLine(freq_Temp, Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length,
+//						cmd_Plus_Data.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE);
+//					needPlusNum = 
+//						calAddSpeed_NeedPlusNum(Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length);
+//					Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
+//				}
+//				else 																// 无法满足加减速条件，关闭加减速
+//				{
+//					Psc_Data_Cur[i].enAddSubFlag = DISABLE; 		
+//					break;
+//				}
+//			}
 		}
 		else if(DISABLE == Psc_Data_Cur[i].enAddSubFlag) 			// 不加减速
 		{
@@ -231,7 +239,7 @@ static void cal_S_Line(void)
 	}
 	
 	// 根据最小的步进数修正加减速曲线，或者修正不需要加减速的轴
-	minStepNum_Length = calMinStepNumLength(Psc_Data_Cur);	
+//	minStepNum_Length = calMinStepNumLength(Psc_Data_Cur);	
 	needTotalTime = calTotalNeedTime(maxClkNum);
 	
 	for(i=0; i<AXIS_NUM; i++)
@@ -246,15 +254,15 @@ static void cal_S_Line(void)
 		else	// 修正步进数不等于最小值的轴
 		{
 			nAxisClk_Cur[i] = n_Axis_Min_Clk(i);
-			if(Psc_Data_Cur[i].length != minStepNum_Length)
-			{
-				Psc_Data_Cur[i].length = minStepNum_Length;
-				calSModelLine(freq_Temp, Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length,
-						cmd_Plus_Data.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE);
-				needPlusNum = 
-					calAddSpeed_NeedPlusNum(Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length);
-				Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
-			}
+//			if(Psc_Data_Cur[i].length != minStepNum_Length)
+//			{
+//				Psc_Data_Cur[i].length = minStepNum_Length;
+//				calSModelLine(freq_Temp, Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length,
+//						cmd_Plus_Data.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE);
+//				needPlusNum = 
+//					calAddSpeed_NeedPlusNum(Psc_Data_Cur[i].psc_data, Psc_Data_Cur[i].length);
+//				Psc_Data_Cur[i].addSpeed_NeedPlusNum = needPlusNum;
+//			}
 		}
 	}
 }
@@ -416,34 +424,89 @@ static float calAddSpeed_NeedPlusNum(u16 period[], float len)
 // 估算指定轴运行所需要的时间 单位us 确定加速曲线后再调用
 static float calTotalNeedTime(u8 nAxis)
 {	
+	u32 i;
+	u32 maxStep;
 	float constSpeedTime; 		// 匀速阶段需要的时间
+	float plus_Num;						// 发出的脉冲数
+	
 	if(DISABLE == Psc_Data_Cur[nAxis].enAddSubFlag) 		// 未开启加减速
-		return (cmd_Plus_Data.plusNum[nAxis] * 1e6 / cmd_Plus_Data.clk[nAxis]);
+		return (cmd_Plus_Data.plusNum[nAxis] * MHz_2_Hz / cmd_Plus_Data.clk[nAxis]);
 	
-	constSpeedTime = (cmd_Plus_Data.plusNum[nAxis] - 
-		2 * Psc_Data_Cur[nAxis].addSpeed_NeedPlusNum) / cmd_Plus_Data.clk[nAxis];
 	
-	return (addSubTime * Psc_Data_Cur[nAxis].length * 2 + constSpeedTime);
+	maxStep = (int)(Psc_Data_Cur[nAxis].length - 1);
+	// 加速阶段完成运动
+	if(cmd_Plus_Data.plusNum[nAxis] < Psc_Data_Cur[nAxis].addSpeed_NeedPlusNum)
+	{
+		i = 0;
+		
+		plus_Num = 0;
+		while(plus_Num < cmd_Plus_Data.plusNum[nAxis])
+		{
+			if(i >=  Psc_Data_Cur[nAxis].length) 		// i值有误
+			{
+				plus_Num += calClk_PSC(Psc_Data_Cur[nAxis].psc_data[maxStep]) * addSubTime / MHz_2_Hz;
+				respMsgError("计算运行时间异常!\r\n", 1);
+			}
+			else 
+			{
+				plus_Num += calClk_PSC(Psc_Data_Cur[nAxis].psc_data[i]) * addSubTime / MHz_2_Hz;
+			}
+			i++;
+		}
+		
+		return (i * addSubTime);
+	}
 	
+	// 减速阶段完成运动
+	else if((cmd_Plus_Data.plusNum[nAxis] < (Psc_Data_Cur[nAxis].addSpeed_NeedPlusNum) * 2))
+	{
+		i = 0;
+		plus_Num = Psc_Data_Cur[nAxis].addSpeed_NeedPlusNum;
+		while(plus_Num < cmd_Plus_Data.plusNum[nAxis])
+		{
+			if(i >=  Psc_Data_Cur[nAxis].length) 		// i值有误
+			{
+				plus_Num += calClk_PSC(Psc_Data_Cur[nAxis].psc_data[maxStep]) * addSubTime / MHz_2_Hz;
+				respMsgError("计算运行时间异常!\r\n", 1);
+			}
+			else 
+			{
+				plus_Num += calClk_PSC(Psc_Data_Cur[nAxis].psc_data[Psc_Data_Cur[nAxis].length - i - 1]) * 
+										addSubTime / MHz_2_Hz;
+			}
+			i++;
+		}
+		
+		return ((addSubTime * Psc_Data_Cur[nAxis].length) + (i * addSubTime));
+	} 
+	
+	// 完成一个完整的运动
+	else 
+	{
+		constSpeedTime = (cmd_Plus_Data.plusNum[nAxis] - 
+			2 * Psc_Data_Cur[nAxis].addSpeed_NeedPlusNum) / cmd_Plus_Data.clk[nAxis];
+		
+		return (addSubTime * Psc_Data_Cur[nAxis].length * 2 + constSpeedTime);
+	}	
 }
 
 
 // 计算最小的步进数
-static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[])
-{
-	u8 i;
-	u16 minStepNumLength = MIN_STEP_LENGTH__INIT_VAULE;
-	
-	for(i=0; i<AXIS_NUM; i++)
-	{
-		if(0 != Psc_Data_Cur[i].length)
-		{
-			minStepNumLength = min(minStepNumLength, Psc_Data_Cur[i].length);
-		}
-	}
-	
-	return minStepNumLength;
-}
+//static u16 calMinStepNumLength(PSC_Data_Array	Psc_Data_Cur[])
+//{
+//	u8 i;
+//	u16 minStepNumLength = MIN_STEP_LENGTH__INIT_VAULE;
+//	
+//	for(i=0; i<AXIS_NUM; i++)
+//	{
+//		if(0 != Psc_Data_Cur[i].length)
+//		{
+//			minStepNumLength = min(minStepNumLength, Psc_Data_Cur[i].length);
+//		}
+//	}
+//	
+//	return minStepNumLength;
+//}
 
 
 
