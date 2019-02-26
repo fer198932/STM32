@@ -258,8 +258,10 @@ void EXTI_Enable(void)
 	EXTI_Cmd((GPIO_EXTI_Plus+2)->EXTI_Line_N, ENABLE);
 	EXTI_Cmd((GPIO_EXTI_Plus+3)->EXTI_Line_N, ENABLE);
 	EXTI_Cmd((GPIO_EXTI_Plus+4)->EXTI_Line_N, ENABLE);
-	
+
+#if _TEST	
 	EXTI_Cmd(GPIO_Key1.EXTI_Line_N, ENABLE);	
+#endif
 	
 //	EXTI_Cmd(EXTI_Line4, ENABLE);
 }
@@ -285,7 +287,11 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 	}
 	
 	/*  运动完成 关闭PWM */
+#if _TEST_ON_ALIENTEK
 	if(cmd_Plus_Data.plusNum[n] <= pluNumPWM[n])
+#else
+	if(cmd_Plus_Data.plusNum[n] <= (pluNumPWM[n]-1))
+#endif
 	{
 		nAxis_StepMotor_Stop_MACRO(TIM_N, ch_exti, ch_out); 		//  注意这里用宏定义
 		

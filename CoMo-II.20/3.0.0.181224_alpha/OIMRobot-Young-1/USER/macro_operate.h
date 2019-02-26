@@ -6,6 +6,9 @@
 #define max(a,b) ((a)>(b)?(a):(b))
 #define min(a,b) ((a)<(b)?(a):(b))
 
+typedef enum {X_Axis = 0, Y_Axis = 1, Z_Axis = 2, A_Axis = 3, B_Axis = 4, ALL_Axis = 5} N_Axis;
+
+
 // 复用功能结构体
 typedef struct {
 	uint32_t RCC_Periph_N;  							// 时钟线 如：RCC_APB1Periph_USART3 

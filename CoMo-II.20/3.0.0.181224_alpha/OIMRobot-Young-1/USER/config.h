@@ -6,7 +6,7 @@
 
 /* 系统功能开关： 1--打开测试代码，0--关闭 */
 // 开发板上的测试代码，方便在探索者板子上验证代码
-#define _TEST_ON_ALIENTEK 1
+#define _TEST_ON_ALIENTEK 0
 
 /*  系统时钟 */
 #define _SYSCLK	168								// 系统时钟168MHz
