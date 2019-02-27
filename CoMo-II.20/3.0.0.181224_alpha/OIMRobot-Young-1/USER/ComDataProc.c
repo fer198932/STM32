@@ -53,19 +53,27 @@ static IfOK_Status bufData_Proc(void)
 					posCur.end = posCur.start;
 					buffer_Rec.start = posCur.start-2;					// 缓冲区指向新的0x0E
 					/*  帧尾判断  */
-					while(posCur.end <= buffer_Rec.end)
+					posCur.end = buffer_Rec.data[DATA_LENGTH_POSITION]-2;
+					if(FrameEnd == buffer_Rec.data[posCur.end + 1])
 					{
-						if(FrameEnd == buffer_Rec.data[posCur.end])		// 0xFF
-						{
-							posCur.end--;
-							if(IS_OK == bufData_Proc_Region(posCur))
-								return IS_OK;
-							else
-								return NOT_OK;
-						} 
-						else 
-							posCur.end++;
+						if(IS_OK == bufData_Proc_Region(posCur))
+							return IS_OK;
+						else
+							return NOT_OK;
 					}
+//					while(posCur.end <= buffer_Rec.end)
+//					{
+//						if(FrameEnd == buffer_Rec.data[posCur.end])		// 0xFF
+//						{
+//							posCur.end--;
+//							if(IS_OK == bufData_Proc_Region(posCur))
+//								return IS_OK;
+//							else
+//								return NOT_OK;
+//						} 
+//						else 
+//							posCur.end++;
+//					}
 					return NOT_OK;
 				}
 		}
@@ -226,7 +234,9 @@ static void proc_pt_motionData(void* _data)
 // 回复上位机的程序
 void respMsgError(const char str[], u8 status)
 {
+#if PRIN2DISP
 	printf(str);
+#endif
 //	mymemcpy(&buffer_Trans, (void*)"ERROR", 5);
 //	DMA_Restart(DMA_Stream_Tx, 5);
 }

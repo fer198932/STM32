@@ -8,6 +8,11 @@ extern volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
 
 static GPIO_Structure_XX GPIO_EXTI_Plus[AXIS_NUM]; 			// 电机反馈的PWM接收中断 顺序：X、Y、Z、A、B
 
+#if PRIN2DISP
+#else
+static u8 backResString[RESP_MOTIONMSG_LENGTH];										// 反馈数组，暂时运动用  byYJY
+#endif
+
 #if _TEST	
 	/* 按钮中断，测试用  */
 static	GPIO_Structure_XX 	GPIO_Key1;
@@ -46,6 +51,11 @@ void EXTI_Config_Init(void)
 #if _TEST	
 	/* 按钮中断，测试用  */
 	RCC_Periph_N(&GPIO_Key1, _KEY1, EXTI_Trigger_Rising, 0x01, 0x00);
+#endif	
+	
+#if PRIN2DISP
+#else
+	setRespStr_Motion(backResString, RESP_MOTIONMSG_LENGTH, 0x01);
 #endif	
 	
 }
@@ -305,21 +315,26 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 #endif
 //			TIM_Cmd(ADDSUB_TIMER, DISABLE);
 			DIS_ADDSUB_TIMER;
-			
+#if PRIN2DISP					
 			respUsartMsg("PWM_EXTI\r\n", 10);
+#else
+			respUsartMsg(backResString, RESP_MOTIONMSG_LENGTH);
+#endif
 		}
 	}
-	
-	/* test
-	static u32 temp = 0;
-	
-	temp++;
-	if(100000 == temp) 	// 2秒一次
-	{	
-		respUsartMsg("PWM_EXTI\r\n", 10);		 
-		temp = 0;
-	}
-	// test */	
 }
+
+#if PRIN2DISP
+#else
+// 设定运动数据的串口反馈数组的格式
+static void setRespStr_Motion(u8 respStr[], u16 length, u8 status)
+{
+	setRespStr(backResString, RESP_MOTIONMSG_LENGTH);
+	backResString[2] = DATAINFO;
+	backResString[5] = PLUS_DATA;
+	backResString[6] = 0x00;
+	backResString[7] = status;
+}
+#endif
 
 

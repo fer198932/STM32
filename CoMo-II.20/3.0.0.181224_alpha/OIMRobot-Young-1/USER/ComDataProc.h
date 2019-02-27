@@ -10,6 +10,8 @@
 #include "OffLine_Data.h"
 
 
+#define  DATA_LENGTH_POSITION 	3 			// 数据长度对应的位置
+
 typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
 
 

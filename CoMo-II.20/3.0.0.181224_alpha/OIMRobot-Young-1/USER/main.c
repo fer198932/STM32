@@ -65,14 +65,16 @@ int main(void)
 		/* ÍÑ»ú¼Ó¹¤ */
 		if((0 != Offline_Data_Num) && (ENABLE == Offline_Work_Flag))
 		{
-			delay_ms(100);
+			delay_ms(10);
+
+#if PRIN2DISP			
+			// test
+			printf("t:%d\r\n", Offline_Data_Num);
+#endif
 			
  			Offline_Work_Flag = DISABLE;
  			Offline_Data_Num--;
 			offlineWork(LENGTH_OFFL - Offline_Data_Num - 1);
-			
-			// test
-			printf("t:%d\r\n", Offline_Data_Num);
 			
 		}
 		
