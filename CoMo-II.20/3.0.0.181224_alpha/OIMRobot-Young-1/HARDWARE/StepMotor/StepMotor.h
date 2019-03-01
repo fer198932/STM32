@@ -11,7 +11,8 @@
 // 2019年1月31日13:20:00 byYJY
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
-#define 	DIR_EX_DALAY 		10000 			// 换方向后需要设定一定时间延时  单位us
+#define 	DIR_EX_DALAY 					10000 			// 换方向后需要设定一定时间延时  单位us
+#define 	MOTION_START_DALAY 		10000 			// 运动停止后需要设定一定时间延时  单位us
 
 #define 	XAxisDir_Pos 		(Motor_Dir_Set(StepMotor_Dir+0, POS_DIR)) 
 #define 	XAxisDir_Neg 		(Motor_Dir_Set(StepMotor_Dir+0, NEG_DIR)) 

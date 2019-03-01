@@ -93,11 +93,6 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out);
 static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out);
 
 
-#if PRIN2DISP
-#else
-// 设定运动数据的串口反馈数组的格式
-static void setRespStr_Motion(u8 respStr[], u16 length, u8 status);
-#endif
 
 
 

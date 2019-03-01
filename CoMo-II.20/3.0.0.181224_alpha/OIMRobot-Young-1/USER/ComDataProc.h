@@ -39,7 +39,7 @@ typedef struct {
 	
 	u8 			resp_Excute;					// 回复指令码 通常resp_Excute=cmd_Excute
 	u8 			resp_Status;					// 回复状态
-	void* 	cmd_Data; 						// 指向命令的数据结构体，脉冲数据等情况下需要用到
+	void* 	cmd_Data; 						// 指向命令的数据结构体，脉冲数据等情况下需要用到 暂时没用到，慎用！
 } Proc_Data; 
 
 // 脉冲数据结构体 
@@ -48,6 +48,39 @@ typedef struct {
 	u32 				clk[AXIS_NUM];						// 频率：决定了运动速度
 	Motor_Dir	 	dir[AXIS_NUM];						// 电机运动方向
 } Plus_Data;
+
+/* 加减速相关的结构体  */
+#define 	DATA_LENGTH				1024						// 存放加减速psc值的空间长度，后续可考虑转为动态数组
+
+typedef enum {ADD_SPEED = 0, CONST_SPEED = 1, SUB_SPEED = 2} AddSubSpeedStatus;
+
+// 保存PSC值的结构体
+typedef struct {
+	u16 							length;
+	u16 							psc_data[DATA_LENGTH];
+	FunctionalState		enAddSubFlag; 												// 使能加减速的开关
+	float 						addSpeed_NeedPlusNum; 			// 加速阶段需要的脉冲数
+} PSC_Data_Array;
+
+// 保存初始化后的运动数据的结构体 初始化时默认为0
+typedef struct {
+	PSC_Data_Array 	PSC_Data[AXIS_NUM];
+	
+	// 加减速状态标记
+	AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];
+	
+	float addSubTime;		// 每步加减速的时间 即ADDSUB_TIMER的周期时间 单位us
+	u32 maxClk;
+	u32 minClk;
+	u32 nAxisClk_Cur[AXIS_NUM];		// 当前频率
+	u8 maxClkNum;				// 最大频率对应的轴 等于AXIS_NUM表示有误或未设置	
+	
+	Plus_Data  motion_Datas;		// 指向运动数据
+	Proc_Data		proc_Datas;			// 命令数据
+} Motion_Strcuture;
+
+/* 加减速相关的结构体  */
+
 
 // 命令数据结构体的初始化
 void comData_Init(void);

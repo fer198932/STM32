@@ -25,7 +25,7 @@
 
 
 #define 	S_FLEXIBLE 				4								// S曲线的压缩情况，越大曲线越斜，越小越接近匀加速， 理想取值4-6
-#define 	DATA_LENGTH				1024						// 存放加减速psc值的空间长度，后续可考虑转为动态数组
+//#define 	DATA_LENGTH				1024						// 存放加减速psc值的空间长度，后续可考虑转为动态数组
 #define 	AddSub_Time_MAX		200							// 加减速阶段最长的时间，单位ms，对应频率从0~10000的情况
 #define		AddSub_Step_DIV		((float)10)			// 最大频率按该值进行分段 如0~10000时，即分为1000段
 #define 	ConstS_NeedPlus		5								// 匀速下需要的脉冲数，经验值、差不多就行了
@@ -34,15 +34,7 @@
 	
 #define 	MIN_STEP_LENGTH__INIT_VAULE		0xFFFF	// 最小步进数的初始值，正常情况下不会出现该值
 
-typedef enum {ADD_SPEED = 0, CONST_SPEED = 1, SUB_SPEED = 2} AddSubSpeedStatus;
 
-// 保存PSC值的结构体
-typedef struct {
-	u16 							length;
-	u16 							psc_data[DATA_LENGTH];
-	FunctionalState		enAddSubFlag; 												// 使能加减速的开关
-	float 						addSpeed_NeedPlusNum; 			// 加速阶段需要的脉冲数
-} PSC_Data_Array;
 
 
 /* 	计算S型加速曲线的函数 参考：https://blog.csdn.net/weixin_40567368/article/details/81742938
@@ -57,7 +49,7 @@ static FunctionalState calSModelLine(float fre, u16 period[], float len,
 	float fre_max, float fre_min, float flexible);
 
 // 加减速相关参数设置的初始化
-void AddSubSpeed_Init(void);
+void AddSubSpeedInit_Pre(void);
 
 // 设定运动方向
 static void	setStepMotorDir(void);
@@ -112,6 +104,9 @@ static void En_ASS_Flag(FunctionalState status, N_Axis n_Axis);
 
 // 修正指定轴的频率，并设置其起始频率
 static ErrorStatus CorrectClk(u8 nAxis, float needTime);
+
+// 运动数据的初始化
+void motion_Init(void);
 
 
 #endif

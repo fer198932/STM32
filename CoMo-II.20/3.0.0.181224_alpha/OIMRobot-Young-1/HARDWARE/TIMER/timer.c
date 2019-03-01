@@ -5,13 +5,12 @@
 #include "timer.h"
 
 
-extern 	PSC_Data_Array				Psc_Data_Cur[AXIS_NUM];							// 存储PSC值的结构体数组
 extern 	NAxis_TIM_Structure		nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
-extern 	AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];		// 加减速状态标记
+extern 	Motion_Strcuture 	motion_Data;	
 
 
 // 记录加减速定时器运行的步数
-u16 addSubSpeed_StepNum[AXIS_NUM] = {0, 0, 0, 0, 0};
+vu16 addSubSpeed_StepNum[AXIS_NUM] = {0, 0, 0, 0, 0};
 
 
 // 定时器中断服务函数
@@ -82,29 +81,29 @@ static void addSubTime_IRQ_MARCO(void)
 	for(i=0; i<AXIS_NUM; i++)
 	{
 		/* 该轴开启加减速 */
-		if(ENABLE == Psc_Data_Cur[i].enAddSubFlag) 
+		if(ENABLE == motion_Data.PSC_Data[i].enAddSubFlag) 
 		{
 			/* 加速阶段 */
-			if((ADD_SPEED == addSubSpeed_Status[i]) && 
-				(addSubSpeed_StepNum[i] <  Psc_Data_Cur[i].length))
+			if((ADD_SPEED == motion_Data.addSubSpeed_Status[i]) && 
+				(addSubSpeed_StepNum[i] <  motion_Data.PSC_Data[i].length))
 			{
 				nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
-					Psc_Data_Cur[i].psc_data[addSubSpeed_StepNum[i]++]);
+					motion_Data.PSC_Data[i].psc_data[addSubSpeed_StepNum[i]++]);
 			} 
 			
 			/* 匀速阶段 */
-			else if(ADD_SPEED == addSubSpeed_Status[i])
+			else if(ADD_SPEED == motion_Data.addSubSpeed_Status[i])
 			{
-				addSubSpeed_Status[i] = CONST_SPEED;
+				motion_Data.addSubSpeed_Status[i] = CONST_SPEED;
 			} 
 			
 			
 			/* 减速阶段 */
-			else if((SUB_SPEED == addSubSpeed_Status[i]) && 
+			else if((SUB_SPEED == motion_Data.addSubSpeed_Status[i]) && 
 				(addSubSpeed_StepNum[i] !=  0))
 			{
 				nAxisSetPWM(nAxis_TIM_Structure[i].TIM_N, 
-					Psc_Data_Cur[i].psc_data[--addSubSpeed_StepNum[i]]);
+					motion_Data.PSC_Data[i].psc_data[--addSubSpeed_StepNum[i]]);
 			}			
 		}
 	}

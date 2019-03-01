@@ -4,14 +4,20 @@
 
 #include "exti.h"
 
+extern Flag_Structure 	flag_Struct;
 extern volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
+
+// 指令中设定的运动参数
+//extern Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
+//extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
+
+extern Motion_Strcuture 	motion_Data;	
+extern FunctionalState	 		nAxisStatus[AXIS_NUM];  	// 各轴是否可以运动的标志
+
+
 
 static GPIO_Structure_XX GPIO_EXTI_Plus[AXIS_NUM]; 			// 电机反馈的PWM接收中断 顺序：X、Y、Z、A、B
 
-#if PRIN2DISP
-#else
-static u8 backResString[RESP_MOTIONMSG_LENGTH];										// 反馈数组，暂时运动用  byYJY
-#endif
 
 #if _TEST	
 	/* 按钮中断，测试用  */
@@ -19,18 +25,9 @@ static	GPIO_Structure_XX 	GPIO_Key1;
 #endif	
 
 
-// 指令中设定的运动参数
-extern Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
-extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
-
-// 存储PSC值的结构体数组
-extern PSC_Data_Array	Psc_Data_Cur[AXIS_NUM];
-extern AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];		// 加减速状态标记
-extern FunctionalState	 		nAxisStatus[AXIS_NUM];  	// 各轴是否可以运动的标志
-
 
 // 脉冲数的中断计数
-u32 pluNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
+vu32 plusNumPWM[AXIS_NUM] = {0, 0, 0, 0, 0};
 
 
 // 外部中断初始化		 	
@@ -51,13 +48,7 @@ void EXTI_Config_Init(void)
 #if _TEST	
 	/* 按钮中断，测试用  */
 	RCC_Periph_N(&GPIO_Key1, _KEY1, EXTI_Trigger_Rising, 0x01, 0x00);
-#endif	
-	
-#if PRIN2DISP
-#else
-	setRespStr_Motion(backResString, RESP_MOTIONMSG_LENGTH, 0x01);
-#endif	
-	
+#endif		
 }
 
 // 中断服务程序
@@ -286,19 +277,19 @@ static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out
 // 测试用的中断服务程序
 static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 {	
-	pluNumPWM[n]++;
+	plusNumPWM[n]++;
 	
 	/* 进入减速阶段 */
-	if((CONST_SPEED == addSubSpeed_Status[n]) && 
-		(Psc_Data_Cur[n].addSpeed_NeedPlusNum > (cmd_Plus_Data.plusNum[n] - pluNumPWM[n])))
+	if((CONST_SPEED == motion_Data.addSubSpeed_Status[n]) && 
+		(motion_Data.PSC_Data[n].addSpeed_NeedPlusNum > (motion_Data.motion_Datas.plusNum[n] - plusNumPWM[n])))
 	{
 //		ADDSUB_TIMER->CNT = 0;
-		addSubSpeed_Status[n] = SUB_SPEED; 
+		motion_Data.addSubSpeed_Status[n] = SUB_SPEED; 
 	}
 	
 	/*  运动完成 关闭PWM */
 #if _TEST_ON_ALIENTEK
-	if(cmd_Plus_Data.plusNum[n] <= pluNumPWM[n])
+	if(motion_Data.motion_Datas.plusNum[n] <= plusNumPWM[n])
 #else
 	if(cmd_Plus_Data.plusNum[n] <= (pluNumPWM[n]-1))
 #endif
@@ -310,6 +301,8 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 		/* 所有的轴都停止才停止 ADDSUB_TIMER  */
 		if(0 == nAxis_Motion_Flag)
 		{
+			flag_Struct.Cmd_Executing_Flag = RESET;
+			
 #if OFFLINE_WORK
 			Offline_Work_Flag = ENABLE;
 #endif
@@ -318,23 +311,12 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 #if PRIN2DISP					
 			respUsartMsg("PWM_EXTI\r\n", 10);
 #else
-			respUsartMsg(backResString, RESP_MOTIONMSG_LENGTH);
+//			respUsartMsg(backResString_Exti, RESP_MOTIONMSG_LENGTH);
 #endif
 		}
 	}
 }
 
-#if PRIN2DISP
-#else
-// 设定运动数据的串口反馈数组的格式
-static void setRespStr_Motion(u8 respStr[], u16 length, u8 status)
-{
-	setRespStr(backResString, RESP_MOTIONMSG_LENGTH);
-	backResString[2] = DATAINFO;
-	backResString[5] = PLUS_DATA;
-	backResString[6] = 0x00;
-	backResString[7] = status;
-}
-#endif
+
 
 

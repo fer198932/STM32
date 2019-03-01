@@ -16,10 +16,11 @@
 #include "main.h"
 
 /* 全局变量 (主要为各种标志位) */
-volatile 	FlagStatus 	DMA_Out_Flag 	= RESET;								// DMA溢出，重新初始化
-volatile 	FlagStatus 	USART_IDLE_Flag 	= RESET; 						// 串口空闲中断标志，串口数据处理
-volatile 	FunctionalState 	Cmd_Execute_Flag	= DISABLE;					// 指令处理完成标志
-volatile	FunctionalState 	Cmd_Copied_Falg = ENABLE; 			// 串口数据是否可复制的标签（命令执行完后才可)
+Flag_Structure 	flag_Struct;
+//volatile 	FlagStatus 	DMA_Out_Flag 	= RESET;								// DMA溢出，重新初始化
+//volatile 	FlagStatus 	USART_IDLE_Flag 	= RESET; 						// 串口空闲中断标志，串口数据处理
+//volatile 	FunctionalState 	Cmd_Execute_Flag	= DISABLE;					// 指令处理完成标志
+//volatile	FunctionalState 	Cmd_Copied_Falg = ENABLE; 			// 串口数据是否可复制的标签（命令执行完后才可)
 
 volatile 	FunctionalState 	Offline_Work_Flag = DISABLE; 		// 进入脱机加工的标记
 volatile 	u32 	Offline_Data_Num = 0;					// 脱机加工数据的编号
@@ -46,20 +47,40 @@ int main(void)
 		/* 循环扫描是否有限位发生  */
 		procLimit();		
 		
-		/* 发生串口空闲中断并且可以进行数据复制时才进入  */
-		if(SET == USART_IDLE_Flag)
-		{
-			Cmd_Copied_Falg = DISABLE; 				// 命令复制完成前不允许再处理数据
-			UsartDataProc();		
-			USART_IDLE_Flag = RESET; 		
-		}
+		/* 发生串口空闲中断时进入  */
+		if(SET == flag_Struct.USART_IDLE_Flag)
+		{	
+			/* 命令处理完毕  */
+			if(RESET == flag_Struct.Cmd_ProcDone_Flag)
+			{
+				flag_Struct.USART_IDLE_Flag = RESET;
+				
+				
+				UsartDataProc();
+				
+				CMD_Proc();
+				
+				flag_Struct.Cmd_ProcDone_Flag = SET;
+			}
+			
+			/*  执行完命令后进入  */
+			if(RESET == flag_Struct.Cmd_Executing_Flag)
+			{
+				flag_Struct.Cmd_Execute_En = ENABLE;
+			}	
+		}		
+
 		
 		/* 执行命令 */
-		if(ENABLE == Cmd_Execute_Flag)
+		if(ENABLE == flag_Struct.Cmd_Execute_En)
 		{
-			Cmd_Execute_Flag = DISABLE; 			// 执行完成前不许再次进入
+			flag_Struct.Cmd_Execute_En = DISABLE; 
+			
+			flag_Struct.Cmd_Executing_Flag = SET;						// 命令执行完成前不允许再次执行
+			
 			CMD_Execute();
-			// 执行完成在其它地方判断
+			
+			flag_Struct.Cmd_ProcDone_Flag = RESET;			
 		}
 		
 		/* 脱机加工 */
@@ -106,6 +127,7 @@ int main(void)
 // 系统初始化函数 （初始化函数尽量只调用一次，因为野指针的存在可能导致系统问题）
 void Sys_Init(void)
 {
+	Flag_Struct_Init();
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);					// 中断分组配置
 	buffer_Init();					// 数据缓冲区初始化
 	comData_Init();
@@ -147,6 +169,13 @@ void Sys_Enable(void)
 //	PWM_Cmd(Z_PWM, ENABLE, Z_CH_OUT); 
 }
 
+
+// 标记类结构体初始化
+void Flag_Struct_Init(void)
+{
+	mymemset(&flag_Struct, 0, sizeof(flag_Struct));
+//	flag_Struct.Cmd_Execute_Flag = ENABLE;
+}
 
 
 

@@ -35,6 +35,9 @@ static void GPIO_AF_Usart_Init(USART_TypeDef* USARTx,
 
 void uart_init(u32 bound);
 
+// 串口空闲中断服务程序
+void USART_IRQ_Macro(volatile u8 temp);
+
 
 // 串口中断服务程序
 #define USART_IRQ \

@@ -7,9 +7,18 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // 指令中设定的运动参数
-extern 	Proc_Data 	cmd_Proc_Data; 														// 命令数据，有成员指向plus_Data
-extern 	Plus_Data 	cmd_Plus_Data;														// 脉冲数据，控制电机运动
-extern 	volatile 		FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
+extern 	Proc_Data 				cmd_Proc_Data; 																		// 命令数据，有成员指向plus_Data
+extern 	Plus_Data 				cmd_Plus_Data;																		// 脉冲数据，控制电机运动
+extern 	volatile 					FunctionalState 		Offline_Work_Flag; 						// 进入脱机加工的标记
+extern 	Flag_Structure 		flag_Struct;
+
+
+/* 反馈的命令数组  */
+#if PRIN2DISP
+#else
+u8	 backResString_Motion[RESP_MOTIONMSG_LENGTH];
+#endif	
+
 
 // 各轴是否可以运动 
 FunctionalState	 nAxisStatus[AXIS_NUM] = {DISABLE, DISABLE, DISABLE, DISABLE, DISABLE};
@@ -163,10 +172,23 @@ void StepMotor_Start(void)
 //		PWM_Cmd(B_PWM, ENABLE, B_CH_OUT);
 	}		
 
-#if OFFLINE_WORK
 	if(0 == nAxis_Motion_Flag)
+	{
+		flag_Struct.Cmd_Executing_Flag = RESET;
+		
+#if OFFLINE_WORK
 		Offline_Work_Flag = ENABLE;
+#else
 #endif	
+		
+		
+		// 回复上位机
+#if PRIN2DISP
+//		respUsartMsg("PWM_Cmd\r\n", 10);
+#else
+//		respUsartMsg(backResString_Motion, RESP_MOTIONMSG_LENGTH);
+#endif	
+	}
 }
 
 // 步进电机同时停止（同步）

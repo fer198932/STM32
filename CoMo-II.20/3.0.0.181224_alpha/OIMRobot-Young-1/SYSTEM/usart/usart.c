@@ -10,7 +10,8 @@
 // 串口程序
 ////////////////////////////////////////////////////////////////////////////////// 	  
 
-extern volatile 	u8 	USART_IDLE_Flag; 							// 串口空闲中断标志，串口数据处理 
+//extern volatile 	u8 	USART_IDLE_Flag; 							// 串口空闲中断标志，串口数据处理 
+extern	Flag_Structure 	flag_Struct;
 extern volatile 	FlagStatus 	DMA_Out_Flag;									// DMA溢出，重新初始化
 
 //////////////////////////////////////////////////////////////////
@@ -139,6 +140,24 @@ void uart_init(u32 bound){
 
 }
 
+// 串口空闲中断服务程序
+void USART_IRQ_Macro(volatile u8 temp)
+{
+	if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 空闲中断 */ \
+	{ \
+		temp = temp;					/* 清除 warning */				\
+		/* DMA接收方式 */ 		\
+		temp = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清空闲中断 */   \
+		temp = USART_X->DR;		\
+			\
+		/* end指向的位置=设置的接收长度-剩余的DMA缓存大小 （始终等于） */ 	\
+		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx);		\
+			\
+		if(RESET == flag_Struct.USART_IDLE_Flag) 	/* 如果指令处理完成 */		\
+			flag_Struct.USART_IDLE_Flag = SET; 			/* 接收到一帧数据 */ 			\
+	} 	
+}
+
 
 #if EN_USART1
 void USART1_IRQHandler(void)                	//串口1中断服务程序
@@ -149,7 +168,7 @@ void USART1_IRQHandler(void)                	//串口1中断服务程序
 	OSIntEnter();    	
 #endif	
 	
-	USART_IRQ;
+	USART_IRQ_Macro(temp);;
 	
 //	if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 空闲中断 */ \
 //	{ \
@@ -217,7 +236,7 @@ void USART2_IRQHandler(void)                	//串口2中断服务程序
 	OSIntEnter();    	
 #endif	
 	
-	 USART_IRQ;
+	 USART_IRQ_Macro(temp);
 	
 #if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
 	OSIntExit();  											 
@@ -233,7 +252,7 @@ void USART3_IRQHandler(void)                	//串口3中断服务程序
 	OSIntEnter();    	
 #endif	
 	
-	 USART_IRQ;
+	 USART_IRQ_Macro(temp);
 	
 #if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
 	OSIntExit();  											 

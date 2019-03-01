@@ -3,8 +3,7 @@
 ********************************************************************************************************/
 #include "ComDataProc.h"
 
-extern	volatile 	FunctionalState 	Cmd_Execute_Flag;					// 指令处理完成标志
-//extern	volatile 	FlagStatus 				USART_IDLE_Flag; 				// 串口空闲中断标志，串口数据处理
+extern	Flag_Structure 	flag_Struct;
 extern volatile 	u32 	Offline_Data_Num;					// 脱机加工数据的标志
 
 Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
@@ -24,7 +23,7 @@ void UsartDataProc(void)
 	if(IS_OK == bufData_Proc())
 	{
 		// 有数据过来就置位
-		Cmd_Execute_Flag = ENABLE;
+//		flag_Struct.Cmd_Execute_En = ENABLE;
 	}
 	else 
 	{

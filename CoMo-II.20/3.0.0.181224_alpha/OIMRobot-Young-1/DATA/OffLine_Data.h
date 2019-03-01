@@ -4,7 +4,7 @@
 #include "sys.h"
 #include "AddSubSpeed_S.h"
 
-#define LENGTH_OFFL 5505
+#define LENGTH_OFFL 1
 
 // ÔÝÊ±ÈýÖá
 extern const s32 plusNum_OFFL[LENGTH_OFFL][3];
