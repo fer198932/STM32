@@ -5,8 +5,8 @@
 #include "timer.h"
 
 
-extern 	NAxis_TIM_Structure		nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
-extern 	Motion_Strcuture 	motion_Data;	
+extern 		NAxis_TIM_Structure			nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
+extern 		Motion_Strcuture 				motion_Data;	
 
 
 // 记录加减速定时器运行的步数

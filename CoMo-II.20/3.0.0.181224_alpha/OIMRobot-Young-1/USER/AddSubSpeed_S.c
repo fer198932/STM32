@@ -6,8 +6,8 @@
 #include "AddSubSpeed_S.h"
 
 
-extern 											Plus_Data cmd_Plus_Data;						// 脉冲数据，控制电机运动
-extern 											Proc_Data cmd_Proc_Data; 						// 命令数据，有成员指向plus_Data
+//extern 											Plus_Data cmd_Plus_Data;						// 脉冲数据，控制电机运动
+//extern 											Proc_Data cmd_Proc_Data; 						// 命令数据，有成员指向plus_Data
 extern FunctionalState	 		nAxisStatus[AXIS_NUM];  						// 各轴是否可以运动的标志
 extern NAxis_TIM_Structure	nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
 extern vu32 								plusNumPWM[AXIS_NUM]; 								// 脉冲数的中断计数
@@ -24,7 +24,10 @@ Motion_Strcuture 	motion_Data_Pre;
 void motion_Init(void)
 {
 	mymemcpy(&motion_Data, &motion_Data_Pre, sizeof(motion_Data));
-//	motion_Data = motion_Data_Pre;	
+	
+	// 标志位
+	
+	
 	
 	// 设定运动方向
 	setStepMotorDir();
@@ -79,15 +82,10 @@ static void	nAxisMotion_Init(void)
 // 重置相关运动参数
 static void resetMotionData(void)
 {	
-	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
+	//comData_Init();		// 在该函数已经初始化，不能再次初始化
 	
 	motion_Data_Pre.maxClkNum = AXIS_NUM;
 	motion_Data_Pre.addSubTime = TIM_OUT;
-	
-	/* 脉冲数据设定  */
-//	motion_Data_Pre.motion_Datas = cmd_Plus_Data;
-	mymemcpy(&(motion_Data_Pre.motion_Datas), &cmd_Plus_Data, sizeof(cmd_Plus_Data));
-	mymemcpy(&(motion_Data_Pre.proc_Datas), &cmd_Proc_Data, sizeof(cmd_Proc_Data));
 }
 
 // 设定运动方向
@@ -96,7 +94,7 @@ static void	setStepMotorDir(void)
 	u8 i;
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		Motor_Dir_Set(StepMotor_Dir+i, motion_Data.motion_Datas.dir[i]);
+		Motor_Dir_Set(StepMotor_Dir+i, motion_Data.cmd_Datas.plus_Datas.dir[i]);
 	}
 }
 
@@ -110,7 +108,7 @@ static void cal_AddSubSpeed_Div(void)
 //	float correct_Value;			// 修正clk的比例
 	
 	// 最大频率所在轴作为分段依据 这里可能有BUG  byYJY
-	maxClk_length = (motion_Data_Pre.motion_Datas.clk[maxClkNum] - n_Axis_Min_Clk(maxClkNum)) / AddSub_Step_DIV;
+	maxClk_length = (motion_Data_Pre.cmd_Datas.plus_Datas.clk[maxClkNum] - n_Axis_Min_Clk(maxClkNum)) / AddSub_Step_DIV;
 	
 	if((AXIS_NUM > maxClkNum) && (maxClk_length < MIN_STEP_NUM))		// maxClk_length太小或为负时不加减速
 	{
@@ -141,7 +139,7 @@ static void cal_AddSubSpeed_Div(void)
 	for(i=0; i<AXIS_NUM; i++)
 	{
 		// 速度太小时，不进行加减速
-		if(motion_Data_Pre.motion_Datas.clk[i] < n_Axis_Min_Clk(i))
+		if(motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] < n_Axis_Min_Clk(i))
 		{
 			En_ASS_Flag(DISABLE, (N_Axis)i);
 			motion_Data_Pre.PSC_Data[i].length = 0;									
@@ -168,7 +166,7 @@ static u8 adjustClk(void)
 	// 最大值判断
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		if(motion_Data_Pre.motion_Datas.clk[i] == motion_Data_Pre.maxClk) 				// 最大频率
+		if(motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] == motion_Data_Pre.maxClk) 				// 最大频率
 		{
 			if(motion_Data_Pre.maxClk > n_Axis_Max_Clk(i)) 					// 需要降频
 			{
@@ -189,7 +187,7 @@ static u8 adjustClk(void)
 	{
 		for(i=0; i<AXIS_NUM; i++)
 		{
-			if(motion_Data_Pre.motion_Datas.clk[i] == motion_Data_Pre.minClk) 				// 最小频率
+			if(motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] == motion_Data_Pre.minClk) 				// 最小频率
 			{
 				if(motion_Data_Pre.minClk < n_Axis_Min_Clk(i))   			// 最小值过小
 				{
@@ -226,18 +224,18 @@ static void cal_S_Line(void)
 	{
 		for(i=0; i<AXIS_NUM; i++)
 		{
-			motion_Data_Pre.nAxisClk_Cur[i] = motion_Data_Pre.motion_Datas.clk[i];
+			motion_Data_Pre.nAxisClk_Cur[i] = motion_Data_Pre.cmd_Datas.plus_Datas.clk[i];
 		}
 		
 		return;
 	}
 	// 最大频率轴的S型曲线计算错误
 	if(DISABLE == calSModelLine(freq_Temp, motion_Data_Pre.PSC_Data[maxClkNum].psc_data, motion_Data_Pre.PSC_Data[maxClkNum].length,
-				motion_Data_Pre.motion_Datas.clk[maxClkNum], n_Axis_Min_Clk(maxClkNum), S_FLEXIBLE))
+				motion_Data_Pre.cmd_Datas.plus_Datas.clk[maxClkNum], n_Axis_Min_Clk(maxClkNum), S_FLEXIBLE))
 	{
 		En_ASS_Flag(DISABLE ,ALL_Axis);
 		
-		motion_Data_Pre.motion_Datas.clk[maxClkNum] = n_Axis_Min_Clk(maxClkNum);			// 将最大轴的频率降低
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[maxClkNum] = n_Axis_Min_Clk(maxClkNum);			// 将最大轴的频率降低
 		
 		needTotalTime = calTotalNeedTime(maxClkNum);		
 		
@@ -259,11 +257,11 @@ static void cal_S_Line(void)
 	motion_Data_Pre.PSC_Data[maxClkNum].addSpeed_NeedPlusNum = needPlusNum;
 	
 	// 最大频率轴的脉冲数不够进行一次完整的的加减速，那就将加减速关闭
-	if((2 * needPlusNum + ConstS_NeedPlus) > motion_Data_Pre.motion_Datas.plusNum[maxClkNum])
+	if((2 * needPlusNum + ConstS_NeedPlus) > motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[maxClkNum])
 	{
 		En_ASS_Flag(DISABLE ,ALL_Axis);
 		
-		motion_Data_Pre.motion_Datas.clk[maxClkNum] = n_Axis_Min_Clk(maxClkNum);			// 将最大轴的频率降低
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[maxClkNum] = n_Axis_Min_Clk(maxClkNum);			// 将最大轴的频率降低
 		
 		needTotalTime = calTotalNeedTime(maxClkNum);		
 		
@@ -295,7 +293,7 @@ static void cal_S_Line(void)
 		if(ENABLE == motion_Data_Pre.PSC_Data[i].enAddSubFlag)
 		{
 			if(DISABLE == calSModelLine(freq_Temp, motion_Data_Pre.PSC_Data[i].psc_data, motion_Data_Pre.PSC_Data[i].length,
-				motion_Data_Pre.motion_Datas.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE))
+				motion_Data_Pre.cmd_Datas.plus_Datas.clk[i], n_Axis_Min_Clk(i), S_FLEXIBLE))
 			{
 				En_ASS_Flag(DISABLE, (N_Axis)i);
 				
@@ -309,7 +307,7 @@ static void cal_S_Line(void)
 			motion_Data_Pre.PSC_Data[i].addSpeed_NeedPlusNum = needPlusNum;
 			
 			// 如果总的脉冲数不够进行一次完整加减速，那就将加减速关闭
-			if((2 * needPlusNum + ConstS_NeedPlus) > motion_Data_Pre.motion_Datas.plusNum[i])
+			if((2 * needPlusNum + ConstS_NeedPlus) > motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[i])
 			{
 				En_ASS_Flag(DISABLE, (N_Axis)i);
 				
@@ -355,15 +353,15 @@ static FunctionalState calSModelLine(float fre, u16 period[], float len,
 static u32 preProcMaxClk(void)
 {
 	volatile u8 i;
-	u32 max_Clk = motion_Data_Pre.motion_Datas.clk[0];
+	u32 max_Clk = motion_Data_Pre.cmd_Datas.plus_Datas.clk[0];
 	for(i=1; i<AXIS_NUM; i++)
 	{
-		max_Clk = max(max_Clk, motion_Data_Pre.motion_Datas.clk[i]);
+		max_Clk = max(max_Clk, motion_Data_Pre.cmd_Datas.plus_Datas.clk[i]);
 	}
 	// 找到最大频率对应的轴
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		if(max_Clk == motion_Data_Pre.motion_Datas.clk[i])
+		if(max_Clk == motion_Data_Pre.cmd_Datas.plus_Datas.clk[i])
 			motion_Data_Pre.maxClkNum = i;
 	}
 	
@@ -378,13 +376,13 @@ static u32 preProcMinClk(u32 max_Clk)
 	
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		if((0 == min_Clk) && (max_Clk != motion_Data_Pre.motion_Datas.clk[i]))
+		if((0 == min_Clk) && (max_Clk != motion_Data_Pre.cmd_Datas.plus_Datas.clk[i]))
 		{
-			min_Clk = motion_Data_Pre.motion_Datas.clk[i];			
+			min_Clk = motion_Data_Pre.cmd_Datas.plus_Datas.clk[i];			
 		}
-		else if(0 != motion_Data_Pre.motion_Datas.clk[i])
+		else if(0 != motion_Data_Pre.cmd_Datas.plus_Datas.clk[i])
 		{
-			min_Clk = min(min_Clk, motion_Data_Pre.motion_Datas.clk[i]);
+			min_Clk = min(min_Clk, motion_Data_Pre.cmd_Datas.plus_Datas.clk[i]);
 		}
 	}
 	return min_Clk;
@@ -396,7 +394,7 @@ static void reduceClk(void)
 	u8 i;
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		motion_Data_Pre.motion_Datas.clk[i] = (motion_Data_Pre.motion_Datas.clk[i] >> 1);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = (motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] >> 1);
 	}
 }
 // 升频，速度太慢时使用，优先级低
@@ -405,7 +403,7 @@ static void boostClk(void)
 	u8 i;
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		motion_Data_Pre.motion_Datas.clk[i] = (motion_Data_Pre.motion_Datas.clk[i] << 1);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = (motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] << 1);
 	}
 }
 
@@ -454,7 +452,7 @@ static FunctionalState ifBoostClkOK(void)
 	
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		if((motion_Data_Pre.motion_Datas.clk[i] << 1) > n_Axis_Max_Clk(i)) // 升频后大于最大频率，不允许升频
+		if((motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] << 1) > n_Axis_Max_Clk(i)) // 升频后大于最大频率，不允许升频
 		{
 			return DISABLE;
 		}
@@ -491,17 +489,17 @@ static float calTotalNeedTime(u8 nAxis)
 	float plus_Num;						// 发出的脉冲数
 	
 	if(DISABLE == motion_Data_Pre.PSC_Data[nAxis].enAddSubFlag) 		// 未开启加减速
-		return (motion_Data_Pre.motion_Datas.plusNum[nAxis] * MHz_2_Hz / motion_Data_Pre.motion_Datas.clk[nAxis]);
+		return (motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis] * MHz_2_Hz / motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis]);
 	
 	
 	maxStep = (int)(motion_Data_Pre.PSC_Data[nAxis].length - 1);
 	// 加速阶段完成运动
-	if(motion_Data_Pre.motion_Datas.plusNum[nAxis] < motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum)
+	if(motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis] < motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum)
 	{
 		i = 0;
 		
 		plus_Num = 0;
-		while(plus_Num < motion_Data_Pre.motion_Datas.plusNum[nAxis])
+		while(plus_Num < motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis])
 		{
 			if(i >=  motion_Data_Pre.PSC_Data[nAxis].length) 		// i值有误
 			{
@@ -519,11 +517,11 @@ static float calTotalNeedTime(u8 nAxis)
 	}
 	
 	// 减速阶段完成运动
-	else if((motion_Data_Pre.motion_Datas.plusNum[nAxis] < (motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum) * 2))
+	else if((motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis] < (motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum) * 2))
 	{
 		i = 0;
 		plus_Num = motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum;
-		while(plus_Num < motion_Data_Pre.motion_Datas.plusNum[nAxis])
+		while(plus_Num < motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis])
 		{
 			if(i >=  motion_Data_Pre.PSC_Data[nAxis].length) 		// i值有误
 			{
@@ -544,8 +542,8 @@ static float calTotalNeedTime(u8 nAxis)
 	// 完成一个完整的运动
 	else 
 	{
-		constSpeedTime = (motion_Data_Pre.motion_Datas.plusNum[nAxis] - 
-			2 * motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum) / motion_Data_Pre.motion_Datas.clk[nAxis];
+		constSpeedTime = (motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis] - 
+			2 * motion_Data_Pre.PSC_Data[nAxis].addSpeed_NeedPlusNum) / motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis];
 		
 		return (motion_Data_Pre.addSubTime * motion_Data_Pre.PSC_Data[nAxis].length * 2 + constSpeedTime);
 	}	
@@ -593,25 +591,25 @@ static ErrorStatus CorrectClk(u8 nAxis, float needTime)
 	u32 clkTemp;
 	ErrorStatus status;
 	
-	clkTemp = motion_Data_Pre.motion_Datas.plusNum[nAxis] * MHz_2_Hz / needTime;
+	clkTemp = motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[nAxis] * MHz_2_Hz / needTime;
 	
-	if(clkTemp <= motion_Data_Pre.motion_Datas.clk[nAxis])
+	if(clkTemp <= motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis])
 	{
-		motion_Data_Pre.motion_Datas.clk[nAxis] = clkTemp;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis] = clkTemp;
 		status = SUCCESS;
 	}
 	else if(clkTemp <= n_Axis_Min_Clk(nAxis))
 	{
-		motion_Data_Pre.motion_Datas.clk[nAxis] = motion_Data_Pre.motion_Datas.clk[nAxis];
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis] = motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis];
 		status = ERROR;
 	}
 	else
 	{
-		motion_Data_Pre.motion_Datas.clk[nAxis] = n_Axis_Min_Clk(nAxis);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis] = n_Axis_Min_Clk(nAxis);
 		status = ERROR;
 	}
 	
-	motion_Data_Pre.nAxisClk_Cur[nAxis] = motion_Data_Pre.motion_Datas.clk[nAxis];
+	motion_Data_Pre.nAxisClk_Cur[nAxis] = motion_Data_Pre.cmd_Datas.plus_Datas.clk[nAxis];
 	
 	return status;
 }

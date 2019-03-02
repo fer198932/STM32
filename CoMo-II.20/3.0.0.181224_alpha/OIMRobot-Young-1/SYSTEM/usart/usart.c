@@ -153,7 +153,7 @@ void USART_IRQ_Macro(volatile u8 temp)
 		/* end指向的位置=设置的接收长度-剩余的DMA缓存大小 （始终等于） */ 	\
 		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx);		\
 			\
-		if(RESET == flag_Struct.USART_IDLE_Flag) 	/* 如果指令处理完成 */		\
+//		if(RESET == flag_Struct.USART_IDLE_Flag) 	/* 如果指令处理完成 */		
 			flag_Struct.USART_IDLE_Flag = SET; 			/* 接收到一帧数据 */ 			\
 	} 	
 }

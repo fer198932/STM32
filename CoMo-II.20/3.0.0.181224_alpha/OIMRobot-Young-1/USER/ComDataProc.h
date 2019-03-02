@@ -30,24 +30,27 @@ typedef struct {
 	u16 end;
 } PosCur;
 
-// 从串口得到的处理后的命令
-typedef struct {
-	u8 			cmd_Type;  						// 命令类型、帧标识 如：#define SELFCHECK 		0x0B     //自检
-	u8 			cmd_Excute;						// 需要执行的命令、指令码
-	u32 		cmd_Value;						// 命令取值
-//	u32			offline_length;				// 脱机加工数据的长度
-	
-	u8 			resp_Excute;					// 回复指令码 通常resp_Excute=cmd_Excute
-	u8 			resp_Status;					// 回复状态
-	void* 	cmd_Data; 						// 指向命令的数据结构体，脉冲数据等情况下需要用到 暂时没用到，慎用！
-} Proc_Data; 
-
 // 脉冲数据结构体 
 typedef struct {
 	u32 				plusNum[AXIS_NUM];				// 脉冲数
 	u32 				clk[AXIS_NUM];						// 频率：决定了运动速度
 	Motor_Dir	 	dir[AXIS_NUM];						// 电机运动方向
 } Plus_Data;
+
+// 从串口得到的处理后的命令
+typedef struct {
+	u8 						cmd_Type;  						// 命令类型、帧标识 如：#define SELFCHECK 		0x0B     //自检
+	u8 						cmd_Excute;						// 需要执行的命令、指令码
+	u32 					cmd_Value;						// 命令取值
+//	u32			offline_length;						// 脱机加工数据的长度
+	
+	u8 						resp_Excute;					// 回复指令码 通常resp_Excute=cmd_Excute
+	u8 						resp_Status;					// 回复状态
+//	void* 	cmd_Data; 								// 指向命令的数据结构体，脉冲数据等情况下需要用到 暂时没用到，慎用！
+	Plus_Data			plus_Datas;						// 脉冲运动参数
+} Proc_Data; 
+
+
 
 /* 加减速相关的结构体  */
 #define 	DATA_LENGTH				1024						// 存放加减速psc值的空间长度，后续可考虑转为动态数组
@@ -69,14 +72,13 @@ typedef struct {
 	// 加减速状态标记
 	AddSubSpeedStatus addSubSpeed_Status[AXIS_NUM];
 	
-	float addSubTime;		// 每步加减速的时间 即ADDSUB_TIMER的周期时间 单位us
-	u32 maxClk;
-	u32 minClk;
-	u32 nAxisClk_Cur[AXIS_NUM];		// 当前频率
-	u8 maxClkNum;				// 最大频率对应的轴 等于AXIS_NUM表示有误或未设置	
-	
-	Plus_Data  motion_Datas;		// 指向运动数据
-	Proc_Data		proc_Datas;			// 命令数据
+	float 			addSubTime;											// 每步加减速的时间 即ADDSUB_TIMER的周期时间 单位us
+	u32 				maxClk;
+	u32 				minClk;
+	u32 				nAxisClk_Cur[AXIS_NUM];					// 当前频率
+	u8 					maxClkNum;											// 最大频率对应的轴 等于AXIS_NUM表示有误或未设置	
+
+	Proc_Data		cmd_Datas;											// 命令数据
 } Motion_Strcuture;
 
 /* 加减速相关的结构体  */
@@ -97,9 +99,6 @@ static void offline_Data_Proc(PosCur posCur);
 // 处理对应区间上的缓冲区数据
 static IfOK_Status bufData_Proc_Region(PosCur posCur);
 
-// proc结构体指向对应数据结构体
-static void proc_pt_motionData(void* _data);
-
 // 检查从缓冲区读取的数据是否合格
 static IfOK_Status bufData_Proc(void);
 
@@ -119,12 +118,18 @@ static u8 getSetDataDir(PosCur posCur, u8 shift);
 static IfOK_Status setCmdData(PosCur posCur);
 
 // 设置回复字符串的格式
-void setRespStr(u8 resStr[], u16 length);
+void setRespStr(Proc_Data* pCmd, u8 resStr[], u16 length);
 
 // 回复上位机的程序 异常或错误
 void respMsgError(const char str[], u8 status);
 
 // 回复串口数据信息
 void respUsartMsg(const u8 backResString[], u16 length);
+
+#if PRIN2DISP
+#else
+// 设定运动数据的串口反馈数组的格式
+void setRespStr_Motion(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status);
+#endif
 
 #endif

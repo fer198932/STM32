@@ -4,15 +4,10 @@
 
 #include "exti.h"
 
-extern Flag_Structure 	flag_Struct;
-extern volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
-
-// 指令中设定的运动参数
-//extern Proc_Data cmd_Proc_Data; 		// 命令数据，有成员指向plus_Data
-//extern Plus_Data cmd_Plus_Data;			// 脉冲数据，控制电机运动
-
-extern Motion_Strcuture 	motion_Data;	
-extern FunctionalState	 		nAxisStatus[AXIS_NUM];  	// 各轴是否可以运动的标志
+extern 	Flag_Structure 								flag_Struct;
+extern 	volatile 	FunctionalState 		Offline_Work_Flag; 		// 进入脱机加工的标记
+extern 	Motion_Strcuture 							motion_Data;	
+extern 	FunctionalState	 							nAxisStatus[AXIS_NUM];  	// 各轴是否可以运动的标志
 
 
 
@@ -281,7 +276,7 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 	
 	/* 进入减速阶段 */
 	if((CONST_SPEED == motion_Data.addSubSpeed_Status[n]) && 
-		(motion_Data.PSC_Data[n].addSpeed_NeedPlusNum > (motion_Data.motion_Datas.plusNum[n] - plusNumPWM[n])))
+		(motion_Data.PSC_Data[n].addSpeed_NeedPlusNum > (motion_Data.cmd_Datas.plus_Datas.plusNum[n] - plusNumPWM[n])))
 	{
 //		ADDSUB_TIMER->CNT = 0;
 		motion_Data.addSubSpeed_Status[n] = SUB_SPEED; 
@@ -289,7 +284,7 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out)
 	
 	/*  运动完成 关闭PWM */
 #if _TEST_ON_ALIENTEK
-	if(motion_Data.motion_Datas.plusNum[n] <= plusNumPWM[n])
+	if(motion_Data.cmd_Datas.plus_Datas.plusNum[n] <= plusNumPWM[n])
 #else
 	if(cmd_Plus_Data.plusNum[n] <= (pluNumPWM[n]-1))
 #endif

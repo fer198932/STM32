@@ -35,9 +35,10 @@
 // 标记类结构体，注意Flag_Struct_Init里面初始化了默认值（大部分为0）
 typedef struct {
 	volatile 	FlagStatus 	DMA_Out_Flag;								// DMA溢出，重新初始化
-	volatile 	FlagStatus 	USART_IDLE_Flag; 						// 串口空闲中断标志，串口数据处理
 	
+	volatile 	FlagStatus 	USART_IDLE_Flag; 						// 串口空闲中断标志，串口数据处理	
 	volatile 	FlagStatus 	USART_Data_Proc_Flag;				// 串口数据处理完毕
+	
 	volatile 	FlagStatus	Cmd_Executing_Flag;					// 置位后表示命令正在执行
 	volatile 	FlagStatus 	Cmd_ProcDone_Flag;					// 命令处理完毕的标记
 	

@@ -3,27 +3,32 @@
 ********************************************************************************************************/
 #include "ComDataProc.h"
 
-extern	Flag_Structure 	flag_Struct;
-extern volatile 	u32 	Offline_Data_Num;					// 脱机加工数据的标志
+extern		Flag_Structure 				flag_Struct;
+extern 		vu32 									Offline_Data_Num;					// 脱机加工数据的标志
+extern		Motion_Strcuture 			motion_Data_Pre;	
 
-Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
-Plus_Data plus_Data;		// 脉冲数据，控制电机运动
+static Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
+//Plus_Data plus_Data;		// 脉冲数据，控制电机运动
 
 // 命令数据结构体的初始化
 void comData_Init(void)
 {
-	proc_Data.cmd_Type = INVALID_CMD;				// 初始化为无效命令 全局变量默认初始化为0;
-	proc_pt_motionData(NULL);								// 默认情况
+	mymemset(&proc_Data, 0, sizeof(proc_Data));
+	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
 }
 
 
 // 从缓冲区得到数据并进行处理
 void UsartDataProc(void)
 {
+	// 重置为0
+	comData_Init();
+	
 	if(IS_OK == bufData_Proc())
 	{
-		// 有数据过来就置位
-//		flag_Struct.Cmd_Execute_En = ENABLE;
+		// 数据合格就进行复制
+//		motion_Data_Pre.cmd_Datas = proc_Data;
+		mymemcpy(&(motion_Data_Pre.cmd_Datas), &proc_Data, sizeof(proc_Data));
 	}
 	else 
 	{
@@ -118,17 +123,17 @@ static IfOK_Status bufData_Proc_Region(PosCur posCur)
 }
 
 // 设置回复字符串的格式
-void setRespStr(u8 resStr[], u16 length)
+void setRespStr(Proc_Data* pCmd, u8 resStr[], u16 length)
 {
 	resStr[0] = FrameB1;
 	resStr[1] = FrameB2;
 	
-	resStr[2] = proc_Data.cmd_Type;				// 帧标识
+	resStr[2] = pCmd->cmd_Type;				// 帧标识
 	
 	resStr[3] = (length & 0x00FF);												// 长度
 	resStr[4] = (length >> 8);
 	
-	resStr[5] = proc_Data.resp_Excute;		// 标志码
+	resStr[5] = pCmd->resp_Excute;		// 标志码
 	
 	resStr[length-1] = FrameEnd;
 }
@@ -224,12 +229,6 @@ static IfOK_Status setCmdData(PosCur posCur)
 	}
 }
 
-// proc结构体指向对应数据结构体
-static void proc_pt_motionData(void* _data)
-{
-	proc_Data.cmd_Data = _data;
-}
-
 // 回复上位机的程序
 void respMsgError(const char str[], u8 status)
 {
@@ -282,59 +281,59 @@ static void plus_Data_Proc(PosCur posCur)
 {
 	/* 脉冲数据 */
 				// X轴
-				plus_Data.plusNum[0] = getSetDataPlusNum(posCur, 0);
-				plus_Data.clk[0] = getSetDataClk(posCur, 0);
+			proc_Data.plus_Datas.plusNum[0] = getSetDataPlusNum(posCur, 0);
+				proc_Data.plus_Datas.clk[0] = getSetDataClk(posCur, 0);
 			
-				if((0 == plus_Data.plusNum[0]) && (0 == plus_Data.clk[0]))  	// 方向设定
-					plus_Data.dir[0] = TBD_DIR;																	// 方向未定
+				if((0 == proc_Data.plus_Datas.plusNum[0]) && (0 == proc_Data.plus_Datas.clk[0]))  	// 方向设定
+					proc_Data.plus_Datas.dir[0] = TBD_DIR;																	// 方向未定
 				else if(0 == getSetDataDir(posCur, 0))
-					plus_Data.dir[0] = POS_DIR;																	// 正向
+					proc_Data.plus_Datas.dir[0] = POS_DIR;																	// 正向
 				else
-					plus_Data.dir[0] = NEG_DIR;																	// 负向
+					proc_Data.plus_Datas.dir[0] = NEG_DIR;																	// 负向
 				
 				// Y轴
-				plus_Data.plusNum[1] = getSetDataPlusNum(posCur, 1);
-				plus_Data.clk[1] = getSetDataClk(posCur, 1);
+				proc_Data.plus_Datas.plusNum[1] = getSetDataPlusNum(posCur, 1);
+				proc_Data.plus_Datas.clk[1] = getSetDataClk(posCur, 1);
 				
-				if((0 == plus_Data.plusNum[1]) || (0 == plus_Data.clk[1]))  	// 方向设定
-					plus_Data.dir[1] = TBD_DIR;																	// 方向未定
+				if((0 == proc_Data.plus_Datas.plusNum[1]) || (0 == proc_Data.plus_Datas.clk[1]))  	// 方向设定
+					proc_Data.plus_Datas.dir[1] = TBD_DIR;																	// 方向未定
 				else if(0 == getSetDataDir(posCur, 1))
-					plus_Data.dir[1] = POS_DIR;																	// 正向
+					proc_Data.plus_Datas.dir[1] = POS_DIR;																	// 正向
 				else
-					plus_Data.dir[1] = NEG_DIR;																	// 负向
+					proc_Data.plus_Datas.dir[1] = NEG_DIR;																	// 负向
 			
 				// Z轴
-				plus_Data.plusNum[2] = getSetDataPlusNum(posCur, 2);
-				plus_Data.clk[2] = getSetDataClk(posCur, 2);
+				proc_Data.plus_Datas.plusNum[2] = getSetDataPlusNum(posCur, 2);
+				proc_Data.plus_Datas.clk[2] = getSetDataClk(posCur, 2);
 				
-				if((0 == plus_Data.plusNum[2]) || (0 == plus_Data.clk[2]))  	// 方向设定
-					plus_Data.dir[2] = TBD_DIR;																	// 方向未定
+				if((0 == proc_Data.plus_Datas.plusNum[2]) || (0 == proc_Data.plus_Datas.clk[2]))  	// 方向设定
+					proc_Data.plus_Datas.dir[2] = TBD_DIR;																	// 方向未定
 				else if(0 == getSetDataDir(posCur, 2))
-					plus_Data.dir[2] = POS_DIR;																	// 正向
+					proc_Data.plus_Datas.dir[2] = POS_DIR;																	// 正向
 				else
-					plus_Data.dir[2] = NEG_DIR;																	// 负向
+					proc_Data.plus_Datas.dir[2] = NEG_DIR;																	// 负向
 				
 				// A轴
-				plus_Data.plusNum[3] = getSetDataPlusNum(posCur, 3);
-				plus_Data.clk[3] = getSetDataClk(posCur, 3);
+				proc_Data.plus_Datas.plusNum[3] = getSetDataPlusNum(posCur, 3);
+				proc_Data.plus_Datas.clk[3] = getSetDataClk(posCur, 3);
 				
-				if((0 == plus_Data.plusNum[3]) || (0 == plus_Data.clk[3]))  	// 方向设定
-					plus_Data.dir[3] = TBD_DIR;																	// 方向未定
+				if((0 == proc_Data.plus_Datas.plusNum[3]) || (0 == proc_Data.plus_Datas.clk[3]))  	// 方向设定
+					proc_Data.plus_Datas.dir[3] = TBD_DIR;																	// 方向未定
 				else if(0 == getSetDataDir(posCur, 3))
-					plus_Data.dir[3] = POS_DIR;																	// 正向
+					proc_Data.plus_Datas.dir[3] = POS_DIR;																	// 正向
 				else
-					plus_Data.dir[3] = NEG_DIR;																	// 负向
+					proc_Data.plus_Datas.dir[3] = NEG_DIR;																	// 负向
 				
 				// B轴
-				plus_Data.plusNum[4] = getSetDataPlusNum(posCur, 4);
-				plus_Data.clk[4] = getSetDataClk(posCur, 4);
+				proc_Data.plus_Datas.plusNum[4] = getSetDataPlusNum(posCur, 4);
+				proc_Data.plus_Datas.clk[4] = getSetDataClk(posCur, 4);
 				
-				if((0 == plus_Data.plusNum[4]) || (0 == plus_Data.clk[4]))  	// 方向设定
-					plus_Data.dir[4] = TBD_DIR;																	// 方向未定
+				if((0 == proc_Data.plus_Datas.plusNum[4]) || (0 == proc_Data.plus_Datas.clk[4]))  	// 方向设定
+					proc_Data.plus_Datas.dir[4] = TBD_DIR;																	// 方向未定
 				else if(0 == getSetDataDir(posCur, 4))
-					plus_Data.dir[4] = POS_DIR;																	// 正向
+					proc_Data.plus_Datas.dir[4] = POS_DIR;																	// 正向
 				else
-					plus_Data.dir[4] = NEG_DIR;																	// 负向
+					proc_Data.plus_Datas.dir[4] = NEG_DIR;																	// 负向
 	
 }
 
@@ -350,5 +349,19 @@ static void offline_Data_Proc(PosCur posCur)
 //	proc_Data.offline_length = LENGTH_OFFL;
 	Offline_Data_Num = LENGTH_OFFL;
 }
+
+
+#if PRIN2DISP
+#else
+// 设定运动数据的串口反馈数组的格式
+void setRespStr_Motion(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{
+	setRespStr(pCmd, respStr, RESP_MOTIONMSG_LENGTH);
+	respStr[2] = DATAINFO;
+	respStr[5] = PLUS_DATA;
+	respStr[6] = 0x00;
+	respStr[7] = status;
+}
+#endif
 
 

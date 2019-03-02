@@ -47,41 +47,91 @@ int main(void)
 		/* 循环扫描是否有限位发生  */
 		procLimit();		
 		
-		/* 发生串口空闲中断时进入  */
+		/* 发生串口空闲中断 */
 		if(SET == flag_Struct.USART_IDLE_Flag)
-		{	
-			/* 命令处理完毕  */
+		{
+			flag_Struct.USART_IDLE_Flag = RESET;
+			
 			if(RESET == flag_Struct.Cmd_ProcDone_Flag)
 			{
-				flag_Struct.USART_IDLE_Flag = RESET;
-				
+				flag_Struct.Cmd_ProcDone_Flag = SET;
 				
 				UsartDataProc();
 				
-				CMD_Proc();
-				
-				flag_Struct.Cmd_ProcDone_Flag = SET;
-			}
-			
-			/*  执行完命令后进入  */
-			if(RESET == flag_Struct.Cmd_Executing_Flag)
-			{
-				flag_Struct.Cmd_Execute_En = ENABLE;
-			}	
-		}		
+				CMD_Proc();		
 
+				
+			}
+			else
+			{
+				respMsgError("前一条命令还未处理完毕！\r\n", 1);				
+				continue;
+			}
+		}
 		
-		/* 执行命令 */
+		if((SET == flag_Struct.Cmd_ProcDone_Flag) && (RESET == flag_Struct.Cmd_Executing_Flag))
+		{
+			flag_Struct.Cmd_Execute_En = ENABLE;
+		}
+		
+//		/*  复制命令数据的结构体 */
+//		if(RESET == flag_Struct.Cmd_Executing_Flag)
+//		{
+//			usartData2cmd(); 		// 复制串口命令到本地，（会不停复制）
+//			
+//			// 标志位
+//			flag_Struct.Cmd_Execute_En = ENABLE;
+//		}
+		
+		/* 执行命令  */
 		if(ENABLE == flag_Struct.Cmd_Execute_En)
 		{
-			flag_Struct.Cmd_Execute_En = DISABLE; 
+			flag_Struct.Cmd_Execute_En = DISABLE;
 			
-			flag_Struct.Cmd_Executing_Flag = SET;						// 命令执行完成前不允许再次执行
+			flag_Struct.Cmd_Executing_Flag = SET;
 			
-			CMD_Execute();
-			
-			flag_Struct.Cmd_ProcDone_Flag = RESET;			
+			CMD_Execute();					
 		}
+		
+		
+		
+		
+		
+//		/* 发生串口空闲中断时进入  */
+//		if(SET == flag_Struct.USART_IDLE_Flag)
+//		{	
+//			/* 命令处理完毕  */
+//			if(RESET == flag_Struct.Cmd_ProcDone_Flag)
+//			{
+//				flag_Struct.USART_IDLE_Flag = RESET;
+//				
+//				
+//				UsartDataProc();
+//				
+//				CMD_Proc();
+//				
+//				flag_Struct.Cmd_ProcDone_Flag = SET;
+//			}
+//			
+//			/*  执行完命令后进入  */
+//			if(RESET == flag_Struct.Cmd_Executing_Flag)
+//			{
+//				flag_Struct.Cmd_Execute_En = ENABLE;
+//			}	
+//		}		
+
+//		
+//		/* 执行命令 */
+//		if(ENABLE == flag_Struct.Cmd_Execute_En)
+//		{
+//			flag_Struct.Cmd_Execute_En = DISABLE; 
+//			
+//			flag_Struct.Cmd_Executing_Flag = SET;						// 命令执行完成前不允许再次执行
+//			
+//			CMD_Execute();
+//			
+//			flag_Struct.Cmd_ProcDone_Flag = RESET;			
+//		}
 		
 		/* 脱机加工 */
 		if((0 != Offline_Data_Num) && (ENABLE == Offline_Work_Flag))

@@ -7,11 +7,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // 指令中设定的运动参数
-extern 	Proc_Data 				cmd_Proc_Data; 																		// 命令数据，有成员指向plus_Data
-extern 	Plus_Data 				cmd_Plus_Data;																		// 脉冲数据，控制电机运动
 extern 	volatile 					FunctionalState 		Offline_Work_Flag; 						// 进入脱机加工的标记
 extern 	Flag_Structure 		flag_Struct;
-
+extern	Motion_Strcuture 	motion_Data;	
 
 /* 反馈的命令数组  */
 #if PRIN2DISP
@@ -112,7 +110,7 @@ void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 void StepMotor_Start(void)
 {
 	// X轴
-	if((0 == cmd_Plus_Data.plusNum[0]) || (0 == cmd_Plus_Data.clk[0]))
+	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[0]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[0]))
 	{
 		nAxisStatus[0] = DISABLE;
 	}
@@ -125,7 +123,7 @@ void StepMotor_Start(void)
 	}
 	
 	// Y轴
-	if((0 == cmd_Plus_Data.plusNum[1]) || (0 == cmd_Plus_Data.clk[1]))
+	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[1]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[1]))
 	{
 		nAxisStatus[1] = DISABLE;
 	}
@@ -137,7 +135,7 @@ void StepMotor_Start(void)
 	}
 	
 	// Z轴
-	if((0 == cmd_Plus_Data.plusNum[2]) || (0 == cmd_Plus_Data.clk[2]))
+	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[2]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[2]))
 	{
 		nAxisStatus[2] = DISABLE;
 	}
@@ -149,7 +147,7 @@ void StepMotor_Start(void)
 	}
 	
 	// A轴
-	if((0 == cmd_Plus_Data.plusNum[3]) || (0 == cmd_Plus_Data.clk[3]))
+	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[3]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[3]))
 	{
 		nAxisStatus[3] = DISABLE;
 	}
@@ -161,7 +159,7 @@ void StepMotor_Start(void)
 	}
 	
 	// B轴
-	if((0 == cmd_Plus_Data.plusNum[4]) || (0 == cmd_Plus_Data.clk[4]))
+	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[4]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[4]))
 	{
 		nAxisStatus[4] = DISABLE;
 	}

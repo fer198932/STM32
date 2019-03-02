@@ -4,8 +4,8 @@
 
 #include "OffLine_Data.h"
 
-extern 							Plus_Data		 				cmd_Plus_Data;						// 脉冲数据，控制电机运动
-extern 	volatile 		FunctionalState 		Offline_Work_Flag; 				// 进入脱机加工的标记
+extern		Motion_Strcuture 						motion_Data_Pre;					// 暂时没启用流水线模式
+extern 		volatile FunctionalState 		Offline_Work_Flag; 				// 进入脱机加工的标记
 
 // 脱机加工
 void offlineWork(u32 num)
@@ -32,72 +32,72 @@ static void offl_Data_Set(u32 num)
 	// X轴
 	if(plusNum_OFFL[num][0] < 0)
 	{
-		cmd_Plus_Data.dir[0] = NEG_DIR;
-		cmd_Plus_Data.plusNum[0] = (-plusNum_OFFL[num][0]);
-		cmd_Plus_Data.clk[0] = clk_OFFL[num][0];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[0] = NEG_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[0] = (-plusNum_OFFL[num][0]);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[0] = clk_OFFL[num][0];
 	}
 	else if(plusNum_OFFL[num][0] > 0)
 	{
-		cmd_Plus_Data.dir[0] = POS_DIR;
-		cmd_Plus_Data.plusNum[0] = plusNum_OFFL[num][0];
-		cmd_Plus_Data.clk[0] = clk_OFFL[num][0];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[0] = POS_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[0] = plusNum_OFFL[num][0];
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[0] = clk_OFFL[num][0];
 	}
 	else
 	{
-		cmd_Plus_Data.dir[0] = TBD_DIR;
-		cmd_Plus_Data.plusNum[0] = 0;
-		cmd_Plus_Data.clk[0] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[0] = TBD_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[0] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[0] = 0;
 	}
 	
 	// Y轴
 	if(plusNum_OFFL[num][1] < 0)
 	{
-		cmd_Plus_Data.dir[1] = NEG_DIR;
-		cmd_Plus_Data.plusNum[1] = (-plusNum_OFFL[num][1]);
-		cmd_Plus_Data.clk[1] = clk_OFFL[num][1];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[1] = NEG_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[1] = (-plusNum_OFFL[num][1]);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[1] = clk_OFFL[num][1];
 	}
 	else if(plusNum_OFFL[num][1] > 0)
 	{
-		cmd_Plus_Data.dir[1] = POS_DIR;
-		cmd_Plus_Data.plusNum[1] = plusNum_OFFL[num][1];
-		cmd_Plus_Data.clk[1] = clk_OFFL[num][1];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[1] = POS_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[1] = plusNum_OFFL[num][1];
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[1] = clk_OFFL[num][1];
 	}
 	else
 	{
-		cmd_Plus_Data.dir[1] = TBD_DIR;
-		cmd_Plus_Data.plusNum[1] = 0;
-		cmd_Plus_Data.clk[1] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[1] = TBD_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[1] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[1] = 0;
 	}
 	
 	// Z轴
 	if(plusNum_OFFL[num][2] < 0)
 	{
-		cmd_Plus_Data.dir[2] = NEG_DIR;
-		cmd_Plus_Data.plusNum[2] = (-plusNum_OFFL[num][2]);
-		cmd_Plus_Data.clk[2] = clk_OFFL[num][2];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[2] = NEG_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[2] = (-plusNum_OFFL[num][2]);
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[2] = clk_OFFL[num][2];
 	}
 	else if(plusNum_OFFL[num][2] > 0)
 	{
-		cmd_Plus_Data.dir[2] = POS_DIR;
-		cmd_Plus_Data.plusNum[2] = plusNum_OFFL[num][2];
-		cmd_Plus_Data.clk[2] = clk_OFFL[num][2];
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[2] = POS_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[2] = plusNum_OFFL[num][2];
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[2] = clk_OFFL[num][2];
 	}
 	else
 	{
-		cmd_Plus_Data.dir[2] = TBD_DIR;
-		cmd_Plus_Data.plusNum[2] = 0;
-		cmd_Plus_Data.clk[2] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[2] = TBD_DIR;
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[2] = 0;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[2] = 0;
 	}
 	
 	/* 暂时三轴 */
 	// A轴
-	cmd_Plus_Data.dir[3] = TBD_DIR;
-	cmd_Plus_Data.plusNum[3] = 0;
-	cmd_Plus_Data.clk[3] = 0;
+	motion_Data_Pre.cmd_Datas.plus_Datas.dir[3] = TBD_DIR;
+	motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[3] = 0;
+	motion_Data_Pre.cmd_Datas.plus_Datas.clk[3] = 0;
 	// B轴
-	cmd_Plus_Data.dir[4] = TBD_DIR;
-	cmd_Plus_Data.plusNum[4] = 0;
-	cmd_Plus_Data.clk[4] = 0;
+	motion_Data_Pre.cmd_Datas.plus_Datas.dir[4] = TBD_DIR;
+	motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[4] = 0;
+	motion_Data_Pre.cmd_Datas.plus_Datas.clk[4] = 0;
 	
 /*	
 	// A轴
