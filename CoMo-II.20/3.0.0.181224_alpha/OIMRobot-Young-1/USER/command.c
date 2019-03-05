@@ -11,6 +11,8 @@ extern 		FunctionalState	 							nAxisStatus[AXIS_NUM];  		// 各轴是否可以运动的
 extern 		Motion_Strcuture 							motion_Data;	
 extern 		Motion_Strcuture 							motion_Data_Pre;	
 
+extern 		RespMsgArray									respMsgStr;										// 回复上位机的消息数组	
+
 
 // 串口发来的数据
 //extern Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
@@ -20,11 +22,6 @@ extern 		Motion_Strcuture 							motion_Data_Pre;
 //Plus_Data cmd_Plus_Data;				// 脉冲数据，控制电机运动
 
 
-/* 反馈的命令数组  */
-#if PRIN2DISP
-#else
-extern	u8	 backResString_Motion[RESP_MOTIONMSG_LENGTH];
-#endif	
 
 
 // 串口发来的命令处理
@@ -39,18 +36,6 @@ void CMD_Proc(void)
 		{
 			// 运动状态初始化
 			AddSubSpeedInit_Pre();
-			
-			/* 回复上位机  */
-			// 设置反馈上位机的数组
-#if PRIN2DISP
-#else
-			setRespStr_Motion(&(motion_Data_Pre.cmd_Datas), backResString_Motion, RESP_MOTIONMSG_LENGTH, 0x01);
-#endif	
-//#if PRIN2DISP
-////			respUsartMsg("PWM_CMD\r\n", 10);
-//#else
-//			respUsartMsg(backResString_Motion, RESP_MOTIONMSG_LENGTH);
-//#endif	
 		}
 	}
 }
@@ -97,38 +82,22 @@ void usartData2cmd(void)
 	mymemcpy(&motion_Data, &motion_Data_Pre, sizeof(motion_Data));
 	
 	// 标志位
-	flag_Struct.Cmd_ProcDone_Flag = RESET;
-	
-//	cmd_Plus_Data = plus_Data;
-//	cmd_Proc_Data = proc_Data;
-//	mymemcpy(&cmd_Plus_Data, &plus_Data, sizeof(cmd_Plus_Data));
-//	mymemcpy(&cmd_Proc_Data, &proc_Data, sizeof(cmd_Proc_Data));
-//	cmd_Proc_Data.cmd_Data = &cmd_Plus_Data; 		// 重新指向
-	
-	// 标志位 数据复制完后，可以进行下一次串口数据处理
-//	Cmd_Copied_Falg = ENABLE; 			
+	flag_Struct.Cmd_ProcDone_Flag = RESET;	
 }
 
 // 自检程序
 void selfCheckFunc(void)
-{
-	const u8 length = 8;
-	u8 backResString[length];
+{	
+	u8 status;		// 急停按钮的状态
 	
 	motion_Data.cmd_Datas.resp_Status = 0x01;
-	// 	temp = UrgentStopTest();		//急停开关检测 0:按下；1:松开；2:抖动；
 	
-	setRespStr(&(motion_Data.cmd_Datas), backResString, length);
+	status = UrgentStopTest();		//急停开关检测 
 	
-	// 其余位的字符数据设置
-	backResString[6] = motion_Data.cmd_Datas.resp_Status;
+	setRespStr_SlefCheck(&(motion_Data.cmd_Datas), respMsgStr.respMsg_SelfCheck, RespMsg_SELFCHECK_LENGTH, status);
 	
 	// 串口发回
-#if PRIN2DISP
-	respUsartMsg("SELCK\r\n", length);
-#else
-	respUsartMsg(backResString, length);
-#endif
+	respUsartMsg(respMsgStr.respMsg_SelfCheck, RespMsg_SELFCHECK_LENGTH);
 	
 	// 自检程序执行完后，执行命令标记重新置位
 	flag_Struct.Cmd_Executing_Flag = RESET;
@@ -164,11 +133,10 @@ void motionDataProc(void)
 			break;			
 	}
 	
-/* 反馈的命令数组  */
-#if PRIN2DISP
-#else
-	respUsartMsg(backResString_Motion, RESP_MOTIONMSG_LENGTH);
-#endif	
+	/* 回复上位机  */
+	// 设置反馈上位机的数组
+	setRespStr_Motion(&(motion_Data_Pre.cmd_Datas), respMsgStr.respMsg_Motion, RespMsg_MOTION_LENGTH, 0x01);
+	respUsartMsg(respMsgStr.respMsg_Motion, RespMsg_MOTION_LENGTH);	
 }
 
 

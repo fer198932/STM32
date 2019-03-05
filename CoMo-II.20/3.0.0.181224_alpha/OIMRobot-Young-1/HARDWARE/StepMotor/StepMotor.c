@@ -7,15 +7,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // 指令中设定的运动参数
-extern 	volatile 					FunctionalState 		Offline_Work_Flag; 						// 进入脱机加工的标记
-extern 	Flag_Structure 		flag_Struct;
-extern	Motion_Strcuture 	motion_Data;	
+extern 	volatile 	FunctionalState 		Offline_Work_Flag; 						// 进入脱机加工的标记
+extern 	Flag_Structure 				flag_Struct;
+extern	Motion_Strcuture 			motion_Data;	
+extern	Motion_Strcuture 			motion_Data_Pre;	
 
-/* 反馈的命令数组  */
-#if PRIN2DISP
-#else
-u8	 backResString_Motion[RESP_MOTIONMSG_LENGTH];
-#endif	
+
+// 换向间隙相关
+const	 u32	 Backlash_PlusNum = BacklashCompensation * SUBDIV_NUM / (1e3);
+BacklashCompensation_Structure		backlashCompen;
 
 
 // 各轴是否可以运动 
@@ -109,12 +109,11 @@ void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 // 步进电机同时开始运动（保证同步） 寄存器方式，提高效率
 void StepMotor_Start(void)
 {
+	// 限位触发时，将该轴的脉冲数、频率置零
+	StepMotor_Limited(flag_Struct.Limiti_Flag);
+	
 	// X轴
-	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[0]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[0]))
-	{
-		nAxisStatus[0] = DISABLE;
-	}
-	else 
+	if(ENABLE == nAxisStatus[0])
 	{
 		// 宏定义启动
 		nAxis_StepMotor_Start(X);
@@ -123,11 +122,7 @@ void StepMotor_Start(void)
 	}
 	
 	// Y轴
-	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[1]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[1]))
-	{
-		nAxisStatus[1] = DISABLE;
-	}
-	else 
+	if(ENABLE == nAxisStatus[1])
 	{
 		nAxis_StepMotor_Start(Y);
 //		PWM_Cmd(Y_PWM, ENABLE, Y_CH_EXTI);
@@ -135,11 +130,7 @@ void StepMotor_Start(void)
 	}
 	
 	// Z轴
-	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[2]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[2]))
-	{
-		nAxisStatus[2] = DISABLE;
-	}
-	else 
+	if(ENABLE == nAxisStatus[2])
 	{
 		nAxis_StepMotor_Start(Z);
 //		PWM_Cmd(Z_PWM, ENABLE, Z_CH_EXTI);
@@ -147,11 +138,7 @@ void StepMotor_Start(void)
 	}
 	
 	// A轴
-	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[3]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[3]))
-	{
-		nAxisStatus[3] = DISABLE;
-	}
-	else 
+	if(ENABLE == nAxisStatus[3])
 	{
 		nAxis_StepMotor_Start(A);
 //		PWM_Cmd(A_PWM, ENABLE, A_CH_EXTI);
@@ -159,11 +146,7 @@ void StepMotor_Start(void)
 	}
 	
 	// B轴
-	if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[4]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[4]))
-	{
-		nAxisStatus[4] = DISABLE;
-	}
-	else 
+	if(ENABLE == nAxisStatus[4])
 	{
 		nAxis_StepMotor_Start(B);
 //		PWM_Cmd(B_PWM, ENABLE, B_CH_EXTI);
@@ -189,14 +172,67 @@ void StepMotor_Start(void)
 	}
 }
 
-// 步进电机同时停止（同步）
-void StepMotor_Stop(void)
+// 步进电机同时停止（同步） 没有强制拉高
+void StepMotor_Stop_Macro(void)
 {
-	nAxis_StepMotor_Stop(X);
-	nAxis_StepMotor_Stop(Y);
-	nAxis_StepMotor_Stop(Z);
-	nAxis_StepMotor_Stop(A);
-	nAxis_StepMotor_Stop(B);
+	TIM_Cmd(X_PWM, DISABLE);
+	TIM_Cmd(Y_PWM, DISABLE);
+	TIM_Cmd(Z_PWM, DISABLE);
+	TIM_Cmd(A_PWM, DISABLE);
+	TIM_Cmd(B_PWM, DISABLE);
+//	nAxis_StepMotor_Stop(X);
+//	nAxis_StepMotor_Stop(Y);
+//	nAxis_StepMotor_Stop(Z);
+//	nAxis_StepMotor_Stop(A);
+//	nAxis_StepMotor_Stop(B);
+}
+
+// 步进电机运行设定距离
+void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
+{		
+	// 设定方向
+//	Motor_Dir_Set(StepMotor_Dir+n_axis, Dir);
+
+	/* 各轴初始化 */
+	// 设定运动参数
+	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
+	motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
+	motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
+	motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
+	
+	// 加减速初始化
+	AddSubSpeedInit_Pre();		// 注意这里可能会对设定的频率进行调整
+	
+	// 运动状态初始化
+	motion_Init();
+	delay_us(MOTION_START_DALAY); 			// 一定延时
+	
+	// 步进电机同时开始运动
+	StepMotor_Start();
+	
+#if NO_ADDSUBSPEED
+	/* 关闭加减速 */
+#else		
+	// 加减速定时器开启
+	EN_ADDSUB_TIMER;
+#endif
+}
+
+// 初始化时候的间隙补偿 0.1mm
+void Move2CompensateBacklash(void)
+{
+	u8 i;
+	
+	for(i=0; i<AXIS_NUM; i++)
+	{
+		StepMotor_Move((N_Axis)i, n_Axis_Min_Clk(i), SUBDIV_NUM/10, POS_DIR);		// 0.1mm
+		delay_ms(100);
+		StepMotor_Move((N_Axis)i, n_Axis_Min_Clk(i), SUBDIV_NUM/10, NEG_DIR);
+		delay_ms(100);
+		backlashCompen.motorDirOld[i] = NEG_DIR;
+	}
+	
+	backlashCompen.DirChange_En = ENABLE;
 }
 
 

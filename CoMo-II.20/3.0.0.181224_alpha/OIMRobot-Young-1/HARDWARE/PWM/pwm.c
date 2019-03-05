@@ -147,7 +147,7 @@ static void GPIO_PWM_Init(const GPIO_Structure_XX *GPIO_Temp)
 	GPIO_InitTypeDef 		GPIO_InitStructure;
 	
 	// GPIO结构体构造
-//	if(!GPIO_Structure_Make(Pin_PWM_str, GPIO_Temp))
+//	if(ERROR == GPIO_Structure_Make(Pin_PWM_str, GPIO_Temp))
 //		return;	
 	
 	// 使能时钟
@@ -330,6 +330,33 @@ u32 calClk_PSC(u16 psc)
 	clk = PSC_CLK / psc;
 	return clk;
 }
+
+// 所有的PWM强制拉高
+void PWM_Forced2High_All(void)
+{
+	PWM_Forced2High(X_PWM, DISABLE, X_CH_EXTI);
+	PWM_Forced2High(X_PWM, DISABLE, X_CH_OUT);
+	
+	PWM_Forced2High(Y_PWM, DISABLE, Y_CH_EXTI);
+	PWM_Forced2High(Y_PWM, DISABLE, Y_CH_OUT);
+	
+	PWM_Forced2High(Z_PWM, DISABLE, Z_CH_EXTI);
+	PWM_Forced2High(Z_PWM, DISABLE, Z_CH_OUT);
+	
+	PWM_Forced2High(A_PWM, DISABLE, A_CH_EXTI);
+	PWM_Forced2High(A_PWM, DISABLE, A_CH_OUT);
+	
+	PWM_Forced2High(B_PWM, DISABLE, B_CH_EXTI);
+	PWM_Forced2High(B_PWM, DISABLE, B_CH_OUT);
+}
+
+
+
+
+
+
+
+
 
 
 

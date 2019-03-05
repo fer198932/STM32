@@ -8,11 +8,13 @@
 
 //extern 											Plus_Data cmd_Plus_Data;						// 脉冲数据，控制电机运动
 //extern 											Proc_Data cmd_Proc_Data; 						// 命令数据，有成员指向plus_Data
-extern FunctionalState	 		nAxisStatus[AXIS_NUM];  						// 各轴是否可以运动的标志
-extern NAxis_TIM_Structure	nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
-extern vu32 								plusNumPWM[AXIS_NUM]; 								// 脉冲数的中断计数
-extern vu16 								addSubSpeed_StepNum[AXIS_NUM]; 			// 记录加减速定时器运行的步数
-
+extern 		FunctionalState	 			nAxisStatus[AXIS_NUM];  						// 各轴是否可以运动的标志
+extern 		NAxis_TIM_Structure		nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的结构体  
+extern 		vu32 									plusNumPWM[AXIS_NUM]; 							// 脉冲数的中断计数
+extern 		vu16 									addSubSpeed_StepNum[AXIS_NUM]; 			// 记录加减速定时器运行的步数
+extern 		Flag_Structure 				flag_Struct;
+extern		const	 u32	 					Backlash_PlusNum;
+extern		BacklashCompensation_Structure		backlashCompen;
 
 
 // 运动参数
@@ -65,6 +67,14 @@ static void	nAxisMotion_Init(void)
 		addSubSpeed_StepNum[i] = ADD_SPEED;
 		nAxisStatus[i] = ENABLE;
 		
+		// 如果电机运动方向改变
+		if(SET == backlashCompen.DirChange_Flag[i])
+		{
+			backlashCompen.DirChange_Flag[i] = RESET;
+			
+			motion_Data.cmd_Datas.plus_Datas.plusNum[i] += Backlash_PlusNum;			
+		}
+		
 #if NO_ADDSUBSPEED
 //		nAxisClk_Cur[i] = cmd_Plus_Data.clk[i];
 		nAxisClk_Cur[i] = n_Axis_Min_Clk(i);
@@ -88,13 +98,27 @@ static void resetMotionData(void)
 	motion_Data_Pre.addSubTime = TIM_OUT;
 }
 
-// 设定运动方向
+// 设定运动方向，mode：设定是否补偿间隙
 static void	setStepMotorDir(void)
 {
 	u8 i;
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		Motor_Dir_Set(StepMotor_Dir+i, motion_Data.cmd_Datas.plus_Datas.dir[i]);
+		if(TBD_DIR != motion_Data.cmd_Datas.plus_Datas.dir[i])
+		{
+			Motor_Dir_Set(StepMotor_Dir+i, motion_Data.cmd_Datas.plus_Datas.dir[i]);
+			
+			// 换向标记
+			if(ENABLE == backlashCompen.DirChange_En)
+			{
+				if(backlashCompen.motorDirOld[i] != motion_Data.cmd_Datas.plus_Datas.dir[i])
+				{
+					backlashCompen.motorDirOld[i] = motion_Data.cmd_Datas.plus_Datas.dir[i];
+					
+					backlashCompen.DirChange_Flag[i] = SET;
+				}
+			}
+		}
 	}
 }
 

@@ -15,14 +15,25 @@
 typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
 
 
-// 串口接收一帧数据完成的标志
-extern	 volatile 	IfOK_Status 	USARTRx_IfOK_Flag;
 
-// 串口DMA数据溢出的标志
-extern volatile 	ErrorStatus 	USARTRx_DMAOut_Flag;
 
-// 数据是否处理完毕
-// extern	volatile	IfOK_Status 	DataPro_IsOK_Flag;
+
+/* 回复上位机的消息的结构体 */
+#define 	RespMsg_SELFCHECK_LENGTH							8
+#define		RespMsg_MOTION_LENGTH 								9
+#define		RespMsg_LIMIT_LENGTH									9
+#define		RespMsg_UrgentStopDown_Length					23
+#define		RespMsg_UrgentStopUp_Length						9
+
+typedef struct {
+	u8 		respMsg_SelfCheck[RespMsg_SELFCHECK_LENGTH];
+	u8 		respMsg_Motion[RespMsg_MOTION_LENGTH];
+	u8 		respMsg_Limit[RespMsg_LIMIT_LENGTH];
+	u8 		respMsg_UrgentStopDown[RespMsg_UrgentStopDown_Length];
+	u8 		respMsg_UrgentStopUp[RespMsg_UrgentStopUp_Length];
+} RespMsgArray;
+
+
 
 // 位置游标
 typedef struct {
@@ -126,10 +137,23 @@ void respMsgError(const char str[], u8 status);
 // 回复串口数据信息
 void respUsartMsg(const u8 backResString[], u16 length);
 
-#if PRIN2DISP
-#else
 // 设定运动数据的串口反馈数组的格式
 void setRespStr_Motion(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status);
-#endif
+
+
+// 自检消息的反馈数组
+void setRespStr_SlefCheck(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status);
+
+// 急停消息的反馈数组设置
+void setRespStr_UrgentStop(u8 respStr[], u16 length, u8 status);
+
+
+
+
+
+
+
+
+
 
 #endif

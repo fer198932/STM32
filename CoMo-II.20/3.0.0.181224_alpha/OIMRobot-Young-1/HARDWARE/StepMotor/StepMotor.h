@@ -11,6 +11,10 @@
 // 2019年1月31日13:20:00 byYJY
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
+#define 	SUBDIV_NUM						400					// 细分数：如400脉冲=1mm
+//#define 	Backlash_PlusNum			BacklashCompensation * SUBDIV_NUM / (1e3)		// 间隙对应的脉冲数
+
+
 #define 	DIR_EX_DALAY 					10000 			// 换方向后需要设定一定时间延时  单位us
 #define 	MOTION_START_DALAY 		10000 			// 运动停止后需要设定一定时间延时  单位us
 
@@ -33,6 +37,15 @@
 // #define 	nAxis_StepMotor_Start(TIM_N) 			((TIM_N)->CR1 |= TIM_CR1_CEN)
 
 #define 	nAxis_Motion_Flag 	(nAxisStatus[0] | nAxisStatus[1] | nAxisStatus[2] | nAxisStatus[3] | nAxisStatus[4])
+
+
+// 换向，间隙补偿的结构体
+typedef struct {
+	volatile		Motor_Dir 					motorDirOld[AXIS_NUM];					// 前一次的运动方向
+	volatile		FlagStatus					DirChange_Flag[AXIS_NUM];				// 换向的标志
+	volatile		FunctionalState			DirChange_En;										// 初始状态关闭	
+} BacklashCompensation_Structure;
+
 
 #define	nAxis_StepMotor_Start(n) 	\
 do \
@@ -64,6 +77,19 @@ void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir);
 
 // 步进电机同时开始运动（保证同步） 寄存器方式，提高效率
 void StepMotor_Start(void);
+
+// 步进电机同时停止（同步） 没有强制拉高
+void StepMotor_Stop_Macro(void);
+
+
+// 步进电机运行设定距离
+void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir);
+
+// 初始化时候的间隙补偿
+void Move2CompensateBacklash(void);
+
+
+
 
 
 #endif

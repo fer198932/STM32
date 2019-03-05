@@ -4,10 +4,14 @@
 #include "ComDataProc.h"
 
 extern		Flag_Structure 				flag_Struct;
-extern 		vu32 									Offline_Data_Num;					// 脱机加工数据的标志
+extern 		vu32 									Offline_Data_Num;											// 脱机加工数据的标志
 extern		Motion_Strcuture 			motion_Data_Pre;	
+extern 		vu32 									plusNumPWM[AXIS_NUM]; 								// 脉冲数的中断计数
 
-static Proc_Data proc_Data; 		// 命令数据，有成员指向plus_Data
+// 回复上位机的消息数组
+RespMsgArray		respMsgStr;		
+
+static 	Proc_Data 	proc_Data; 		// 命令数据，有成员指向plus_Data
 //Plus_Data plus_Data;		// 脉冲数据，控制电机运动
 
 // 命令数据结构体的初始化
@@ -133,7 +137,7 @@ void setRespStr(Proc_Data* pCmd, u8 resStr[], u16 length)
 	resStr[3] = (length & 0x00FF);												// 长度
 	resStr[4] = (length >> 8);
 	
-	resStr[5] = pCmd->resp_Excute;		// 标志码
+	resStr[5] = pCmd->resp_Excute;		// 指令码
 	
 	resStr[length-1] = FrameEnd;
 }
@@ -352,16 +356,90 @@ static void offline_Data_Proc(PosCur posCur)
 
 
 #if PRIN2DISP
+// 设定运动数据的串口反馈数组的格式
+void setRespStr_Motion(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{
+	mymemcpy(respStr, "MOTION\r\n", length);
+}
 #else
 // 设定运动数据的串口反馈数组的格式
 void setRespStr_Motion(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
 {
-	setRespStr(pCmd, respStr, RESP_MOTIONMSG_LENGTH);
-	respStr[2] = DATAINFO;
-	respStr[5] = PLUS_DATA;
+	setRespStr(pCmd, respStr, length);
 	respStr[6] = 0x00;
 	respStr[7] = status;
 }
 #endif
+
+#if PRIN2DISP
+// 自检消息的反馈数组
+void setRespStr_SlefCheck(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{
+	mymemcpy(respStr, "SELCK\r\n", length);
+}
+#else
+// 自检消息的反馈数组
+void setRespStr_SlefCheck(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{
+	setRespStr(pCmd, respStr, length);
+	respStr[6] = status;
+}
+#endif
+
+#if PRIN2DISP
+// 急停消息的反馈数组设置
+void setRespStr_UrgentStop(u8 respStr[], u16 length, u8 status)
+{
+	if(RespMsg_UrgentStopDown_Length == length)
+	{
+		mymemcpy(respStr, "UrgentDown\r\n", 12);
+	}
+	else
+	{
+		mymemcpy(respStr, "UrgenUp\r\n", 9);
+	}
+}
+#else
+// 急停消息的反馈数组设置
+void setRespStr_UrgentStop(u8 respStr[], u16 length, u8 status)
+{
+	Proc_Data 	procDataTemp;
+	u8 i;
+	
+	if(RespMsg_UrgentStopDown_Length == length)
+	{
+		procDataTemp.cmd_Type = STATUSINFO;
+		procDataTemp.resp_Excute = HARDWARE_URGENTSTOP;
+		setRespStr(&procDataTemp, respStr, length);
+		respStr[6] = 0x00;
+		
+		// 脉冲数设定
+		for(i=0; i<AXIS_NUM; i++)
+		{
+			respStr[i*3+7] = (plusNumPWM[i] >> 0) & 0xFF;
+			respStr[i*3+8] = (plusNumPWM[i] >> 8) & 0xFF;
+			respStr[i*3+9] = (plusNumPWM[i] >> 16) & 0xFF;
+		}		
+	}
+	else if(RespMsg_UrgentStopUp_Length == length)
+	{
+		procDataTemp.cmd_Type = STATUSINFO;
+		procDataTemp.resp_Excute = HARDWARE_URGENTCANCEL;
+		setRespStr(&procDataTemp, respStr, length);
+		respStr[6] = 0x00;
+		
+		respStr[7] = 0x01;
+	}
+}
+#endif
+
+
+
+
+
+
+
+
+
 
 

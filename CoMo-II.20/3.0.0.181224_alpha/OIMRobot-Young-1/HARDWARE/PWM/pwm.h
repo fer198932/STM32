@@ -89,6 +89,10 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 // PWM 强制拉高或取消 ch:输出通道
 static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 
+// 所有的PWM强制拉高
+void PWM_Forced2High_All(void);
+
+
 // 通过CLK频率计算预分频系数 PSC
 u16 calPSC(u32 clk, u8 nAxis);
 // 通过PSC计算频率， 注意寄存器溢出问题  单位HZ

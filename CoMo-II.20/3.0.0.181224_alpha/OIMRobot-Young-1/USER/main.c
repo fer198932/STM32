@@ -15,6 +15,9 @@
 ********************************************************************************************************/
 #include "main.h"
 
+
+extern	 BacklashCompensation_Structure		backlashCompen;
+
 /* 全局变量 (主要为各种标志位) */
 Flag_Structure 	flag_Struct;
 //volatile 	FlagStatus 	DMA_Out_Flag 	= RESET;								// DMA溢出，重新初始化
@@ -38,14 +41,23 @@ void Delay(__IO uint32_t nCount)
 int main(void)
 {	
 	u32 t=0;
+	u8 urgentStopTemp1, urgentStopTemp2;
 	
 	
 	Sys_Init();		// 系统初始化函数
 	Sys_Enable();	// 系统使能函数
 	
+	// test
+//	while(1)
+//	{
+//		StepMotor_Move(X_Axis, 5000, 4000, POS_DIR);
+//		delay_ms(5000);
+//	}
+	
   while(1){
 		/* 循环扫描是否有限位发生  */
 		procLimit();		
+		
 		
 		/* 发生串口空闲中断 */
 		if(SET == flag_Struct.USART_IDLE_Flag)
@@ -69,19 +81,11 @@ int main(void)
 			}
 		}
 		
-		if((SET == flag_Struct.Cmd_ProcDone_Flag) && (RESET == flag_Struct.Cmd_Executing_Flag))
+		if((SET == flag_Struct.Cmd_ProcDone_Flag) && (RESET == flag_Struct.Cmd_Executing_Flag) && (flag_Struct.UrgentStop_Flag != UrgentStop_Locked))
 		{
 			flag_Struct.Cmd_Execute_En = ENABLE;
 		}
 		
-//		/*  复制命令数据的结构体 */
-//		if(RESET == flag_Struct.Cmd_Executing_Flag)
-//		{
-//			usartData2cmd(); 		// 复制串口命令到本地，（会不停复制）
-//			
-//			// 标志位
-//			flag_Struct.Cmd_Execute_En = ENABLE;
-//		}
 		
 		/* 执行命令  */
 		if(ENABLE == flag_Struct.Cmd_Execute_En)
@@ -94,6 +98,17 @@ int main(void)
 		}
 		
 		
+		/* 限位处理 */
+//		if(0 != flag_Struct.Limiti_Flag)
+//		{
+//			StepMotor_Limited(flag_Struct.Limiti_Flag);
+//		}
+		
+		/* 急停按钮处理  */
+		if(UrgentStop_Locked == flag_Struct.UrgentStop_Flag)
+		{
+			UrgentStop_Proc_Macro;
+		}
 		
 		
 		
@@ -205,6 +220,13 @@ void Sys_Enable(void)
 	/* 中断使能 */
 	EXTI_Enable();
 	
+	/* 自检 */
+	selfCheckFunc();
+	
+	/* 运动消除换向间隙 */
+	Move2CompensateBacklash();
+	
+	
 	/* 使能加减速时钟， 测试用，可删除  */
 //	TIM_Cmd(ADDSUB_TIMER, ENABLE);
 	
@@ -225,6 +247,7 @@ void Flag_Struct_Init(void)
 {
 	mymemset(&flag_Struct, 0, sizeof(flag_Struct));
 //	flag_Struct.Cmd_Execute_Flag = ENABLE;
+	mymemset(&backlashCompen, 0, sizeof(backlashCompen));
 }
 
 

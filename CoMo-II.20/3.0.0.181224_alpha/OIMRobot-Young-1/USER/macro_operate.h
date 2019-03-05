@@ -20,20 +20,20 @@ typedef struct {
 
 // GPIO结构体
 typedef struct {
-	uint16_t 				GPIO_Pin_N;								// pin脚
-	GPIO_TypeDef 		*GPIO_Port;								// 端口号  如：GPIOA
-	uint32_t 				RCC_Periph_N;							// 时钟线
+	uint16_t 						GPIO_Pin_N;								// pin脚
+	GPIO_TypeDef 				*GPIO_Port;								// 端口号  如：GPIOA
+	uint32_t 						RCC_Periph_N;							// 时钟线
+		
+	uint16_t 						GPIO_PinSource_N; 				// 如：GPIO_PinSource10
 	
-	uint16_t 				GPIO_PinSource_N; 				// 如：GPIO_PinSource10
-	
-	uint8_t 				EXTI_PortGPIO_N; 					// GPIO中断端口
-	uint8_t 				EXTI_PinSource_N;					// 指定的中断线Pin脚
-	uint32_t 				EXTI_Line_N;							// 中断线
-	uint8_t 				NVIC_IRQ_N;								// 对应中断服务程序
+	uint8_t 						EXTI_PortGPIO_N; 					// GPIO中断端口
+	uint8_t 						EXTI_PinSource_N;					// 指定的中断线Pin脚
+	uint32_t 						EXTI_Line_N;							// 中断线
+	uint8_t 						NVIC_IRQ_N;								// 对应中断服务程序
 	
 //	uint32_t GPIOx_ODR_Addr;				// 输出地址映射
 	
-	AF_Structure_XX* AF_Structure;							 	// 指向该PIN脚复用的结构体
+	AF_Structure_XX* 		AF_Structure;							 	// 指向该PIN脚复用的结构体
 	
 } GPIO_Structure_XX;
 

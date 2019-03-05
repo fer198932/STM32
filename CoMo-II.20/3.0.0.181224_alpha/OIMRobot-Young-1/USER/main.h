@@ -32,19 +32,33 @@
 // 加减速开关
 #define NO_ADDSUBSPEED 0
 
+
+
+
+typedef enum {
+UrgentStop_Init = 0, 
+UrgentStop_Down = 1, 
+UrgentStop_Up = 2, 
+UrgentStop_Falling = 3, 
+UrgentStop_Rising = 4,
+UrgentStop_Locked = 5} UrgentStop_Status;
+
 // 标记类结构体，注意Flag_Struct_Init里面初始化了默认值（大部分为0）
 typedef struct {
-	volatile 	FlagStatus 	DMA_Out_Flag;								// DMA溢出，重新初始化
+	volatile 		FlagStatus 					DMA_Out_Flag;								// DMA溢出，重新初始化
 	
-	volatile 	FlagStatus 	USART_IDLE_Flag; 						// 串口空闲中断标志，串口数据处理	
-	volatile 	FlagStatus 	USART_Data_Proc_Flag;				// 串口数据处理完毕
+	volatile 		FlagStatus 					USART_IDLE_Flag; 						// 串口空闲中断标志，串口数据处理	
+	volatile 		FlagStatus 					USART_Data_Proc_Flag;				// 串口数据处理完毕
 	
-	volatile 	FlagStatus	Cmd_Executing_Flag;					// 置位后表示命令正在执行
-	volatile 	FlagStatus 	Cmd_ProcDone_Flag;					// 命令处理完毕的标记
+	volatile 		FlagStatus					Cmd_Executing_Flag;					// 置位后表示命令正在执行
+	volatile 		FlagStatus 					Cmd_ProcDone_Flag;					// 命令处理完毕的标记
 	
-	volatile 	FunctionalState 	Cmd_Execute_En;					// 可以执行命令
+	volatile 		FunctionalState 		Cmd_Execute_En;					// 可以执行命令
 //	volatile	FunctionalState 	Cmd_Proc_Falg; 			// 串口数据可以进行处理
 	
+	volatile		UrgentStop_Status		UrgentStop_Flag;		// 急停按钮的状态	
+	
+	vu32														Limiti_Flag;	
 } Flag_Structure;
 
 

@@ -59,9 +59,9 @@ static void GPIO_AF_Usart_Init(USART_TypeDef* USARTx,
 	GPIO_AF_Usart_Tx.AF_Structure = &USART_AF_Structure; 			// GPIO与串口的复用映射
 	GPIO_AF_Usart_Rx.AF_Structure = &USART_AF_Structure; 			// GPIO与串口的复用映射
 	
-	if(!GPIO_Structure_Make(Pin_Tx_str, &GPIO_AF_Usart_Tx))
+	if(ERROR == GPIO_Structure_Make(Pin_Tx_str, &GPIO_AF_Usart_Tx))
 		return;
-	if(!GPIO_Structure_Make(Pin_Rx_str, &GPIO_AF_Usart_Rx))
+	if(ERROR == GPIO_Structure_Make(Pin_Rx_str, &GPIO_AF_Usart_Rx))
 		return;	
 	
 #if EN_USART1
