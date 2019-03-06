@@ -73,7 +73,7 @@ void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
 	}
 	
 //		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
-	delay_us(DIR_EX_DALAY); 			// 一定延时
+//	delay_us(DIR_EX_DALAY); 			// 一定延时
 
 }
 
@@ -190,15 +190,28 @@ void StepMotor_Stop_Macro(void)
 // 步进电机运行设定距离
 void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
 {		
+	u8 i;
 	// 设定方向
 //	Motor_Dir_Set(StepMotor_Dir+n_axis, Dir);
 
 	/* 各轴初始化 */
 	// 设定运动参数
 	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
-	motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
-	motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
-	motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
+	if(ALL_Axis == n_axis)
+	{
+		for(i=0; i<AXIS_NUM-2; i++)			// 暂时取消A、B轴的运动  byYJY
+		{
+			motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[i] = PlusNum;
+			motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = Clk;
+			motion_Data_Pre.cmd_Datas.plus_Datas.dir[i] = Dir;
+		}
+	}
+	else
+	{
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
+	}
 	
 	// 加减速初始化
 	AddSubSpeedInit_Pre();		// 注意这里可能会对设定的频率进行调整
@@ -220,19 +233,18 @@ void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
 
 // 初始化时候的间隙补偿 0.1mm
 void Move2CompensateBacklash(void)
-{
-	u8 i;
+{	
+	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, POS_DIR);		// 0.1mm
+	delay_ms(100);
+	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, NEG_DIR);
+	delay_ms(100);
 	
-	for(i=0; i<AXIS_NUM; i++)
-	{
-		StepMotor_Move((N_Axis)i, n_Axis_Min_Clk(i), SUBDIV_NUM/10, POS_DIR);		// 0.1mm
-		delay_ms(100);
-		StepMotor_Move((N_Axis)i, n_Axis_Min_Clk(i), SUBDIV_NUM/10, NEG_DIR);
-		delay_ms(100);
-		backlashCompen.motorDirOld[i] = NEG_DIR;
-	}
+//	backlashCompen.motorDirOld[i] = NEG_DIR;
+	mymemset((void*)backlashCompen.motorDirOld, NEG_DIR, sizeof(FlagStatus) * AXIS_NUM);
 	
+#if BACKLASH_COMPENSATION
 	backlashCompen.DirChange_En = ENABLE;
+#endif
 }
 
 

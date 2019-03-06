@@ -219,12 +219,15 @@ void Sys_Enable(void)
 	
 	/* 中断使能 */
 	EXTI_Enable();
-	
-	/* 自检 */
-	selfCheckFunc();
+
 	
 	/* 运动消除换向间隙 */
 	Move2CompensateBacklash();
+	delay_ms(1);
+	
+	
+	/* 自检 */
+	selfCheckFunc();
 	
 	
 	/* 使能加减速时钟， 测试用，可删除  */

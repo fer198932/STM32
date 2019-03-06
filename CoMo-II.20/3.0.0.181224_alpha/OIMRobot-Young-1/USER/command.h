@@ -23,6 +23,9 @@ void motionDataProc(void);
 // 串口发来的命令处理
 void CMD_Proc(void);
 
+// 处理控制命令的函数
+void controlFunc(void);
+
 
 
 

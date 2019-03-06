@@ -312,13 +312,17 @@ static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 u16 calPSC(u32 clk, u8 nAxis)
 {
 	u16 psc;
-	if((clk >= n_Axis_Min_Clk(nAxis)) && (clk <= n_Axis_Max_Clk(nAxis)))
+	if((clk >= PSC_MIN_CLK) && (clk <= n_Axis_Max_Clk(nAxis)))
 	{
 		psc = PSC_CLK / clk;
 	}
+	else if(clk < PSC_MIN_CLK)
+	{
+		psc = PSC_CLK / PSC_MIN_CLK;
+	}
 	else
 	{
-		psc = PSC_CLK / n_Axis_Min_Clk(nAxis);
+		psc = PSC_CLK / n_Axis_Min_Clk(nAxis);		// 出现这种情况的可能性较小,因为adjustClk会调整。优先保证脉冲数不丢失
 	}
 	return psc;
 }

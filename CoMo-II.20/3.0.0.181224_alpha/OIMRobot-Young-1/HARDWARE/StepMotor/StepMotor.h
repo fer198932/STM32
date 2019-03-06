@@ -14,6 +14,9 @@
 #define 	SUBDIV_NUM						400					// 细分数：如400脉冲=1mm
 //#define 	Backlash_PlusNum			BacklashCompensation * SUBDIV_NUM / (1e3)		// 间隙对应的脉冲数
 
+#define		StepMotor_MinClk			500
+#define		StepMotor_MaxClk			10000
+
 
 #define 	DIR_EX_DALAY 					10000 			// 换方向后需要设定一定时间延时  单位us
 #define 	MOTION_START_DALAY 		10000 			// 运动停止后需要设定一定时间延时  单位us

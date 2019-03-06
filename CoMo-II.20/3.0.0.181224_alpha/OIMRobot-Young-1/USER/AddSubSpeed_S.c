@@ -33,6 +33,7 @@ void motion_Init(void)
 	
 	// 设定运动方向
 	setStepMotorDir();
+	delay_us(DIR_EX_DALAY); 			// 一定延时
 	
 	// 各轴的运动状态初始化
 	nAxisMotion_Init();
@@ -167,7 +168,7 @@ static void cal_AddSubSpeed_Div(void)
 		{
 			En_ASS_Flag(DISABLE, (N_Axis)i);
 			motion_Data_Pre.PSC_Data[i].length = 0;									
-			continue;
+//			continue;
 		} 
 		else
 		{
@@ -268,6 +269,7 @@ static void cal_S_Line(void)
 		{
 			if(i == maxClkNum)
 			{
+				motion_Data_Pre.nAxisClk_Cur[i] = n_Axis_Min_Clk(i);
 				continue;
 			}
 			
@@ -294,6 +296,7 @@ static void cal_S_Line(void)
 		{
 			if(i == maxClkNum)
 			{
+				motion_Data_Pre.nAxisClk_Cur[i] = n_Axis_Min_Clk(i);
 				continue;
 			}
 			

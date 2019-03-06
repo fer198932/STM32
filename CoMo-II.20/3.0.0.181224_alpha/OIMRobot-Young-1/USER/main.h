@@ -23,7 +23,10 @@
 // #define _TEST_ON_ALIENTEK 1  -->在"config.h"
 
 // 测试用
-#define PRIN2DISP 0   			// 打印提示信息，而不是发回控制命令
+#define PRIN2DISP 1   			// 打印提示信息，而不是发回控制命令
+
+// 背隙补偿开关
+#define		BACKLASH_COMPENSATION 		0
 
 
 // 脱机加工开关

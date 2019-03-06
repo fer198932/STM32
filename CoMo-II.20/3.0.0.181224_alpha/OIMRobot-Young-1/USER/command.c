@@ -53,7 +53,7 @@ void CMD_Execute(void)
 			break;
 		
 		case CONTROLINFO:
-			
+			controlFunc();
 			break;
 		
 		case DATAINFO:
@@ -137,6 +137,13 @@ void motionDataProc(void)
 	// 设置反馈上位机的数组
 	setRespStr_Motion(&(motion_Data_Pre.cmd_Datas), respMsgStr.respMsg_Motion, RespMsg_MOTION_LENGTH, 0x01);
 	respUsartMsg(respMsgStr.respMsg_Motion, RespMsg_MOTION_LENGTH);	
+}
+
+// 处理控制命令的函数
+void controlFunc(void)
+{
+	
+	
 }
 
 

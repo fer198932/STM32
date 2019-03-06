@@ -24,6 +24,9 @@
 #define B_AXIS_MAX_CLK 		10000
 
 
+#define		PSC_MIN_CLK			50					// PSC寄存器为16位，其能装载的最大值（如60000）对应的最小频率为50
+
+
 #define 	S_FLEXIBLE 				4								// S曲线的压缩情况，越大曲线越斜，越小越接近匀加速， 理想取值4-6
 //#define 	DATA_LENGTH				1024						// 存放加减速psc值的空间长度，后续可考虑转为动态数组
 #define 	AddSub_Time_MAX		200							// 加减速阶段最长的时间，单位ms，对应频率从0~10000的情况
