@@ -60,6 +60,9 @@ uint8_t B_Lim(void);
 
 uint8_t UrgentStop_Lim(void);
 
+uint8_t MainMotor_Start(void);
+
+
 // 查看是否有限位发生
 // mode:0,不支持连续按;1,支持连续按;
 static void LIMIT_Scan(void);				// u8 mode

@@ -69,19 +69,6 @@ static IfOK_Status bufData_Proc(void)
 						else
 							return NOT_OK;
 					}
-//					while(posCur.end <= buffer_Rec.end)
-//					{
-//						if(FrameEnd == buffer_Rec.data[posCur.end])		// 0xFF
-//						{
-//							posCur.end--;
-//							if(IS_OK == bufData_Proc_Region(posCur))
-//								return IS_OK;
-//							else
-//								return NOT_OK;
-//						} 
-//						else 
-//							posCur.end++;
-//					}
 					return NOT_OK;
 				}
 		}
@@ -185,12 +172,13 @@ static IfOK_Status setCmdData(PosCur posCur)
 		switch(proc_Data.cmd_Type)
 		{
 			case 0x0B: 			// 自检
-				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + buffer_Rec.data[posCur.start+3]; 
+				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + (buffer_Rec.data[posCur.start+3]<<0); 
 				proc_Data.resp_Excute = proc_Data.cmd_Excute;
 				return IS_OK;
 //				break;
 			case 0x0C:			// 控制
-				
+				proc_Data.cmd_Excute = (buffer_Rec.data[posCur.start+4]<<8) + (buffer_Rec.data[posCur.start+3]<<0); 
+				proc_Data.resp_Excute = proc_Data.cmd_Excute;
 				return IS_OK;
 //				break;
 			case 0x0D: 			// 数据
@@ -430,6 +418,35 @@ void setRespStr_UrgentStop(u8 respStr[], u16 length, u8 status)
 		
 		respStr[7] = 0x01;
 	}
+}
+#endif
+
+
+#if PRIN2DISP
+// 急停消息的反馈数组设置
+void setRespStr_Control(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{
+	switch(pCmd->cmd_Excute)
+	{
+		case MAINAXIS_WORK:
+			mymemcpy(respStr, "MainWor\r\n", length);
+			break;
+		
+		case MAINAXIS_STOP:
+			mymemcpy(respStr, "MainSto\r\n", length);
+			break;
+		
+		default:
+			break;
+	}
+}
+#else
+// 急停消息的反馈数组设置
+void setRespStr_Control(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status)
+{	
+	setRespStr(pCmd, respStr, length);
+	respStr[6] = 0x00;	
+	respStr[7] = status;	
 }
 #endif
 

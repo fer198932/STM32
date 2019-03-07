@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER;..\HARDWARE\StepMotor;..\DATA</IncludePath>
+              <IncludePath>..\USER;..\CORE;..\FWLIB\STM32F4xx_StdPeriph_Driver\inc;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\LED;..\HARDWARE\LIMIT;..\HARDWARE\DMA;..\HARDWARE\BUFFER;..\MALLOC;..\HARDWARE\EXTI;..\HARDWARE\PWM;..\HARDWARE\TIMER;..\HARDWARE\StepMotor;..\DATA;..\HARDWARE\MainAxisMotor</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -492,6 +492,11 @@
               <FileName>StepMotor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\StepMotor\StepMotor.c</FilePath>
+            </File>
+            <File>
+              <FileName>MainAxisMotor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\MainAxisMotor\MainAxisMotor.c</FilePath>
             </File>
           </Files>
         </Group>

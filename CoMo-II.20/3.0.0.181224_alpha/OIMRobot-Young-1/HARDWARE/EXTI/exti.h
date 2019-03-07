@@ -124,6 +124,10 @@ static void EXTI_IRQ_UrgentStop_MACRO(void);
 static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out);
 
 
+// 主轴启动中断服务程序
+static void EXTI_IRQ_MainMotorWork_MACRO(void);
+
+
 // 根据中断线编译指定的中断服务程序
 //#define 	EXTI_HANDLER(n)			\
 //do		\

@@ -58,6 +58,18 @@ int main(void)
 		/* 循环扫描是否有限位发生  */
 		procLimit();		
 		
+		/* 主轴电机控制 */
+		if(SET == flag_Struct.MainMotor_Start_Flag)
+		{
+			flag_Struct.MainMotor_Start_Flag = RESET;
+			mainMotorWork(HM_Decode);			
+		}
+		if(SET == flag_Struct.MainMotor_Stop_Flag)		// 暂时没用
+		{
+			flag_Struct.MainMotor_Start_Flag = RESET;
+			mainMotorStop();
+		}
+		
 		
 		/* 发生串口空闲中断 */
 		if(SET == flag_Struct.USART_IDLE_Flag)
@@ -205,6 +217,7 @@ void Sys_Init(void)
 	PWM_Init();
 	EXTI_Config_Init();				// 中断IO口初始化 中断最后初始化
 	StepMotor_Init();				// 步进电机方向IO口初始化
+	mainMotor_Init();
 }
 
 // 系统各外设使能函数，如LED使能、中断使能等

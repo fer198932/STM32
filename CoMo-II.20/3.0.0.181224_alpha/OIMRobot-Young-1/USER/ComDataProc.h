@@ -18,12 +18,13 @@ typedef enum { IS_OK = 0, NOT_OK = !IS_OK} IfOK_Status;
 
 
 
-/* 回复上位机的消息的结构体 */
+/* 回复上位机的消息的结构体 （占用空间太多，可以考虑优化） */
 #define 	RespMsg_SELFCHECK_LENGTH							8
 #define		RespMsg_MOTION_LENGTH 								9
 #define		RespMsg_LIMIT_LENGTH									9
 #define		RespMsg_UrgentStopDown_Length					23
 #define		RespMsg_UrgentStopUp_Length						9
+#define		RespMsg_CONTROL_LENGTH								9
 
 typedef struct {
 	u8 		respMsg_SelfCheck[RespMsg_SELFCHECK_LENGTH];
@@ -31,6 +32,8 @@ typedef struct {
 	u8 		respMsg_Limit[RespMsg_LIMIT_LENGTH];
 	u8 		respMsg_UrgentStopDown[RespMsg_UrgentStopDown_Length];
 	u8 		respMsg_UrgentStopUp[RespMsg_UrgentStopUp_Length];
+	u8		respMsg_Control[RespMsg_CONTROL_LENGTH];
+	
 } RespMsgArray;
 
 
@@ -147,7 +150,8 @@ void setRespStr_SlefCheck(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status);
 // 急停消息的反馈数组设置
 void setRespStr_UrgentStop(u8 respStr[], u16 length, u8 status);
 
-
+// 急停消息的反馈数组设置
+void setRespStr_Control(Proc_Data* pCmd, u8 respStr[], u16 length, u8 status);
 
 
 

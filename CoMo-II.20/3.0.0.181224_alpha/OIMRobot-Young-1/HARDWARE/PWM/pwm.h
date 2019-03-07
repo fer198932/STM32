@@ -8,25 +8,34 @@
 ////////////////////////////////////////////////////////////////////////////////// 	
 
 /*  TIM 定义  */
-#define 		X_PWM  			TIM3
-#define 		X_CH_EXTI		2 					// 对应通道 PWM_X_EXTI
-#define 		X_CH_OUT		1 					// 对应通道 PWM_X_OUT
+#define 		X_PWM  						TIM3
+#define 		X_CH_EXTI					2 					// 对应通道 PWM_X_EXTI
+#define 		X_CH_OUT					1 					// 对应通道 PWM_X_OUT
 
-#define 		Y_PWM  			TIM2
-#define 		Y_CH_EXTI		4
-#define 		Y_CH_OUT		1
+#define 		Y_PWM  						TIM2
+#define 		Y_CH_EXTI					4
+#define 		Y_CH_OUT					1
 
-#define 		Z_PWM  			TIM4
-#define 		Z_CH_EXTI 	3
-#define 		Z_CH_OUT		4
+#define 		Z_PWM  						TIM4
+#define 		Z_CH_EXTI 				3
+#define 		Z_CH_OUT					4
 
-#define 		A_PWM  			TIM9
-#define 		A_CH_EXTI		1
-#define 		A_CH_OUT		2
+#define 		A_PWM  						TIM9
+#define 		A_CH_EXTI					1
+#define 		A_CH_OUT					2
 
-#define 		B_PWM  			TIM12
-#define 		B_CH_EXTI		1
-#define 		B_CH_OUT		2
+#define 		B_PWM  						TIM12
+#define 		B_CH_EXTI					1
+#define 		B_CH_OUT					2
+
+#define			MAINMOTOR_PWM			TIM14
+#define			MAINMOTOR_CH			1
+
+
+
+
+
+
 
 #define 		DUTY_CYCLE	0 		// 占空比的开关，置零即关闭占空比调整（默认为50%） 暂时没做 byYJY
 
@@ -68,7 +77,7 @@ typedef enum {PWM_EXTI = 0, PWM_OUT = !PWM_EXTI} PWM_Channel; 		// PWM的通道
 void PWM_Init(void);
 	
 // 获得指定轴与TIM之间的映射关系
-void nAxis2TIM(u8 nAxis, NAxis_TIM_Structure* 	nAxis_TIM_Structure);
+static void nAxis2TIM(u8 nAxis, NAxis_TIM_Structure* 	nAxis_TIM_Structure);
 
 // 根据CLK设定PWM的输出频率
 // void setAxisPWM(u8 nAxis, u32 clk, u16 dutyCycle1, u16 dutyCycle2);
@@ -87,7 +96,7 @@ static void Set_PWM_Channel(TIM_TypeDef* TIM_N, TIM_OCInitTypeDef*  TIM_OCInitSt
 void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 
 // PWM 强制拉高或取消 ch:输出通道
-static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
+void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch);
 
 // 所有的PWM强制拉高
 void PWM_Forced2High_All(void);
@@ -97,6 +106,21 @@ void PWM_Forced2High_All(void);
 u16 calPSC(u32 clk, u8 nAxis);
 // 通过PSC计算频率， 注意寄存器溢出问题  单位HZ
 u32 calClk_PSC(u16 psc);
+
+// 主轴电机的初始化
+void	MainMotor_PWM_Init(void);
+
+
+// 获得指定轴与TIM之间的映射关系
+static void mainAxis2TIM(NAxis_TIM_Structure* 	nAxis_TIM_Structure);
+
+
+
+
+
+
+
+
 
 
 #endif

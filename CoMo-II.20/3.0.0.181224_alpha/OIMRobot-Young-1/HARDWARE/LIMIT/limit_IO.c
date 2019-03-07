@@ -5,7 +5,10 @@
 
 extern 		Flag_Structure 								flag_Struct;
 extern 		RespMsgArray									respMsgStr;										// 回复上位机的消息数组	
+
 extern		GPIO_Structure_XX							EXTI_UrgentStop;							// 急停中断
+extern		GPIO_Structure_XX							EXTI_MainMotor_Start;					// 急停中断
+
 extern		Motion_Strcuture 							motion_Data;	
 extern 		FunctionalState	 							nAxisStatus[AXIS_NUM];  	// 各轴是否可以运动的标志
 
@@ -305,11 +308,19 @@ uint8_t UrgentStop_Lim(void)
 	return readOutput(&EXTI_UrgentStop);
 }
 
+uint8_t MainMotor_Start(void)
+{
+	return readOutput(&EXTI_MainMotor_Start);
+}
+
 // 急停处理
 void UrgentStop_Proc(u8 status)
 {
 	if(UrgentStop_Down == status)			// 按下急停
 	{
+		// 主轴电机停止转动
+		mainMotorStop();
+		
 		// 电机停止运动
 		StepMotor_Stop_Macro();
 		DIS_ADDSUB_TIMER;

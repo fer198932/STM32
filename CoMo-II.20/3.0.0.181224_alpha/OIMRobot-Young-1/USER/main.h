@@ -14,16 +14,17 @@
 #include "pwm.h"
 #include "timer.h"
 #include "StepMotor.h"	
+#include "MainAxisMotor.h"	
 
 /* 系统功能开关： 1--打开测试代码，0--关闭 */
 // 测试代码，测试代码通常属于验证编写的代码，不算入系统代码
-#define _TEST 1							
+#define _TEST 0							
 
 // 开发板上的测试代码，方便在探索者板子上验证代码
 // #define _TEST_ON_ALIENTEK 1  -->在"config.h"
 
-// 测试用
-#define PRIN2DISP 1   			// 打印提示信息，而不是发回控制命令
+
+
 
 // 背隙补偿开关
 #define		BACKLASH_COMPENSATION 		0
@@ -46,7 +47,7 @@ UrgentStop_Falling = 3,
 UrgentStop_Rising = 4,
 UrgentStop_Locked = 5} UrgentStop_Status;
 
-// 标记类结构体，注意Flag_Struct_Init里面初始化了默认值（大部分为0）
+// 标记类结构体，注意Flag_Struct_Init里面初始化了默认值（大部分为0），不要轻易初始化为0！
 typedef struct {
 	volatile 		FlagStatus 					DMA_Out_Flag;								// DMA溢出，重新初始化
 	
@@ -56,10 +57,13 @@ typedef struct {
 	volatile 		FlagStatus					Cmd_Executing_Flag;					// 置位后表示命令正在执行
 	volatile 		FlagStatus 					Cmd_ProcDone_Flag;					// 命令处理完毕的标记
 	
-	volatile 		FunctionalState 		Cmd_Execute_En;					// 可以执行命令
-//	volatile	FunctionalState 	Cmd_Proc_Falg; 			// 串口数据可以进行处理
+	volatile 		FunctionalState 		Cmd_Execute_En;							// 可以执行命令
+//	volatile	FunctionalState 	Cmd_Proc_Falg; 								// 串口数据可以进行处理
 	
-	volatile		UrgentStop_Status		UrgentStop_Flag;		// 急停按钮的状态	
+	volatile		UrgentStop_Status		UrgentStop_Flag;						// 急停按钮的状态	
+	
+	volatile 		FlagStatus					MainMotor_Start_Flag;				// 主轴电机启动标志
+	volatile 		FlagStatus					MainMotor_Stop_Flag;				// 主轴电机停止标志
 	
 	vu32														Limiti_Flag;	
 } Flag_Structure;

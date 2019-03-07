@@ -1,251 +1,128 @@
-#include "StepMotor.h"			
+#include "MainAxisMotor.h"			
 
 //////////////////////////////////////////////////////////////////////////////////	 
-// 步进电机控制程序
-// 1、
-// 2019年1月31日13:20:00 byYJY
-//////////////////////////////////////////////////////////////////////////////////
-
-// 指令中设定的运动参数
-extern 	volatile 	FunctionalState 		Offline_Work_Flag; 						// 进入脱机加工的标记
-extern 	Flag_Structure 				flag_Struct;
-extern	Motion_Strcuture 			motion_Data;	
-extern	Motion_Strcuture 			motion_Data_Pre;	
+// 主轴电机控制程序
+// 2019年3月6日13:42:10 byYJY
+////////////////////////////////////////////////////////////////////////////////// 
 
 
-// 换向间隙相关
-const	 u32	 Backlash_PlusNum = BacklashCompensation * SUBDIV_NUM / (1e3);
-BacklashCompensation_Structure		backlashCompen;
+extern 		NAxis_TIM_Structure					mainMotor_TIM_Structure;
 
 
-// 各轴是否可以运动 
-FunctionalState	 nAxisStatus[AXIS_NUM] = {DISABLE, DISABLE, DISABLE, DISABLE, DISABLE};
 
-// 电机方向IO口
-GPIO_Structure_XX  	StepMotor_Dir[AXIS_NUM];
-
-// 步进电机初始化 主要是方向IO口的初始化
-void StepMotor_Init(void)
+// 主轴初始化，主要是电机方向
+void mainMotor_Init(void)
 {
-	Motor_Dir_Init(StepMotor_Dir+0, DIR_X);
-	Motor_Dir_Init(StepMotor_Dir+1, DIR_Y);
-	Motor_Dir_Init(StepMotor_Dir+2, DIR_Z);
-	Motor_Dir_Init(StepMotor_Dir+3, DIR_A);
-	Motor_Dir_Init(StepMotor_Dir+4, DIR_B);
+	PWM_Forced2High(mainMotor_TIM_Structure.TIM_N, DISABLE, mainMotor_TIM_Structure.ch_out);	// 取消强制拉高
 	
+	// 预留的方向IO口初始化
 }
 
-// 步进电机运动IO口方向初始化
-static void Motor_Dir_Init(GPIO_Structure_XX *GPIO_Temp, const char str[])
+// 主轴解码
+static void mainMotorDecode(void)
 {
-	GPIO_InitTypeDef  GPIO_InitStructure;
+	nAxisSetPWM(mainMotor_TIM_Structure.TIM_N, MAINMOTOR_PSC);
+	TIM_GenerateEvent(mainMotor_TIM_Structure.TIM_N, TIM_EventSource_Update);			// 主动发起事件，更新寄存器
 	
-	// 构造GPIO
-	if(!GPIO_Structure_Make(str, GPIO_Temp)) return;
+	TIM_Cmd(mainMotor_TIM_Structure.TIM_N, ENABLE);
+//	PWM_Cmd(mainMotor_TIM_Structure.TIM_N, ENABLE, mainMotor_TIM_Structure.ch_out);		// 带强制拉高
 	
-	// 使能时钟
-	RCC_AHB1PeriphClockCmd(GPIO_Temp->RCC_Periph_N, ENABLE);
+	// 解码1
+	setMainMotor_DC(mainMotor_TIM_Structure.ch_out, MAINMOTOR_DECODE_DC1);
+	delay_ms(MAINMOTOR_DECODE_DELAY1);
 	
-	// GPIO配置
-	GPIO_InitStructure.GPIO_Pin = GPIO_Temp->GPIO_Pin_N;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;						// 普通输出模式
-  GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;					// 推挽输出
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;			// 100M
-  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;						// 上拉 默认是正方向运动
-  GPIO_Init(GPIO_Temp->GPIO_Port, &GPIO_InitStructure);									// 初始化GPIO	
+	// 解码2 
+	setMainMotor_DC(mainMotor_TIM_Structure.ch_out, MAINMOTOR_DECODE_DC2);
+	delay_ms(MAINMOTOR_DECODE_DELAY2);
+	
+	TIM_Cmd(mainMotor_TIM_Structure.TIM_N, DISABLE);	
+//	PWM_Cmd(mainMotor_TIM_Structure.TIM_N, DISABLE, mainMotor_TIM_Structure.ch_out);		// 带取消强制拉高
 }
 
-// 电机运动方向设定 
-void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
-{	
-//	static volatile uint8_t dirOld = 0;  		// 最开始的方向
-	
-	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
-		return;
-	
-	if(POS_DIR == dir) 			// 正向
-	{
-		GPIO_SetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
-	}
-	else      							// 负向
-	{
-		GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
-	}
-	
-//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
-//	delay_us(DIR_EX_DALAY); 			// 一定延时
 
-}
-
-// 电机运动方向设定 备份1 
-//void Motor_Dir_Set(GPIO_Structure_XX *GPIO_Temp, Motor_Dir dir)
-//{	
-//	volatile uint8_t dirOld;  		// 最开始的方向
-//	
-//	if(TBD_DIR == dir)					// 方向未设定时，啥都不干
-//		return;
-//	
-//	dirOld = GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
-//	
-//	// 需要换向
-//	if(dirOld != dir)
-//	{
-//		if(POS_DIR == dir) 			// 正向
-//		{
-//			GPIO_SetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);
-//		}
-//		else      							// 负向
-//		{
-//			GPIO_ResetBits(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N);  
-//		}
-//		
-//		while(GPIO_ReadOutputDataBit(GPIO_Temp->GPIO_Port, GPIO_Temp->GPIO_Pin_N) == dirOld) ; 	// 换向完成退出循环
-//		delay_us(DIR_EX_DALAY); 			// 一定延时
-//	}
-//	
-//	// else 不用换向
-//}
-
-// 步进电机同时开始运动（保证同步） 寄存器方式，提高效率
-void StepMotor_Start(void)
+// 主轴工作
+void mainMotorWork(Decode_Mode mode)
 {
-	// 限位触发时，将该轴的脉冲数、频率置零
-	StepMotor_Limited(flag_Struct.Limiti_Flag);
+	u8 temp1, temp2;
 	
-	// X轴
-	if(ENABLE == nAxisStatus[0])
+	if(HM_Decode == mode)
 	{
-		// 宏定义启动
-		nAxis_StepMotor_Start(X);
-//		PWM_Cmd(X_PWM, ENABLE, X_CH_EXTI);
-//		PWM_Cmd(X_PWM, ENABLE, X_CH_OUT);
-	}
-	
-	// Y轴
-	if(ENABLE == nAxisStatus[1])
-	{
-		nAxis_StepMotor_Start(Y);
-//		PWM_Cmd(Y_PWM, ENABLE, Y_CH_EXTI);
-//		PWM_Cmd(Y_PWM, ENABLE, Y_CH_OUT);	
-	}
-	
-	// Z轴
-	if(ENABLE == nAxisStatus[2])
-	{
-		nAxis_StepMotor_Start(Z);
-//		PWM_Cmd(Z_PWM, ENABLE, Z_CH_EXTI);
-//		PWM_Cmd(Z_PWM, ENABLE, Z_CH_OUT);
-	}
-	
-	// A轴
-	if(ENABLE == nAxisStatus[3])
-	{
-		nAxis_StepMotor_Start(A);
-//		PWM_Cmd(A_PWM, ENABLE, A_CH_EXTI);
-//		PWM_Cmd(A_PWM, ENABLE, A_CH_OUT);
-	}
-	
-	// B轴
-	if(ENABLE == nAxisStatus[4])
-	{
-		nAxis_StepMotor_Start(B);
-//		PWM_Cmd(B_PWM, ENABLE, B_CH_EXTI);
-//		PWM_Cmd(B_PWM, ENABLE, B_CH_OUT);
-	}		
-
-	if(0 == nAxis_Motion_Flag)
-	{
-		flag_Struct.Cmd_Executing_Flag = RESET;
+		delay_ms(1);
+		temp1 = MainMotor_Start();
+		delay_ms(1);
+		temp2 = MainMotor_Start();
 		
-#if OFFLINE_WORK
-		Offline_Work_Flag = ENABLE;
-#else
-#endif	
-		
-		
-		// 回复上位机
-#if PRIN2DISP
-//		respUsartMsg("PWM_Cmd\r\n", 10);
-#else
-//		respUsartMsg(backResString_Motion, RESP_MOTIONMSG_LENGTH);
-#endif	
-	}
-}
-
-// 步进电机同时停止（同步） 没有强制拉高
-void StepMotor_Stop_Macro(void)
-{
-	TIM_Cmd(X_PWM, DISABLE);
-	TIM_Cmd(Y_PWM, DISABLE);
-	TIM_Cmd(Z_PWM, DISABLE);
-	TIM_Cmd(A_PWM, DISABLE);
-	TIM_Cmd(B_PWM, DISABLE);
-//	nAxis_StepMotor_Stop(X);
-//	nAxis_StepMotor_Stop(Y);
-//	nAxis_StepMotor_Stop(Z);
-//	nAxis_StepMotor_Stop(A);
-//	nAxis_StepMotor_Stop(B);
-}
-
-// 步进电机运行设定距离
-void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
-{		
-	u8 i;
-	// 设定方向
-//	Motor_Dir_Set(StepMotor_Dir+n_axis, Dir);
-
-	/* 各轴初始化 */
-	// 设定运动参数
-	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
-	if(ALL_Axis == n_axis)
-	{
-		for(i=0; i<AXIS_NUM-2; i++)			// 暂时取消A、B轴的运动  byYJY
+		if(temp1 == temp2)
 		{
-			motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[i] = PlusNum;
-			motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = Clk;
-			motion_Data_Pre.cmd_Datas.plus_Datas.dir[i] = Dir;
+			if(0 == temp1)
+			{
+				mainMotorDecode();
+				delay_us(100);
+			}
 		}
 	}
-	else
-	{
-		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
-		motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
-		motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
-	}
 	
-	// 加减速初始化
-	AddSubSpeedInit_Pre();		// 注意这里可能会对设定的频率进行调整
+	nAxisSetPWM(mainMotor_TIM_Structure.TIM_N, MAINMOTOR_PSC);
+	TIM_GenerateEvent(mainMotor_TIM_Structure.TIM_N, TIM_EventSource_Update);			// 主动发起事件，更新寄存器
 	
-	// 运动状态初始化
-	motion_Init();
-	delay_us(MOTION_START_DALAY); 			// 一定延时
+	// 设定占空比
+	setMainMotor_DC(mainMotor_TIM_Structure.ch_out, MAINMOTOR_DC);
 	
-	// 步进电机同时开始运动
-	StepMotor_Start();
-	
-#if NO_ADDSUBSPEED
-	/* 关闭加减速 */
-#else		
-	// 加减速定时器开启
-	EN_ADDSUB_TIMER;
-#endif
+	TIM_Cmd(mainMotor_TIM_Structure.TIM_N, ENABLE);
+//	PWM_Cmd(mainMotor_TIM_Structure.TIM_N, ENABLE, mainMotor_TIM_Structure.ch_out);		// 带强制拉高
 }
 
-// 初始化时候的间隙补偿 0.1mm
-void Move2CompensateBacklash(void)
-{	
-	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, POS_DIR);		// 0.1mm
-	delay_ms(100);
-	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, NEG_DIR);
-	delay_ms(100);
-	
-//	backlashCompen.motorDirOld[i] = NEG_DIR;
-	mymemset((void*)backlashCompen.motorDirOld, NEG_DIR, sizeof(FlagStatus) * AXIS_NUM);
-	
-#if BACKLASH_COMPENSATION
-	backlashCompen.DirChange_En = ENABLE;
-#endif
+
+// 主轴停止
+void mainMotorStop(void)
+{
+	TIM_Cmd(mainMotor_TIM_Structure.TIM_N, DISABLE);
+//	PWM_Cmd(mainMotor_TIM_Structure.TIM_N, DISABLE, mainMotor_TIM_Structure.ch_out);		// 带取消强制拉高
 }
+
+// 设定主轴电机的占空比，dc：占空比 单位%  
+void setMainMotor_DC(u8 ch, u8 dc)
+{
+	u32 compareTemp;
+	
+	compareTemp = dc * MAINMOTOR_ARR / 100;
+	
+	if(1 > compareTemp) 
+	{
+		compareTemp = 1;
+		respMsgError("主轴电机参数设置有误\r\n", 1);
+	}
+	else if(TIM_ARR-1 < compareTemp)
+	{
+		compareTemp = TIM_ARR-1;
+		respMsgError("主轴电机参数设置有误\r\n", 1);
+	}
+	
+	switch(ch)
+	{
+		case 1:
+			TIM_SetCompare1(mainMotor_TIM_Structure.TIM_N, compareTemp);
+			break;
+		
+		case 2:
+			TIM_SetCompare2(mainMotor_TIM_Structure.TIM_N, compareTemp);
+			break;
+		
+		case 3:
+			TIM_SetCompare3(mainMotor_TIM_Structure.TIM_N, compareTemp);
+			break;
+		
+		case 4:
+			TIM_SetCompare4(mainMotor_TIM_Structure.TIM_N, compareTemp);
+			break;
+		
+		default:
+			respMsgError("主轴电机参数设置有误\r\n", 1);
+			break;
+	}
+	
+}
+
 
 
 

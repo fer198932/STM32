@@ -142,8 +142,28 @@ void motionDataProc(void)
 // 处理控制命令的函数
 void controlFunc(void)
 {
+	switch(motion_Data.cmd_Datas.cmd_Excute)
+	{
+		case MAINAXIS_WORK:
+			mainMotorWork(Auto_Decode);
+			break;
+		
+		case MAINAXIS_STOP:
+			mainMotorStop();
+			break;
+		
+		default:
+			respMsgError("控制命令指令码有误\r\n", 1);
+			break;		
+	}
 	
+	/* 回复上位机  */
+	// 设置反馈上位机的数组
+	setRespStr_Control(&(motion_Data_Pre.cmd_Datas), respMsgStr.respMsg_Control, RespMsg_CONTROL_LENGTH, 0x01);
+	respUsartMsg(respMsgStr.respMsg_Control, RespMsg_CONTROL_LENGTH);	
 	
+	// 程序执行完后，执行命令标记重新置位
+	flag_Struct.Cmd_Executing_Flag = RESET;
 }
 
 

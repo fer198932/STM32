@@ -10,6 +10,7 @@ extern u32 n_Axis_Min_Clk(u8 i);
 
 /* PWM 初始化的结构体  */
 NAxis_TIM_Structure 				nAxis_TIM_Structure[AXIS_NUM];
+NAxis_TIM_Structure					mainMotor_TIM_Structure;
 
 // PWM初始化函数
 void PWM_Init(void)
@@ -26,10 +27,13 @@ void PWM_Init(void)
 		Tim_PWM_Init(&nAxis_TIM_Structure[i], 0x04, 0x04, TIM_ARR, TIM_PSC, PWM_OUT);
 //		delay_us(5);
 	}
+	
+	// 主轴电机的初始化
+	MainMotor_PWM_Init();
 }
 
 // 获得指定轴与TIM之间的映射关系
-void nAxis2TIM(u8 nAxis, NAxis_TIM_Structure* 	nAxis_TIM_Structure)
+static void nAxis2TIM(u8 nAxis, NAxis_TIM_Structure* 	nAxis_TIM_Structure)
 {
 //	TIM_Temp = TIM_Temp;		// 屏蔽warning 不能屏蔽！
 	switch(nAxis)
@@ -250,7 +254,7 @@ void PWM_Cmd(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 //} while(0)
 
 // PWM 强制拉高或取消 ch:输出通道
-static void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
+void PWM_Forced2High(TIM_TypeDef* TIM_N, FunctionalState state, u8 ch)
 {
 	if(ENABLE == state) 		// 强制拉高
 	{
@@ -355,7 +359,25 @@ void PWM_Forced2High_All(void)
 }
 
 
+// 主轴电机的初始化
+void	MainMotor_PWM_Init(void)
+{
+	mainAxis2TIM(&mainMotor_TIM_Structure);
+	Tim_PWM_Init(&mainMotor_TIM_Structure, 0x04, 0x04, MAINMOTOR_ARR, MAINMOTOR_PSC, PWM_OUT);
+}
 
+// 获得指定轴与TIM之间的映射关系
+static void mainAxis2TIM(NAxis_TIM_Structure* 	nAxis_TIM_Structure)
+{
+	nAxis_TIM_Structure->nAxis = 6;				// 随便赋的值
+	nAxis_TIM_Structure->TIM_N = MAINMOTOR_PWM;
+	nAxis_TIM_Structure->ch_exti = MAINMOTOR_CH;
+	nAxis_TIM_Structure->ch_out = MAINMOTOR_CH;
+//	if(ERROR == GPIO_Structure_Make(PWM_MAINMOTOR_OUT, &(nAxis_TIM_Structure->GPIO_PWM_EXTI)))
+//		nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+	if(ERROR == GPIO_Structure_Make(PWM_MAINMOTOR_OUT, &(nAxis_TIM_Structure->GPIO_PWM_OUT)))
+		nAxis_TIM_Structure->nAxis = GPIO_ERROR;
+}
 
 
 

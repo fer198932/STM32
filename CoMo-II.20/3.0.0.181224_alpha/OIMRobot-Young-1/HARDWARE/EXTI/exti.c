@@ -12,13 +12,10 @@ extern 		FunctionalState	 							nAxisStatus[AXIS_NUM];  	// ¸÷ÖáÊÇ·ñ¿ÉÒÔÔË¶¯µÄ±
 
 
 static 		GPIO_Structure_XX	 		GPIO_EXTI_Plus[AXIS_NUM]; 			// µç»ú·´À¡µÄPWM½ÓÊÕÖÐ¶Ï Ë³Ðò£ºX¡¢Y¡¢Z¡¢A¡¢B
-GPIO_Structure_XX			EXTI_UrgentStop;								// ¼±Í£ÖÐ¶Ï
+GPIO_Structure_XX			EXTI_UrgentStop;										// ¼±Í£ÖÐ¶Ï
+GPIO_Structure_XX			EXTI_MainMotor_Start;								// ¼±Í£ÖÐ¶Ï
 
 
-#if _TEST	
-	/* °´Å¥ÖÐ¶Ï£¬²âÊÔÓÃ  */
-static	GPIO_Structure_XX 	GPIO_Key1;
-#endif	
 
 
 
@@ -41,12 +38,14 @@ void EXTI_Config_Init(void)
 //	delay_ms(5);
 	EXTI_Line_Init(GPIO_EXTI_Plus+4, EXTI_B_PLUS, EXTI_LINE_B, EXTI_Trigger_Rising, 0x00, 0x02);
 //	delay_ms(5);
+	
+	// ¼±Í£ÖÐ¶Ï³õÊ¼»¯
 	EXTI_Line_Init(&EXTI_UrgentStop, EXTI_UrgentStop_IO, EXTI_LINE_UrgentStop, EXTI_Trigger_Rising_Falling, 0x00, 0x00);
+	
+	// Ö÷Öáµç»úÆô¶¯³õÊ¼»¯
+	EXTI_Line_Init(&EXTI_MainMotor_Start, EXTI_MAINMOTOR_START, EXTI_LINE_MAINMOTOR, EXTI_Trigger_Falling, 0x01, 0x00);
 
-#if _TEST	
-	/* °´Å¥ÖÐ¶Ï£¬²âÊÔÓÃ  */
-	EXTI_Line_Init(&GPIO_Key1, _KEY1, 3, EXTI_Trigger_Rising, 0x01, 0x00);
-#endif		
+
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
@@ -66,6 +65,8 @@ void EXTI0_IRQHandler(void)
 	EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 0)
 	EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 0)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line0 has problem! 
 #endif	
@@ -88,6 +89,8 @@ void EXTI1_IRQHandler(void)
 	EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 1)
 	EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 1)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line1 has problem! 
 #endif	
@@ -110,6 +113,8 @@ void EXTI2_IRQHandler(void)
 	EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 2)
 	EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 2)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line2 has problem! 
 #endif	
@@ -132,6 +137,8 @@ void EXTI3_IRQHandler(void)
 	EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 3)
 	EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 3)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line3 has problem! 
 #endif	
@@ -154,6 +161,8 @@ void EXTI4_IRQHandler(void)
 	EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 4)
 	EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 4)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line4 has problem! 
 #endif	
@@ -180,6 +189,8 @@ void EXTI9_5_IRQHandler(void)
 		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 5)
 		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 5)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line5 has problem! 
 #endif			
@@ -201,18 +212,224 @@ void EXTI9_5_IRQHandler(void)
 		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
 #elif 	(EXTI_LINE_UrgentStop == 6)
 		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 6)
+	EXTI_IRQ_MainMotorWork_MACRO();
 #else
 //	#warning 	EXTI_Line0 has problem! 
 #endif			
 	}
-
+	
+	if(EXTI_GetITStatus(EXTI_Line7) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line7);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	7)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 7)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 7)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 7)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 7)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 7)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 7)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line8) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line8);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	8)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 8)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 8)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 8)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 8)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 8)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 8)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line9) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line9);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	9)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 9)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 9)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 9)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 9)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 9)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 9)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
 }
 
 // ÖÐ¶Ï·þÎñ³ÌÐò
 void EXTI15_10_IRQHandler(void)
 { 
 //	EXTI_ClearITPendingBit(EXTI_Line1);			// Çå³ýÖÐ¶Ï±êÖ¾Î»
+	if(EXTI_GetITStatus(EXTI_Line10) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line10);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	10)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 10)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 10)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 10)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 10)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 10)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 10)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
 	
+	if(EXTI_GetITStatus(EXTI_Line11) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line11);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	11)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 11)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 11)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 11)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 11)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 11)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 11)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line12) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line12);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	12)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 12)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 12)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 12)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 12)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 12)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 12)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line13) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line13);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	13)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 13)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 13)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 13)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 13)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 13)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 13)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line14) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line14);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	14)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 14)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 14)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 14)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 14)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 14)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 14)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}
+	
+	if(EXTI_GetITStatus(EXTI_Line15) != RESET)		// KEY1²âÊÔ
+	{
+		EXTI_ClearITPendingBit(EXTI_Line15);				// Çå³ýÖÐ¶Ï±êÖ¾Î»
+		
+#if 		(EXTI_LINE_X	==	15)
+		EXTI_IRQ_PWM_MACRO(0, X_PWM, X_CH_EXTI, X_CH_OUT);
+#elif 	(EXTI_LINE_Y == 15)
+		EXTI_IRQ_PWM_MACRO(1, Y_PWM, Y_CH_EXTI, Y_CH_OUT);
+#elif 	(EXTI_LINE_Z == 15)
+		EXTI_IRQ_PWM_MACRO(2, Z_PWM, Z_CH_EXTI, Z_CH_OUT);
+#elif 	(EXTI_LINE_Z == 15)
+		EXTI_IRQ_PWM_MACRO(3, A_PWM, A_CH_EXTI, A_CH_OUT);
+#elif 	(EXTI_LINE_B == 15)
+		EXTI_IRQ_PWM_MACRO(4, B_PWM, B_CH_EXTI, B_CH_OUT);
+#elif 	(EXTI_LINE_UrgentStop == 15)
+		EXTI_IRQ_UrgentStop_MACRO();
+#elif 	(EXTI_LINE_MAINMOTOR == 15)
+	EXTI_IRQ_MainMotorWork_MACRO();
+#else
+//	#warning 	EXTI_Line0 has problem! 
+#endif			
+	}	
 }
 
 
@@ -269,12 +486,9 @@ static void EXTI_GPIO_Init(GPIO_Structure_XX *GPIO_Temp, const char str[], uint8
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;  			//ÊäÈë
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//100M
 
-//#if _TEST	
-//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;  			//ÏÂÀ­ÊäÈë  ²âÊÔ°å×ÓÉÏµÄKEY1Ê±ÓÃ£¬¿ÉÉ¾³ý
-////	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;  			// ÉÏÀ­ÊäÈë  ²âÊÔ°å×ÓÉÏµÄKEY1Ê±ÓÃ£¬¿ÉÉ¾³ý
-//#else
+
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;  			//ÉÏÀ­ÊäÈë 
-//#endif
+
 	
 	GPIO_Init(GPIO_Temp->GPIO_Port, &GPIO_InitStructure);	
 }
@@ -301,11 +515,14 @@ void EXTI_Enable(void)
 	EXTI_Cmd((GPIO_EXTI_Plus+3)->EXTI_Line_N, ENABLE);
 	EXTI_Cmd((GPIO_EXTI_Plus+4)->EXTI_Line_N, ENABLE);
 	
+	// ¼±Í£ÖÐ¶ÏÊ¹ÄÜ
 	EXTI_Cmd(EXTI_UrgentStop.EXTI_Line_N, ENABLE);
+	
+	// Ö÷Öáµç»úÆô¶¯ÖÐ¶ÏÊ¹ÄÜ
+	EXTI_Cmd(EXTI_MainMotor_Start.EXTI_Line_N, ENABLE);
+	
 
-#if _TEST	
-	EXTI_Cmd(GPIO_Key1.EXTI_Line_N, ENABLE);	
-#endif
+
 	
 //	EXTI_Cmd(EXTI_Line4, ENABLE);
 }
@@ -365,6 +582,16 @@ static void EXTI_IRQ_UrgentStop_MACRO(void)
 {
 	flag_Struct.UrgentStop_Flag = UrgentStop_Locked;
 }
+
+// Ö÷ÖáÆô¶¯ÖÐ¶Ï·þÎñ³ÌÐò
+static void EXTI_IRQ_MainMotorWork_MACRO(void)
+{
+	flag_Struct.MainMotor_Start_Flag = SET;
+}
+
+
+
+
 
 
 

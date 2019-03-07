@@ -34,6 +34,12 @@ ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp)
 			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOC;
 			break;
 		
+		case 'D':
+			GPIO_Temp->GPIO_Port = GPIOD;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOD;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOD;
+			break;
+		
 		case 'E':
 			GPIO_Temp->GPIO_Port = GPIOE;
 			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOE;
@@ -44,6 +50,36 @@ ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp)
 			GPIO_Temp->GPIO_Port = GPIOF;
 			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOF;
 			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOF;
+			break;
+		
+		case 'G':
+			GPIO_Temp->GPIO_Port = GPIOG;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOG;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOG;
+			break;
+		
+		case 'H':
+			GPIO_Temp->GPIO_Port = GPIOH;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOH;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOH;
+			break;
+		
+		case 'I':
+			GPIO_Temp->GPIO_Port = GPIOI;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOI;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOI;
+			break;
+		
+		case 'J':
+			GPIO_Temp->GPIO_Port = GPIOJ;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOJ;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOJ;
+			break;
+		
+		case 'K':
+			GPIO_Temp->GPIO_Port = GPIOK;
+			GPIO_Temp->RCC_Periph_N = RCC_AHB1Periph_GPIOK;
+			GPIO_Temp->EXTI_PortGPIO_N = EXTI_PortSourceGPIOK;
 			break;
 		
 		default:
@@ -88,6 +124,38 @@ ErrorStatus GPIO_Structure_Make(const char str[], GPIO_Structure_XX *GPIO_Temp)
 						GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource11;
 						GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource11;
 						GPIO_Temp->EXTI_Line_N = EXTI_Line11;
+						GPIO_Temp->NVIC_IRQ_N = EXTI15_10_IRQn;
+						break;
+					
+					case '2':
+						GPIO_Temp->GPIO_Pin_N = GPIO_Pin_12;
+						GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource12;
+						GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource12;
+						GPIO_Temp->EXTI_Line_N = EXTI_Line12;
+						GPIO_Temp->NVIC_IRQ_N = EXTI15_10_IRQn;
+						break;
+					
+					case '3':
+						GPIO_Temp->GPIO_Pin_N = GPIO_Pin_13;
+						GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource13;
+						GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource13;
+						GPIO_Temp->EXTI_Line_N = EXTI_Line13;
+						GPIO_Temp->NVIC_IRQ_N = EXTI15_10_IRQn;
+						break;
+					
+					case '4':
+						GPIO_Temp->GPIO_Pin_N = GPIO_Pin_14;
+						GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource14;
+						GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource14;
+						GPIO_Temp->EXTI_Line_N = EXTI_Line14;
+						GPIO_Temp->NVIC_IRQ_N = EXTI15_10_IRQn;
+						break;
+					
+					case '5':
+						GPIO_Temp->GPIO_Pin_N = GPIO_Pin_15;
+						GPIO_Temp->GPIO_PinSource_N = GPIO_PinSource15;
+						GPIO_Temp->EXTI_PinSource_N = EXTI_PinSource15;
+						GPIO_Temp->EXTI_Line_N = EXTI_Line15;
 						GPIO_Temp->NVIC_IRQ_N = EXTI15_10_IRQn;
 						break;
 					
