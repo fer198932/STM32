@@ -69,10 +69,10 @@ void DMA_Restart(DMA_Stream_TypeDef *DMA_Streamx, uint32_t amount)
 void DMA_USART_Init(void)
 {
 	/* DMA发送初始化  */
-	DMA_Config(DMA_Stream_Tx, DMA_Channel_Tx, (u32)&USART1->DR, (u32)buffer_Trans.data,
+	DMA_Config(DMA_Stream_Tx, DMA_Channel_Tx, (u32)&USART_X->DR, (u32)buffer_Trans.data,
 		BUF_SIZE, DMA_DIR_MemoryToPeripheral, DMA_Mode_Normal);
 	/* DMA接收初始化 */
-	DMA_Config(DMA_Stream_Rx, DMA_Channel_Rx, (u32)&USART1->DR, (u32)buffer_Rec.data,
+	DMA_Config(DMA_Stream_Rx, DMA_Channel_Rx, (u32)&USART_X->DR, (u32)buffer_Rec.data,
 		BUF_SIZE, DMA_DIR_PeripheralToMemory, DMA_Mode_Circular);
 	DMA_Cmd(DMA_Stream_Rx, DISABLE);					// 调用一下，否则第一条不会接收
 	DMA_SetCurrDataCounter(DMA_Stream_Rx, BUF_SIZE);

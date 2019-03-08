@@ -88,7 +88,11 @@ int main(void)
 			}
 			else
 			{
-				respMsgError("前一条命令还未处理完毕！\r\n", 1);				
+				respMsgError("前一条命令还未处理完毕！\r\n", 1);		
+				
+				// 重置缓冲区
+				buffer_Reset();
+				
 				continue;
 			}
 		}

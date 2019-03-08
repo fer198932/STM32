@@ -12,34 +12,40 @@
 
 /* 中断线编译检查 */
 #if 		((EXTI_LINE_X < 0) || (EXTI_LINE_X > 16) || (EXTI_LINE_X == EXTI_LINE_Y) || (EXTI_LINE_X == EXTI_LINE_Z) || \
-					(EXTI_LINE_X == EXTI_LINE_A) || (EXTI_LINE_X == EXTI_LINE_B) || (EXTI_LINE_X == EXTI_LINE_UrgentStop))
+					(EXTI_LINE_X == EXTI_LINE_A) || (EXTI_LINE_X == EXTI_LINE_B) || (EXTI_LINE_X == EXTI_LINE_UrgentStop) || (EXTI_LINE_X == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_X has problem!
 #endif
 
 #if 		((EXTI_LINE_Y < 0) || (EXTI_LINE_Y > 16) || (EXTI_LINE_Y == EXTI_LINE_X) || (EXTI_LINE_Y == EXTI_LINE_Z) || \
-					(EXTI_LINE_Y == EXTI_LINE_A) || (EXTI_LINE_Y == EXTI_LINE_B) || (EXTI_LINE_Y == EXTI_LINE_UrgentStop))
+					(EXTI_LINE_Y == EXTI_LINE_A) || (EXTI_LINE_Y == EXTI_LINE_B) || (EXTI_LINE_Y == EXTI_LINE_UrgentStop) || (EXTI_LINE_Y == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_Y has problem!
 #endif
 
 #if 		((EXTI_LINE_Z < 0) || (EXTI_LINE_Z > 16) || (EXTI_LINE_Z == EXTI_LINE_X) || (EXTI_LINE_Z == EXTI_LINE_Y) || \
-					(EXTI_LINE_Z == EXTI_LINE_A) || (EXTI_LINE_Z == EXTI_LINE_B) || (EXTI_LINE_Z == EXTI_LINE_UrgentStop))
+					(EXTI_LINE_Z == EXTI_LINE_A) || (EXTI_LINE_Z == EXTI_LINE_B) || (EXTI_LINE_Z == EXTI_LINE_UrgentStop) || (EXTI_LINE_Z == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_Z has problem!
 #endif
 
 #if 		((EXTI_LINE_A < 0) || (EXTI_LINE_A > 16) || (EXTI_LINE_A == EXTI_LINE_X) || (EXTI_LINE_A == EXTI_LINE_Y) || \
-					(EXTI_LINE_A == EXTI_LINE_Z) || (EXTI_LINE_A == EXTI_LINE_B) || (EXTI_LINE_A == EXTI_LINE_UrgentStop))
+					(EXTI_LINE_A == EXTI_LINE_Z) || (EXTI_LINE_A == EXTI_LINE_B) || (EXTI_LINE_A == EXTI_LINE_UrgentStop) || (EXTI_LINE_A == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_A has problem!
 #endif
 
 #if 		((EXTI_LINE_B < 0) || (EXTI_LINE_B > 16) || (EXTI_LINE_B == EXTI_LINE_X) || (EXTI_LINE_B == EXTI_LINE_Y) || \
-					(EXTI_LINE_B == EXTI_LINE_Z) || (EXTI_LINE_B == EXTI_LINE_A) || (EXTI_LINE_B == EXTI_LINE_UrgentStop))
+					(EXTI_LINE_B == EXTI_LINE_Z) || (EXTI_LINE_B == EXTI_LINE_A) || (EXTI_LINE_B == EXTI_LINE_UrgentStop) || (EXTI_LINE_B == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_B has problem!
 #endif
 
 #if 		((EXTI_LINE_UrgentStop < 0) || (EXTI_LINE_UrgentStop > 16) || (EXTI_LINE_UrgentStop == EXTI_LINE_X) || 	\
 					(EXTI_LINE_UrgentStop == EXTI_LINE_Y) || (EXTI_LINE_UrgentStop == EXTI_LINE_Z) || 	\
-					(EXTI_LINE_UrgentStop == EXTI_LINE_A) || (EXTI_LINE_UrgentStop == EXTI_LINE_B))
+					(EXTI_LINE_UrgentStop == EXTI_LINE_A) || (EXTI_LINE_UrgentStop == EXTI_LINE_B) || (EXTI_LINE_UrgentStop == EXTI_LINE_MAINMOTOR))
 #error 	EXTI_LINE_UrgentStop has problem!
+#endif
+
+#if 		((EXTI_LINE_MAINMOTOR < 0) || (EXTI_LINE_MAINMOTOR > 16) || (EXTI_LINE_MAINMOTOR == EXTI_LINE_X) || 	\
+					(EXTI_LINE_MAINMOTOR == EXTI_LINE_Y) || (EXTI_LINE_MAINMOTOR == EXTI_LINE_Z) || 	\
+					(EXTI_LINE_MAINMOTOR == EXTI_LINE_A) || (EXTI_LINE_MAINMOTOR == EXTI_LINE_B) || (EXTI_LINE_MAINMOTOR == EXTI_LINE_UrgentStop))
+#error 	EXTI_LINE_MAINMOTOR has problem!
 #endif
 
 // 中断线与GPIO映射关系

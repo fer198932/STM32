@@ -39,14 +39,6 @@ int fputc(int ch, FILE *f)
 }
 #endif
 
-#if EN_USART1
-	#define USART_X USART1
-#elif EN_USART2
-	#define USART_X USART2
-#elif EN_USART3
-	#define USART_X USART3
-#else
-#endif
 
 static 	GPIO_Structure_XX 	GPIO_AF_Usart_Tx;						// GPIO复用为串口发送
 static 	GPIO_Structure_XX 	GPIO_AF_Usart_Rx;						// GPIO复用为串口接收
@@ -64,15 +56,15 @@ static void GPIO_AF_Usart_Init(USART_TypeDef* USARTx,
 	if(ERROR == GPIO_Structure_Make(Pin_Rx_str, &GPIO_AF_Usart_Rx))
 		return;	
 	
-#if EN_USART1
+#if (1 == USART_EN)
 	USART_AF_Structure.RCC_Periph_N = RCC_APB2Periph_USART1;
 	USART_AF_Structure.GPIO_AF = GPIO_AF_USART1;
 	USART_AF_Structure.IRQ_Channel_N = USART1_IRQn;	
-#elif EN_USART2
+#elif (2 == USART_EN)
 	USART_AF_Structure.RCC_Periph_N = RCC_APB1Periph_USART2;
 	USART_AF_Structure.GPIO_AF = GPIO_AF_USART2;
 	USART_AF_Structure.IRQ_Channel_N = USART2_IRQn;
-#elif EN_USART3
+#elif (3 == USART_EN)
 	USART_AF_Structure.RCC_Periph_N = RCC_APB1Periph_USART3;
 	USART_AF_Structure.GPIO_AF = GPIO_AF_USART3;
 	USART_AF_Structure.IRQ_Channel_N = USART3_IRQn;
@@ -93,7 +85,7 @@ void uart_init(u32 bound){
 	GPIO_AF_Usart_Init(USART_X, USART_TX, USART_RX);
 	
 	// 时钟使能 1、串口1与串口2、3的时钟线不一样； 2、GPIO需在同一个端口（该程序的需求）
-#if EN_USART1
+#if (1 == USART_EN)
 	RCC_APB2PeriphClockCmd(USART_AF_Structure.RCC_Periph_N, ENABLE); 		// 使能USART1时钟
 #else
 	RCC_APB1PeriphClockCmd(USART_AF_Structure.RCC_Periph_N, ENABLE); 		// 使能串口时钟
@@ -159,104 +151,38 @@ void USART_IRQ_Macro(volatile u8 temp)
 }
 
 
-#if EN_USART1
+#if (1 == USART_EN)
 void USART1_IRQHandler(void)                	//串口1中断服务程序
 {
 //	volatile static u16 endPosOld = 0; 					// end指向的前一个位置，判断是否倒置
 	volatile u8 temp;												// 清标志位的
-#if SYSTEM_SUPPORT_OS 		/*如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */		
-	OSIntEnter();    	
-#endif	
+//#if SYSTEM_SUPPORT_OS 		/*如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */		
+//	OSIntEnter();    	
+//#endif	
 	
-	USART_IRQ_Macro(temp);;
+	USART_IRQ_Macro(temp); 
 	
-//	if(USART_GetITStatus(USART_X, USART_IT_IDLE) != RESET)  /* 空闲中断 */ \
-//	{ \
-//		temp = USART_X->SR;    /* 通过读SR(状态寄存器)和DR(数据寄存器)清空闲中断 */   \
-//		temp = USART_X->DR;		\
-//		/* DMA接收方式 */ 		\
-//		/* end指向的位置=设置的接收长度-剩余的DMA缓存大小 （始终等于） */
-//		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx);		
-//		if(buffer_Rec.start <= buffer_Rec.end)  /* 正序 */
-//		{
-//			/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */
-//			if((BUF_SIZE + buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE)
-//			{
-//				DMA_Cmd(DMA_Stream_Rx, DISABLE);
-//				respMsgError("DMA溢出\r\n", 1);
-//			}
-//		}
-//		else 																		/* 逆序 */
-//		{
-//			/* 如果剩余的空间小于RESERVED_SIZE，关闭DMA （注：处理数据之后应重新开启）  */
-//			if((buffer_Rec.start - buffer_Rec.end) < RESERVED_SIZE)
-//			{
-//				DMA_Cmd(DMA_Stream_Rx, DISABLE);
-//				respMsgError("DMA溢出\r\n", 1);
-//			}
-//		}
-
-//		
-////		if(endPosOld < buffer_Rec.end) 		/* end没发生倒置 */ 
-////			
-////		
-////		/* 接收的字符串长度=设置的接收长度-剩余的DMA缓存大小 */ 	
-////		buffer_Rec.end = BUF_SIZE - DMA_GetCurrDataCounter(DMA_Stream_Rx); 	
-////		/* 剩余的DMA缓存大小  */
-//////		length = DMA_GetCurrDataCounter(DMA_Stream_Rx);
-////		if(buffer_Rec.bufStatus) /* 逆序，start>end */
-////		{
-////			
-////		}
-////		else 										/* 正序，start<end */
-////		{
-//////			buffer_Rec.end += 
-//////			if()
-////		}
-////		
-////		
-//////		mymemcpy((buffer_Rec.data+buffer_Rec.end), DMA_Rec, length); 		
-//////		DMA_Stream_Rx->NDTR = BUF_SIZE;		/* 从0位置开始重新装填 */ 		
-////		/* 设置传输数据长度 */ 			
-//////		DMA_SetCurrDataCounter(DMA_Stream_Rx, BUF_SIZE); 			
-//////		DMA_Cmd(DMA_Stream_Rx, ENABLE); 		
-//	} 	 
-	
-#if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
-	OSIntExit();  											 
-#endif 	
+//#if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
+//	OSIntExit();  											 
+//#endif 	
 } 	
 
-#elif EN_USART2
+#elif (2 == USART_EN)
 void USART2_IRQHandler(void)                	//串口2中断服务程序
 {
 	volatile u8 temp;												// 清标志位的
 	
-#if SYSTEM_SUPPORT_OS 		/*如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */		
-	OSIntEnter();    	
-#endif	
-	
 	 USART_IRQ_Macro(temp);
 	
-#if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
-	OSIntExit();  											 
-#endif 	
 } 
 
-#elif EN_USART3
+#elif (3 == USART_EN)
 void USART3_IRQHandler(void)                	//串口3中断服务程序
 {
 	volatile u8 temp;												// 清标志位的
 	
-#if SYSTEM_SUPPORT_OS 		/*如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */		
-	OSIntEnter();    	
-#endif	
-	
 	 USART_IRQ_Macro(temp);
 	
-#if SYSTEM_SUPPORT_OS 	/* 如果SYSTEM_SUPPORT_OS为真，则需要支持OS. */ 
-	OSIntExit();  											 
-#endif 	
 } 
 
 #endif	

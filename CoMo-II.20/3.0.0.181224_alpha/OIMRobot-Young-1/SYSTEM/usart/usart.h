@@ -14,19 +14,20 @@
 
 // #define USART_REC_LEN  			BUF_SIZE  	//定义最大接收字节数 200
 
-#if EN_USART1
+#if (1 == USART_EN)
 	#define USART_X 		USART1
 	#define USART_TX 		"PA9"						// 串口Tx
 	#define USART_RX 		"PA10"					// 串口Rx
-#elif EN_USART2
+#elif (2 == USART_EN)
 	#define USART_X 		USART2
 	#define USART_TX 		"PA2"						// 串口Tx
 	#define USART_RX 		"PA3"						// 串口Rx
-#elif EN_USART3
+#elif (3 == USART_EN)
 	#define USART_X 		USART3
 	#define USART_TX 		"PB10"					// 串口Tx
 	#define USART_RX 		"PB11"					// 串口Rx
 #else
+	#error	USART Init Error!
 #endif
 
 // 初始化GPIO和串口的数据结构体
