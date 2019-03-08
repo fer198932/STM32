@@ -66,6 +66,8 @@ typedef struct {
 	volatile 		FlagStatus					MainMotor_Stop_Flag;				// 主轴电机停止标志
 	
 	vu32														Limiti_Flag;	
+	
+//	volatile		FlagStatus					Retun2Zero_Flag;						// 回零标记
 } Flag_Structure;
 
 

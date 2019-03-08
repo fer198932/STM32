@@ -190,28 +190,20 @@ void StepMotor_Stop_Macro(void)
 // 步进电机运行设定距离
 void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
 {		
-	u8 i;
-	// 设定方向
-//	Motor_Dir_Set(StepMotor_Dir+n_axis, Dir);
+	if(n_axis >= ALL_Axis)
+	{
+		respMsgError("设定电机运动错误\r\n", 1);
+		return;
+	}
 
 	/* 各轴初始化 */
 	// 设定运动参数
-	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
-	if(ALL_Axis == n_axis)
-	{
-		for(i=0; i<AXIS_NUM-2; i++)			// 暂时取消A、B轴的运动  byYJY
-		{
-			motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[i] = PlusNum;
-			motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = Clk;
-			motion_Data_Pre.cmd_Datas.plus_Datas.dir[i] = Dir;
-		}
-	}
-	else
-	{
-		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
-		motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
-		motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
-	}
+	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));	
+	
+	motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[n_axis] = PlusNum;
+	motion_Data_Pre.cmd_Datas.plus_Datas.clk[n_axis] = Clk;
+	motion_Data_Pre.cmd_Datas.plus_Datas.dir[n_axis] = Dir;
+	
 	
 	// 加减速初始化
 	AddSubSpeedInit_Pre();		// 注意这里可能会对设定的频率进行调整
@@ -223,20 +215,47 @@ void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir)
 	// 步进电机同时开始运动
 	StepMotor_Start();
 	
-#if NO_ADDSUBSPEED
-	/* 关闭加减速 */
-#else		
 	// 加减速定时器开启
 	EN_ADDSUB_TIMER;
-#endif
+}
+
+// 所有轴的步进电机运行设定距离
+void StepMotor_All_Move(u32 Clk, u32 PlusNum, Motor_Dir Dir[])
+{		
+	u8 i;
+	
+	mymemset(&motion_Data_Pre, 0, sizeof(motion_Data_Pre));
+	
+	for(i=0; i<AXIS_NUM; i++)			// 暂时取消A、B轴的运动  byYJY
+	{
+		motion_Data_Pre.cmd_Datas.plus_Datas.plusNum[i] = PlusNum;
+		motion_Data_Pre.cmd_Datas.plus_Datas.clk[i] = Clk;
+		motion_Data_Pre.cmd_Datas.plus_Datas.dir[i] = Dir[i];
+	}
+	
+	// 加减速初始化
+	AddSubSpeedInit_Pre();		// 注意这里可能会对设定的频率进行调整
+	
+	// 运动状态初始化
+	motion_Init();
+	delay_us(MOTION_START_DALAY); 			// 一定延时
+	
+	// 步进电机同时开始运动
+	StepMotor_Start();
+
+	// 加减速定时器开启
+	EN_ADDSUB_TIMER;
 }
 
 // 初始化时候的间隙补偿 0.1mm
 void Move2CompensateBacklash(void)
 {	
-	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, POS_DIR);		// 0.1mm
+	Motor_Dir posDir[AXIS_NUM] = {POS_DIR, POS_DIR, POS_DIR, TBD_DIR, TBD_DIR};
+	Motor_Dir negDir[AXIS_NUM] = {NEG_DIR, NEG_DIR, NEG_DIR, TBD_DIR, TBD_DIR};
+	
+	StepMotor_All_Move(StepMotor_MinClk, SUBDIV_NUM/10, posDir);		// 0.1mm
 	delay_ms(100);
-	StepMotor_Move(ALL_Axis, StepMotor_MinClk, SUBDIV_NUM/10, NEG_DIR);
+	StepMotor_All_Move(StepMotor_MinClk, SUBDIV_NUM/10, negDir);
 	delay_ms(100);
 	
 //	backlashCompen.motorDirOld[i] = NEG_DIR;
@@ -245,6 +264,14 @@ void Move2CompensateBacklash(void)
 #if BACKLASH_COMPENSATION
 	backlashCompen.DirChange_En = ENABLE;
 #endif
+}
+
+
+
+// 运动停止前，会死循环在该函数里
+void StepMotor_Move_Done(void)
+{
+	while(0 != nAxis_Motion_Flag) ;
 }
 
 

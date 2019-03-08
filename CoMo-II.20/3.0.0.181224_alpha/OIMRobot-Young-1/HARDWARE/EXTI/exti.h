@@ -127,7 +127,7 @@ static void EXTI_IRQ_PWM_MACRO(u8 n, TIM_TypeDef *TIM_N, u8 ch_exti, u8 ch_out);
 static void EXTI_IRQ_UrgentStop_MACRO(void);
 
 // 测试用的各轴停止函数
-static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out);
+void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out);
 
 
 // 主轴启动中断服务程序

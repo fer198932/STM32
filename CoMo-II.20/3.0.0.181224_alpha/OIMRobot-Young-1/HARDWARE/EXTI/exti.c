@@ -528,7 +528,7 @@ void EXTI_Enable(void)
 }
 
 // 测试用的各轴停止函数
-static void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out)
+void nAxis_StepMotor_Stop_MACRO(TIM_TypeDef* TIM_N, u8 ch_exti, u8 ch_out)
 {
 	PWM_Cmd(TIM_N, DISABLE, ch_exti); 	
 	PWM_Cmd(TIM_N, DISABLE, ch_out); 	

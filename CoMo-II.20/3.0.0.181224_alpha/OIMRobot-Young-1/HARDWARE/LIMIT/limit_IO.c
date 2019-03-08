@@ -377,7 +377,8 @@ void StepMotor_Limited(vu32 limitValue)
 	
 	for(i=0; i<AXIS_NUM; i++)
 	{
-		if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[i]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[i]))
+		if((0 == motion_Data.cmd_Datas.plus_Datas.plusNum[i]) || (0 == motion_Data.cmd_Datas.plus_Datas.clk[i]) || 
+				(TBD_DIR == motion_Data.cmd_Datas.plus_Datas.dir[i]))
 		{
 			nAxisStatus[i] = DISABLE;
 		}

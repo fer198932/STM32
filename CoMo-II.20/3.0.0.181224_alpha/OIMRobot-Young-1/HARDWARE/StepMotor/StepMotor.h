@@ -87,11 +87,14 @@ void StepMotor_Stop_Macro(void);
 
 // 步进电机运行设定距离
 void StepMotor_Move(N_Axis n_axis, u32 Clk, u32 PlusNum, Motor_Dir Dir);
+// 所有轴的步进电机运行设定距离
+void StepMotor_All_Move(u32 Clk, u32 PlusNum, Motor_Dir Dir[]);
 
 // 初始化时候的间隙补偿
 void Move2CompensateBacklash(void);
 
-
+// 运动停止前，会死循环在该函数里
+void StepMotor_Move_Done(void);
 
 
 
