@@ -222,6 +222,7 @@ void Sys_Init(void)
 	EXTI_Config_Init();				// 中断IO口初始化 中断最后初始化
 	StepMotor_Init();				// 步进电机方向IO口初始化
 	mainMotor_Init();
+	Tool_Init();						// 刀具初始化
 }
 
 // 系统各外设使能函数，如LED使能、中断使能等

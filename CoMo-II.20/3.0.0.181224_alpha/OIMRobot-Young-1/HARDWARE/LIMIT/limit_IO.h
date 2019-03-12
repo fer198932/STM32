@@ -43,7 +43,7 @@
 // IO口初始化函数
 void limit_IO_Init(void);
 // 初始化函数
-static void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[]);
+void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[]);
 
 // 读取IO口输出电平
 static uint8_t readOutput(GPIO_Structure_XX *GPIO_Temp);

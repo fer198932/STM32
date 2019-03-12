@@ -12,7 +12,7 @@ extern 		NAxis_TIM_Structure			nAxis_TIM_Structure[AXIS_NUM];  		// PWM 初始化的
 extern 		Flag_Structure 					flag_Struct;
 
 
-static	 DesPosition 	workPos;			// 回零前的工作位置
+DesPosition 	workPos;			// 回零前的工作位置
 
 // 回到零点，限位触发
 void return2Zero(void)
@@ -36,15 +36,15 @@ void return2Zero(void)
 	mymemset(&workPos, 0, sizeof(workPos));	
 	
 	// Z轴向上进入限位位置
-	workPos2Limit(Z_Axis, Z_AXIS_MAX_CLK>>2, POS_DIR, Z_P_Lim);
+	workPos2Limit(Z_Axis, Z_AXIS_MAX_CLK>>1, POS_DIR, Z_P_Lim);
 	delay_ms(10);	
 	workPos.posPlusNum[Z_Axis] = plusNumPWM[Z_Axis];		// 保存原来的工作位置
 	// X轴向左进入限位位置
-	workPos2Limit(X_Axis, X_AXIS_MAX_CLK>>2, NEG_DIR, X_N_Lim);
+	workPos2Limit(X_Axis, X_AXIS_MAX_CLK>>1, NEG_DIR, X_N_Lim);
 	delay_ms(10);	
 	workPos.posPlusNum[X_Axis] = plusNumPWM[X_Axis];		// 保存原来的工作位置
 	// Y轴向后进入限位位置
-	workPos2Limit(Y_Axis, Y_AXIS_MAX_CLK>>2, POS_DIR, Y_P_Lim);
+	workPos2Limit(Y_Axis, Y_AXIS_MAX_CLK>>1, POS_DIR, Y_P_Lim);
 	delay_ms(10);
 	workPos.posPlusNum[Y_Axis] = plusNumPWM[Y_Axis];		// 保存原来的工作位置
 	
@@ -77,13 +77,7 @@ void return2Zero(void)
 	//////////////////////
 	
 	// 清空串口数据，避免执行命令时有串口命令进来
-	if(SET == flag_Struct.USART_IDLE_Flag)
-	{
-		flag_Struct.USART_IDLE_Flag = RESET;
-		respMsgError("回零执行中，不接收串口命令！\r\n", 1);					
-		// 重置缓冲区
-		buffer_Reset();		
-	}
+	lockUsart("回零执行中，不接收串口命令！\r\n");
 }
 
 // 指定轴从工作位置移动到限位点
@@ -110,16 +104,16 @@ static void workPos2Limit(N_Axis n, u32 _clk, Motor_Dir _dir, u8 (*fuc_limit)())
 
 
 // 从零点到指定位置，按设定的值运动
-static void zeroBack2Pos(DesPosition* pDesPos)
+void zeroBack2Pos(DesPosition* pDesPos)
 {	
 	// X、Y轴运动
-	StepMotor_Move(X_Axis, StepMotor_MaxClk>>2, pDesPos->posPlusNum[X_Axis], pDesPos->posDir[X_Axis]);		
-	StepMotor_Move(Y_Axis, StepMotor_MaxClk>>2, pDesPos->posPlusNum[Y_Axis], pDesPos->posDir[Y_Axis]);
+	StepMotor_Move(X_Axis, StepMotor_MaxClk>>1, pDesPos->posPlusNum[X_Axis], pDesPos->posDir[X_Axis]);		
+	StepMotor_Move(Y_Axis, StepMotor_MaxClk>>1, pDesPos->posPlusNum[Y_Axis], pDesPos->posDir[Y_Axis]);
 	StepMotor_Move_Done();
 	delay_ms(10);
 	
 	// z轴运动
-	StepMotor_Move(Z_Axis, StepMotor_MaxClk>>2, pDesPos->posPlusNum[Z_Axis], pDesPos->posDir[Z_Axis]);
+	StepMotor_Move(Z_Axis, StepMotor_MaxClk>>1, pDesPos->posPlusNum[Z_Axis], pDesPos->posDir[Z_Axis]);
 	StepMotor_Move_Done();
 	delay_ms(10);
 }

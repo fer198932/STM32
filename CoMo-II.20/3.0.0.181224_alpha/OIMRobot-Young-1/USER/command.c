@@ -148,6 +148,32 @@ void controlFunc(void)
 			mainMotorStop();
 			break;
 		
+		case CHANGE_TOOL1:
+			changeTools(1, Assmble_Tool);
+			break;
+		
+		case CHANGE_TOOL2:
+			changeTools(2, Assmble_Tool);
+			break;
+		
+		case CHANGE_TOOL3:
+			changeTools(3, Assmble_Tool);
+			break;
+		
+		case CHANGE_TOOL4:
+			changeTools(4, Assmble_Tool);
+			break;
+		
+		case CLEAN_TOOLS:
+			changeTools(flag_Struct.ToolsNum_Flag, Clean_Tool);
+			break;
+		
+		case CALIBRATE_TOOL_POS:			// 命令: 0E 09 0C 08 00 14 00 FF
+			calibrateToolPos();
+			/* 不回复上位机 */
+			flag_Struct.Cmd_Executing_Flag = RESET;
+			return;
+		
 		default:
 			respMsgError("控制命令指令码有误\r\n", 1);
 			break;		

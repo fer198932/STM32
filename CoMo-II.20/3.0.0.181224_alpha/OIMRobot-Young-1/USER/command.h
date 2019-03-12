@@ -5,6 +5,7 @@
 #include "config.h"
 #include "main.h"
 #include "AddSubSpeed_S.h"
+#include "ChangeTools.h"
 
 
 // Ö´ÐÐÃüÁî

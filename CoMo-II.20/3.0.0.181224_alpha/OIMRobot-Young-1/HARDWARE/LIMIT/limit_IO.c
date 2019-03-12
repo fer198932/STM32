@@ -243,7 +243,7 @@ void procLimit(void)
 }
 
 // ³õÊ¼»¯º¯Êý
-static void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[])
+void limitInit(GPIO_Structure_XX *GPIO_Temp, const char str[])
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	

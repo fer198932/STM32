@@ -41,7 +41,8 @@ void mainMotorStop(void);
 // 设定主轴电机的占空比，dc：占空比 单位%  
 void setMainMotor_DC(u8 ch, u8 dc);
 
-
+// 主轴电机缓转-装刀用
+void mainMotor_WorkSlowly(void);
 
 
 

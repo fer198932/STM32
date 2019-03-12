@@ -40,6 +40,10 @@ void uart_init(u32 bound);
 void USART_IRQ_Macro(volatile u8 temp);
 
 
+// 锁定串口，不接收命令（发送的命令全部丢掉）
+void lockUsart(const char str[]);
+
+
 // 串口中断服务程序
 #define USART_IRQ \
 do \

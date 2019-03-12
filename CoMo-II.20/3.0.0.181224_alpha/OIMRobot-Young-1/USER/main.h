@@ -15,6 +15,7 @@
 #include "timer.h"
 #include "StepMotor.h"	
 #include "MainAxisMotor.h"	
+#include "ChangeTools.h"
 
 /* 系统功能开关： 1--打开测试代码，0--关闭 */
 // 测试代码，测试代码通常属于验证编写的代码，不算入系统代码
@@ -68,6 +69,8 @@ typedef struct {
 	vu32														Limiti_Flag;	
 	
 //	volatile		FlagStatus					Retun2Zero_Flag;						// 回零标记
+	
+	vu8															ToolsNum_Flag;								// 刀具
 } Flag_Structure;
 
 

@@ -13,7 +13,8 @@
 #include "StepMotor.h"
 
 // 最大行程，单位mm
-#define		MAX_DIS			100
+#define		MAX_DIS			200
+#define		MAX_CLK			(StepMotor_MaxClk>>1)
 #define		MIN_DIS			1				// 较小的进给量
 
 
@@ -35,7 +36,7 @@ void return2Zero(void);
 static void workPos2Limit(N_Axis n, u32 _clk, Motor_Dir _dir, u8 (*fuc_limit)());
 
 // 从零点到指定位置，按设定的值运动
-static void zeroBack2Pos(DesPosition* pDesPos);
+void zeroBack2Pos(DesPosition* pDesPos);
 
 
 

@@ -188,6 +188,19 @@ void USART3_IRQHandler(void)                	//串口3中断服务程序
 #endif	
 
 
+// 锁定串口，不接收命令（发送的命令全部丢掉） 后续可以考虑直接关闭串口
+void lockUsart(const char str[])
+{
+	if(SET == flag_Struct.USART_IDLE_Flag)
+	{
+		flag_Struct.USART_IDLE_Flag = RESET;
+		respMsgError(str, 1);					
+		// 重置缓冲区
+		buffer_Reset();		
+	}	
+}
+
+
 
  
 
