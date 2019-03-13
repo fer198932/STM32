@@ -40,11 +40,12 @@ void Tim_Base_Init(TIM_TypeDef* TIM_N, u16 arr, u16 psc, FunctionalState Enable_
 	TIM_TimeBaseInitTypeDef	 	TIM_TimeBaseInitStructure;
 	NVIC_InitTypeDef 					NVIC_InitStructure;
 	
-	// 构造TIM结构体
+	// 构造TIM结构体	
 	if(!TIM_Structure_Make(TIM_N, TIM_AF_Structure))
 		return;
 	
 	// 使能时钟
+//	TIM_DeInit(TIM_N);
 	if((u32)TIM1 > (u32)TIM_N) 			// 时钟线 TIM2、3、4、5、6、7、12、13、14
 		RCC_APB1PeriphClockCmd(TIM_AF_Structure->RCC_Periph_N, ENABLE);
 	else 														// 时钟线 TIM1、8、9、10、11
