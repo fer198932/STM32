@@ -51,11 +51,11 @@
 #define 	X_P_LIMIT 			"PE2"						// X+限位
 #define 	X_N_LIMIT 			"PF6"						// X-限位 兼用为X零位
 #define 	Y_P_LIMIT 			"PF7"						// Y+限位	"PF7"
-#define 	Y_N_LIMIT 			"PA11"					// Y-限位 兼用为Y零位
+#define 	Y_N_LIMIT 			"PD6"					// Y-限位 兼用为Y零位
 #define 	Z_P_LIMIT 			"PF10"					// Z+限位
-#define 	Z_N_LIMIT 			"PA11"					// Z-限位 兼用为Z零位
-#define 	A_LIMIT 				"PA11"					// A零位
-#define 	B_LIMIT 				"PA11"					// B零位
+#define 	Z_N_LIMIT 			"PD6"					// Z-限位 兼用为Z零位
+#define 	A_LIMIT 				"PD6"					// A零位
+#define 	B_LIMIT 				"PD6"					// B零位
 
 /* 刀具电磁铁IO口 */
 #define		TOOLS_ELECTROMAGNET			"PF12"			// 电磁铁IO口
@@ -68,10 +68,13 @@
 
 /******* 中断IO口  注意：如PA11只能连接到中断线11 ***********/
 /* 步进电机的相关IO口  方向、中断及输出IO口 注：PWM的IO口不能随便选择！ */
-#define		EXTI_LINE_X							3															// 中断线，与下文的中断IO口对应  如PC4->中断线4
-#define 	EXTI_X_PLUS							"PB3" 		/* 中断线3 */				// 接收PWM的中断IO口
-#define 	PWM_X_EXTI							"PB5"			/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
-#define 	PWM_X_OUT								"PB4"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用
+#define		EXTI_LINE_X							8															// 中断线，与下文的中断IO口对应  如PC4->中断线4
+//#define 	EXTI_X_PLUS							"PB3" 		/* 中断线3 */				// 接收PWM的中断IO口
+//#define 	PWM_X_EXTI							"PB5"			/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
+//#define 	PWM_X_OUT								"PB4"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用 	
+#define 	EXTI_X_PLUS							"PG8" 		/* 中断线3 */				// 接收PWM的中断IO口
+#define 	PWM_X_EXTI							"PC7"			/* TIM3_CH2 */			// 输出PWM到中断的IO口   	
+#define 	PWM_X_OUT								"PA6"  		/* TIM3_CH1 */			// 输出PWM到电机的IO口		 探索者板子上用
 #define 	DIR_X										"PA4" 		/*          */ 			// 电机运动方向
 
 #if _TEST_ON_ALIENTEK
